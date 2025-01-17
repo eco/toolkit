@@ -24,7 +24,7 @@
     "url": "git+https://github.com/eco/toolkit.git"
   },
   "devDependencies": {
-    "eslint-config": "*",
+    "@repo/eslint-config": "*",
     "tsup": "^8.3.5"
   },
   "keywords": [
