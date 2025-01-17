@@ -1,0 +1,46 @@
+{
+  "name": "@eco-foundation/routes-sdk",
+  "version": "0.1.0",
+  "description": "Eco Routes SDK",
+  "main": "./dist/index.js",
+  "module": "./dist/index.mjs",
+  "types": "./dist/index.d.ts",
+  "type": "module",
+  "exports": {
+    ".": {
+      "types": "./src/index.ts",
+      "default": "./dist/index.js"
+    }
+  },
+  "imports": {},
+  "scripts": {
+    "lint": "eslint .",
+    "check-types": "tsc --noEmit",
+    "dev": "tsup src/index.ts --format cjs,esm --dts --watch",
+    "build": "tsup src/index.ts --format cjs,esm --dts"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/eco/toolkit.git"
+  },
+  "devDependencies": {
+    "eslint-config": "*",
+    "tsup": "^8.3.5"
+  },
+  "keywords": [
+    "sdk",
+    "ethereum",
+    "eco routes",
+    "routes",
+    "bend",
+    "protocol",
+    "solver",
+    "rollup"
+  ],
+  "author": "Eco Engineering <eng@eco.com>",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/eco/toolkit/issues"
+  },
+  "homepage": "https://github.com/eco/toolkit#readme"
+}
