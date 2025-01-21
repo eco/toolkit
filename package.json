@@ -2,6 +2,7 @@
   "name": "toolkit",
   "private": true,
   "scripts": {
+    "test": "turbo test",
     "build": "turbo build",
     "dev": "turbo dev",
     "lint": "turbo lint",
