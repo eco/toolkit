@@ -16,8 +16,19 @@ export type Route = {
 export type CreateSimpleRouteParams = {
   originChainID: ChainId
   destinationChainID: ChainId
-  targetTokens: Token[]
-  rewardTokens: Token[]
+  acquiringToken: Token
+  spendingToken: Token
+  amount: bigint
+  prover?: "HyperProver" | "Prover"
+  simpleRouteActionData: Hex
+  expiryTime?: Date
+}
+
+export type CreateRouteParams = {
+  originChainID: ChainId
+  destinationChainID: ChainId
+  targetTokens: Hex[]
+  rewardTokens: Hex[]
   rewardTokenBalances: bigint[]
   prover: "HyperProver" | "Prover" | Hex
   destinationChainActions: Hex[]
