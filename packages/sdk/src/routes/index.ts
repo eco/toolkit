@@ -1,3 +1,4 @@
+import { getSecondsFromNow } from "../utils/index.js";
 import { NetworkTokens } from "./constants.js";
 import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types.js";
 
@@ -32,8 +33,8 @@ export class RoutesService {
       expiryTime
     } = params;
     // validate
-    if (params.expiryTime && params.expiryTime < new Date()) {
-      throw new Error("Expiry time must be in the future");
+    if (params.expiryTime && params.expiryTime < getSecondsFromNow(60)) {
+      throw new Error("Expiry time must be 60 seconds or more in the future");
     }
     if (amount < BigInt(0)) {
       throw new Error("Invalid amount");
@@ -50,7 +51,7 @@ export class RoutesService {
       rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
       destinationChainActions: [simpleRouteActionData],
-      expiryTime: expiryTime || new Date(Date.now() + (1000 * 60 * 60 * 2)) // 2 hours from now
+      expiryTime: expiryTime || getSecondsFromNow(2 * 60 * 60) // 2 hours from now
     }
   }
 
@@ -68,8 +69,8 @@ export class RoutesService {
     if (params.targetTokens.length === 0 || params.rewardTokens.length === 0 || params.rewardTokenBalances.length === 0 || params.destinationChainActions.length === 0) {
       throw new Error("Invalid route parameters");
     }
-    if (params.expiryTime && params.expiryTime < new Date()) {
-      throw new Error("Expiry time must be in the future");
+    if (params.expiryTime && params.expiryTime < getSecondsFromNow(60)) {
+      throw new Error("Expiry time must be 60 seconds or more in the future");
     }
     if (params.rewardTokenBalances.some((balance) => balance < BigInt(0))) {
       throw new Error("Invalid reward token balance");
@@ -87,7 +88,7 @@ export class RoutesService {
       rewardTokenBalances: params.rewardTokenBalances,
       proverContract: this.getProverContract(params.prover, params.originChainID),
       destinationChainActions: params.destinationChainActions,
-      expiryTime: params.expiryTime || new Date(Date.now() + (1000 * 60 * 60 * 2)) // 2 hours from now
+      expiryTime: params.expiryTime || getSecondsFromNow(2 * 60 * 60) // 2 hours from now
     }
   }
 

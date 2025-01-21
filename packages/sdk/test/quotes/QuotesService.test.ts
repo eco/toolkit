@@ -3,6 +3,7 @@ import { QuotesService } from "../../src/quotes/index.js";
 import { RoutesService } from "../../src/routes/index.js";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
 import { Route } from "../../src/routes/types.js";
+import { getSecondsFromNow } from "../../src/utils/index.js";
 
 describe("QuotesService", () => {
   let routesService: RoutesService;
@@ -83,7 +84,7 @@ describe("QuotesService", () => {
 
     test("invalidExpiryTime", async () => {
       const invalidRoute = validRoute;
-      invalidRoute.expiryTime = new Date(Date.now() - 1000);
+      invalidRoute.expiryTime = getSecondsFromNow(50); // must be 60 seconds in the future or more
 
       await expect(quotesService.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
     })
