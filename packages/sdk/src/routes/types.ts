@@ -7,7 +7,7 @@ export type Route = {
   destinationChainID: ChainId
   targetTokens: Hex[]
   rewardTokens: Hex[]
-  rewardTokenBalances: string[]
+  rewardTokenBalances: bigint[]
   proverContract: Hex
   destinationChainActions: Hex[]
   expiryTime: Date

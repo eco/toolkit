@@ -16,6 +16,8 @@ export class RoutesService {
    * @param {CreateSimpleRouteParams} params - The parameters for creating the simple route.
    * 
    * @returns {Route} The created route.
+   * 
+   * @throws {Error} If the expiry time is in the past or the amount is invalid.
    */
 
   createSimpleRoute(params: CreateSimpleRouteParams): Route {
@@ -45,7 +47,7 @@ export class RoutesService {
       destinationChainID,
       targetTokens: [targetToken],
       rewardTokens: [rewardToken],
-      rewardTokenBalances: [amount.toString()],
+      rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
       destinationChainActions: [simpleRouteActionData],
       expiryTime: expiryTime || new Date(Date.now() + (1000 * 60 * 60 * 2)) // 2 hours from now
@@ -59,7 +61,7 @@ export class RoutesService {
    * 
    * @returns {Route} The created route.
    * 
-   * @throws {Error} If no default prover is found for the specified chain.
+   * @throws {Error} If the parameters, expiry time, reward token balances or tokens are invalid.
    */
   createRoute(params: CreateRouteParams): Route {
     // validate params
@@ -82,7 +84,7 @@ export class RoutesService {
       destinationChainID: params.destinationChainID,
       targetTokens,
       rewardTokens,
-      rewardTokenBalances: params.rewardTokenBalances.map((amount) => amount.toString()),
+      rewardTokenBalances: params.rewardTokenBalances,
       proverContract: this.getProverContract(params.prover, params.originChainID),
       destinationChainActions: params.destinationChainActions,
       expiryTime: params.expiryTime || new Date(Date.now() + (1000 * 60 * 60 * 2)) // 2 hours from now
