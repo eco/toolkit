@@ -30,10 +30,12 @@ export class RoutesService {
       expiryTime
     } = params;
     // validate
+    if (params.expiryTime && params.expiryTime < new Date()) {
+      throw new Error("Expiry time must be in the future");
+    }
     if (amount < BigInt(0)) {
       throw new Error("Invalid amount");
     }
-
 
     const targetToken = RoutesService.getNetworkTokenAddress(originChainID, acquiringToken);
     const rewardToken = RoutesService.getNetworkTokenAddress(destinationChainID, spendingToken);

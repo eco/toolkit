@@ -39,6 +39,19 @@ describe("RoutesService", () => {
       expect(validRoute.expiryTime).toBeDefined();
     })
 
+    test("invalidExpiryTime", async () => {
+      expect(() => routesService.createSimpleRoute({
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: "USDC",
+        acquiringToken: "USDC",
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        simpleRouteActionData: transferData,
+        expiryTime: new Date(Date.now() - 1000),
+      })).toThrow("Expiry time must be in the future");
+    })
+
     test("invalidAmount", async () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
@@ -51,7 +64,7 @@ describe("RoutesService", () => {
       })).toThrow("Invalid amount");
     })
 
-    test("invalidProver", async () => {
+    test("invalidProverForChain", async () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 42161,
         destinationChainID: 10,
@@ -122,6 +135,18 @@ describe("RoutesService", () => {
         destinationChainActions: [transferData],
         expiryTime: new Date(Date.now() - 1000),
       })).toThrow("Expiry time must be in the future");
+    })
+
+    test("invalidAmount", async () => {
+      expect(() => routesService.createSimpleRoute({
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: "USDC",
+        acquiringToken: "USDC",
+        amount: BigInt(-1),
+        prover: 'HyperProver',
+        simpleRouteActionData: transferData
+      })).toThrow("Invalid amount");
     })
 
     test("invalidProverForChain", async () => {
