@@ -19,9 +19,9 @@
         "^lint"
       ]
     },
-    "topo": {
+    "test": {
       "dependsOn": [
-        "^topo"
+        "^test"
       ]
     },
     "check-types": {
