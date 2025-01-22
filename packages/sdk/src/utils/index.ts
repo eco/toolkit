@@ -9,3 +9,7 @@ export function dateToTimestap(date: Date) {
 export function isAmountInvalid(amount: bigint): boolean {
   return amount < BigInt(0);
 }
+
+export function sum(items: (bigint | string | number)[]): bigint {
+  return items.reduce<bigint>((acc, amount) => acc + BigInt(amount), 0n)
+}
