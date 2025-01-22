@@ -1,8 +1,8 @@
 import axios, { AxiosInstance } from "axios";
-import { OQEApiRequest_Quotes, OQEApiResponse_Quotes } from "./types";
+import { OpenQuotingClient_ApiRequest_Quotes, OpenQuotingClient_ApiResponse_Quotes } from "./types";
 import { Route } from "../routes/types";
 
-export class QuotesService {
+export class OpenQuotingClient {
   private dAppID: string;
   private readonly openQuotingBaseUrl = "https://aleph2035.ngrok.io"; // TODO: once deployed, change this to the actual URL
   private axiosInstance: AxiosInstance
@@ -18,14 +18,14 @@ export class QuotesService {
    * Requests quotes for a given route.
    *
    * @param route - The route for which quotes are being requested.
-   * @returns A promise that resolves to an `OQEApiResponse_Quotes` object containing the quotes.
+   * @returns A promise that resolves to an `OpenQuotingClient_ApiResponse_Quotes` object containing the quotes.
    * @throws An error if the request fails.
    *
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided route information.
    */
-  async requestQuotesForRoute(route: Route): Promise<OQEApiResponse_Quotes> {
-    const payload: OQEApiRequest_Quotes = {
+  async requestQuotesForRoute(route: Route): Promise<OpenQuotingClient_ApiResponse_Quotes> {
+    const payload: OpenQuotingClient_ApiRequest_Quotes = {
       dAppID: this.dAppID,
       intentData: {
         originChainID: route.originChainID.toString(),
@@ -39,7 +39,7 @@ export class QuotesService {
       }
     }
 
-    const response = await this.axiosInstance.post<OQEApiResponse_Quotes>("/api/v1/quotes", payload);
+    const response = await this.axiosInstance.post<OpenQuotingClient_ApiResponse_Quotes>("/api/v1/quotes", payload);
     return response.data;
   }
 }

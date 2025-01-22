@@ -1,4 +1,4 @@
-export type OQEApiRequest_Quotes = {
+export type OpenQuotingClient_ApiRequest_Quotes = {
   dAppID: string;
   intentData: {
     originChainID: string
@@ -12,7 +12,7 @@ export type OQEApiRequest_Quotes = {
   }
 }
 
-export type OQEApiResponse_Quotes = {
+export type OpenQuotingClient_ApiResponse_Quotes = {
   data: SolverQuote[]
 }
 

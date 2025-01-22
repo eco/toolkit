@@ -1,19 +1,19 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { QuotesService } from "../../src/quotes";
+import { OpenQuotingClient } from "../../src/quotes";
 import { RoutesService } from "../../src/routes";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
 import { Route } from "../../src/routes/types";
 import { getSecondsFromNow } from "../../src/utils";
 
-describe("QuotesService", () => {
+describe("OpenQuotingClient", () => {
   let routesService: RoutesService;
-  let quotesService: QuotesService;
+  let openQuotingClient: OpenQuotingClient;
   let transferData: Hex;
   let validRoute: Route;
 
   beforeAll(() => {
     routesService = new RoutesService();
-    quotesService = new QuotesService({ dAppID: "test" });
+    openQuotingClient = new OpenQuotingClient({ dAppID: "test" });
     transferData = encodeFunctionData({
       abi: erc20Abi,
       functionName: 'transfer',
@@ -35,7 +35,7 @@ describe("QuotesService", () => {
 
   describe("requestQuotesForRoute", () => {
     test("valid", async () => {
-      const response = await quotesService.requestQuotesForRoute(validRoute);
+      const response = await openQuotingClient.requestQuotesForRoute(validRoute);
 
       expect(response).toBeDefined();
       expect(response.data).toBeDefined();
@@ -65,42 +65,42 @@ describe("QuotesService", () => {
         expiryTime: new Date()
       }
 
-      await expect(quotesService.requestQuotesForRoute(emptyRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForRoute(emptyRoute)).rejects.toThrow("Request failed with status code 400");
     })
 
     test("invalidRewardToken", async () => {
       const invalidRoute = validRoute;
       invalidRoute.rewardTokens = ["0x0"];
 
-      await expect(quotesService.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
     })
 
     test("invalidTargetToken", async () => {
       const invalidRoute = validRoute;
       invalidRoute.targetTokens = ["0x0"];
 
-      await expect(quotesService.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
     })
 
     test("invalidExpiryTime", async () => {
       const invalidRoute = validRoute;
       invalidRoute.expiryTime = getSecondsFromNow(50); // must be 60 seconds in the future or more
 
-      await expect(quotesService.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
     })
 
     test("invalidRewardTokenBalance", async () => {
       const invalidRoute = validRoute;
       invalidRoute.rewardTokenBalances = [BigInt(-1)];
 
-      await expect(quotesService.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
     })
 
     test("invalidProver", async () => {
       const invalidRoute = validRoute;
       invalidRoute.proverContract = "0x0";
 
-      await expect(quotesService.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForRoute(invalidRoute)).rejects.toThrow("Request failed with status code 400");
     })
   });
 });
