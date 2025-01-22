@@ -1,4 +1,4 @@
-import { SolverQuote } from "../types.js";
+import { SolverQuote } from "../types";
 
 export function selectCheapestQuote(quotes: SolverQuote[]): SolverQuote {
   return quotes.reduce((cheapest, quote) => {

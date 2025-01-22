@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
-import { OQEApiRequest_Quotes, OQEApiResponse_Quotes } from "./types.js";
-import { Route } from "../routes/types.js";
+import { OQEApiRequest_Quotes, OQEApiResponse_Quotes } from "./types";
+import { Route } from "../routes/types";
 
 export class QuotesService {
   private dAppID: string;

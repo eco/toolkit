@@ -1,4 +1,4 @@
-import { Token, ChainId } from "./types.js";
+import { Token, ChainId } from "./types";
 
 export const NetworkTokens: Record<ChainId, Partial<Record<Token, Hex | undefined>>> = {
   10: {

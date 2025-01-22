@@ -1,6 +1,6 @@
-export { RoutesService } from "./routes/index.js";
-export type { CreateSimpleRouteParams, CreateRouteParams, Route } from "./routes/types.ts";
+export { RoutesService } from "./routes";
+export type { CreateSimpleRouteParams, CreateRouteParams, Route } from "./routes/types";
 
-export { QuotesService } from "./quotes/index.js";
-export type { SolverQuote, QuoteData } from "./quotes/types.ts";
-export { selectCheapestQuote } from "./quotes/quoteSelectors/index.js";
+export { QuotesService } from "./quotes";
+export type { SolverQuote, QuoteData } from "./quotes/types";
+export { selectCheapestQuote } from "./quotes/quoteSelectors";

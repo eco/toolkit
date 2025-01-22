@@ -1,6 +1,6 @@
-import { getSecondsFromNow } from "../utils/index.js";
-import { NetworkTokens } from "./constants.js";
-import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types.js";
+import { getSecondsFromNow } from "../utils";
+import { NetworkTokens } from "./constants";
+import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types";
 
 import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes";
 

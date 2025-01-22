@@ -1,9 +1,9 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { QuotesService } from "../../src/quotes/index.js";
-import { RoutesService } from "../../src/routes/index.js";
+import { QuotesService } from "../../src/quotes";
+import { RoutesService } from "../../src/routes";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
-import { Route } from "../../src/routes/types.js";
-import { getSecondsFromNow } from "../../src/utils/index.js";
+import { Route } from "../../src/routes/types";
+import { getSecondsFromNow } from "../../src/utils";
 
 describe("QuotesService", () => {
   let routesService: RoutesService;
