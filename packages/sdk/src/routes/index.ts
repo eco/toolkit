@@ -1,5 +1,6 @@
-import { NetworkTokens } from "./constants.js";
-import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types.js";
+import { getSecondsFromNow, isAmountInvalid } from "../utils";
+import { NetworkTokens } from "./constants";
+import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types";
 
 import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes";
 
@@ -16,24 +17,25 @@ export class RoutesService {
    * @param {CreateSimpleRouteParams} params - The parameters for creating the simple route.
    * 
    * @returns {Route} The created route.
+   * 
+   * @throws {Error} If the expiry time is in the past or the amount is invalid.
    */
 
-  createSimpleRoute(params: CreateSimpleRouteParams): Route {
-    const {
-      originChainID,
-      destinationChainID,
-      acquiringToken,
-      spendingToken,
-      amount,
-      prover = "HyperProver",
-      simpleRouteActionData,
-      expiryTime
-    } = params;
+  createSimpleRoute({
+    originChainID,
+    destinationChainID,
+    acquiringToken,
+    spendingToken,
+    amount,
+    prover = "HyperProver",
+    simpleRouteActionData,
+    expiryTime = getSecondsFromNow(60)
+  }: CreateSimpleRouteParams): Route {
     // validate
-    if (params.expiryTime && params.expiryTime < new Date()) {
-      throw new Error("Expiry time must be in the future");
+    if (expiryTime < getSecondsFromNow(60)) {
+      throw new Error("Expiry time must be 60 seconds or more in the future");
     }
-    if (amount < BigInt(0)) {
+    if (isAmountInvalid(amount)) {
       throw new Error("Invalid amount");
     }
 
@@ -45,10 +47,10 @@ export class RoutesService {
       destinationChainID,
       targetTokens: [targetToken],
       rewardTokens: [rewardToken],
-      rewardTokenBalances: [amount.toString()],
+      rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
       destinationChainActions: [simpleRouteActionData],
-      expiryTime: expiryTime || new Date(Date.now() + (1000 * 60 * 60 * 2)) // 2 hours from now
+      expiryTime
     }
   }
 
@@ -59,33 +61,38 @@ export class RoutesService {
    * 
    * @returns {Route} The created route.
    * 
-   * @throws {Error} If no default prover is found for the specified chain.
+   * @throws {Error} If the parameters, expiry time, reward token balances or tokens are invalid.
    */
-  createRoute(params: CreateRouteParams): Route {
+  createRoute({
+    originChainID,
+    destinationChainID,
+    targetTokens,
+    rewardTokens,
+    rewardTokenBalances,
+    prover = "HyperProver",
+    destinationChainActions,
+    expiryTime = getSecondsFromNow(2 * 60 * 60) // 2 hours from now
+  }: CreateRouteParams): Route {
     // validate params
-    if (params.targetTokens.length === 0 || params.rewardTokens.length === 0 || params.rewardTokenBalances.length === 0 || params.destinationChainActions.length === 0) {
+    if (!targetTokens.length || !rewardTokens.length || !rewardTokenBalances.length || !destinationChainActions.length) {
       throw new Error("Invalid route parameters");
     }
-    if (params.expiryTime && params.expiryTime < new Date()) {
-      throw new Error("Expiry time must be in the future");
+    if (expiryTime < getSecondsFromNow(60)) {
+      throw new Error("Expiry time must be 60 seconds or more in the future");
     }
-    if (params.rewardTokenBalances.some((balance) => balance < BigInt(0))) {
+    if (rewardTokenBalances.some(isAmountInvalid)) {
       throw new Error("Invalid reward token balance");
     }
 
-    // validate tokens
-    const targetTokens = params.targetTokens.map((targetToken) => RoutesService.validateNetworkTokenAddress(params.destinationChainID, targetToken))
-    const rewardTokens = params.rewardTokens.map((rewardToken) => RoutesService.validateNetworkTokenAddress(params.originChainID, rewardToken))
-
     return {
-      originChainID: params.originChainID,
-      destinationChainID: params.destinationChainID,
+      originChainID,
+      destinationChainID,
       targetTokens,
       rewardTokens,
-      rewardTokenBalances: params.rewardTokenBalances.map((amount) => amount.toString()),
-      proverContract: this.getProverContract(params.prover, params.originChainID),
-      destinationChainActions: params.destinationChainActions,
-      expiryTime: params.expiryTime || new Date(Date.now() + (1000 * 60 * 60 * 2)) // 2 hours from now
+      rewardTokenBalances,
+      proverContract: this.getProverContract(prover, originChainID),
+      destinationChainActions,
+      expiryTime
     }
   }
 

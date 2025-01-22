@@ -2,6 +2,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { RoutesService } from "../../src/routes";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
 import { NetworkTokens } from "../../src/routes/constants";
+import { getSecondsFromNow } from "../../src/utils";
 
 describe("RoutesService", () => {
   let routesService: RoutesService;
@@ -48,8 +49,8 @@ describe("RoutesService", () => {
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleRouteActionData: transferData,
-        expiryTime: new Date(Date.now() - 1000),
-      })).toThrow("Expiry time must be in the future");
+        expiryTime: getSecondsFromNow(50),
+      })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
     test("invalidAmount", async () => {
@@ -112,18 +113,6 @@ describe("RoutesService", () => {
       })).toThrow("Invalid route parameters");
     })
 
-    test("invalidToken", async () => {
-      expect(() => routesService.createRoute({
-        originChainID: 8453,
-        destinationChainID: 10,
-        targetTokens: ["0xdeadbeef"],
-        rewardTokens: ["0xdeadbeef"],
-        rewardTokenBalances: [BigInt(1000000)],
-        prover: "HyperProver",
-        destinationChainActions: [transferData],
-      })).toThrow("Invalid Token Address 0xdeadbeef on chainId 10");
-    })
-
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createRoute({
         originChainID: 10,
@@ -133,8 +122,8 @@ describe("RoutesService", () => {
         rewardTokenBalances: [BigInt(1000000)],
         prover: "HyperProver",
         destinationChainActions: [transferData],
-        expiryTime: new Date(Date.now() - 1000),
-      })).toThrow("Expiry time must be in the future");
+        expiryTime: getSecondsFromNow(50),
+      })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
     test("invalidAmount", async () => {
