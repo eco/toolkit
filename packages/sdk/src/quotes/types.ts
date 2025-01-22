@@ -4,24 +4,22 @@ export namespace OpenQuotingAPI {
     Quotes = '/api/v1/quotes'
   }
 
-  export type Interfaces = {
-    [Endpoints.Quotes]: {
-      Request: {
-        dAppID: string;
-        intentData: {
-          originChainID: string
-          destinationChainID: string
-          targetTokens: Hex[]
-          rewardTokens: Hex[]
-          rewardTokenBalances: string[]
-          proverContract: Hex
-          destinationChainActions: Hex[]
-          expiryTime: string
-        }
+  export namespace Quotes {
+    export interface Request {
+      dAppID: string;
+      intentData: {
+        originChainID: string
+        destinationChainID: string
+        targetTokens: Hex[]
+        rewardTokens: Hex[]
+        rewardTokenBalances: string[]
+        proverContract: Hex
+        destinationChainActions: Hex[]
+        expiryTime: string
       }
-      Response: {
-        data: SolverQuote[]
-      }
+    }
+    export interface Response {
+      data: SolverQuote[]
     }
   }
 }
