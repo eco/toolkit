@@ -1,4 +1,4 @@
-
+import { Hex } from "viem";
 export namespace OpenQuotingAPI {
   export enum Endpoints {
     Quotes = '/api/v1/quotes'
