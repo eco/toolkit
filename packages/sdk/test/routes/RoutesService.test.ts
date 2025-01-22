@@ -40,6 +40,28 @@ describe("RoutesService", () => {
       expect(validRoute.expiryTime).toBeDefined();
     })
 
+    test("validCustomTokens", async () => {
+      const validRoute = routesService.createSimpleRoute({
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
+        receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        simpleRouteActionData: transferData
+      });
+
+      expect(validRoute).toBeDefined();
+      expect(validRoute.originChainID).toBe(10);
+      expect(validRoute.destinationChainID).toBe(8453);
+      expect(validRoute.targetTokens).toBeDefined();
+      expect(validRoute.rewardTokens).toBeDefined();
+      expect(validRoute.rewardTokenBalances).toBeDefined();
+      expect(validRoute.proverContract).toBeDefined();
+      expect(validRoute.destinationChainActions).toBeDefined();
+      expect(validRoute.expiryTime).toBeDefined();
+    })
+
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
@@ -101,6 +123,28 @@ describe("RoutesService", () => {
       expect(validRoute.expiryTime).toBeDefined();
     })
 
+    test("validCustomTokens", async () => {
+      const validRoute = routesService.createRoute({
+        originChainID: 10,
+        destinationChainID: 8453,
+        targetTokens: ["0x0555E30da8f98308EdB960aa94C0Db47230d2B9c"],
+        rewardTokens: ["0x68f180fcCe6836688e9084f035309E29Bf0A2095"],
+        rewardTokenBalances: [BigInt(1000000)],
+        prover: "HyperProver",
+        destinationChainActions: [transferData],
+      })
+
+      expect(validRoute).toBeDefined();
+      expect(validRoute.originChainID).toBe(10);
+      expect(validRoute.destinationChainID).toBe(8453);
+      expect(validRoute.targetTokens).toBeDefined();
+      expect(validRoute.rewardTokens).toBeDefined();
+      expect(validRoute.rewardTokenBalances).toBeDefined();
+      expect(validRoute.proverContract).toBeDefined();
+      expect(validRoute.destinationChainActions).toBeDefined();
+      expect(validRoute.expiryTime).toBeDefined();
+    })
+
     test("empty", async () => {
       expect(() => routesService.createRoute({
         originChainID: 10,
@@ -126,7 +170,7 @@ describe("RoutesService", () => {
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
-    test.only("invalidRewardTokenBalance", async () => {
+    test("invalidRewardTokenBalance", async () => {
       expect(() => routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
