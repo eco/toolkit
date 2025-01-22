@@ -22,8 +22,30 @@ describe("RoutesService", () => {
       const validRoute = routesService.createSimpleRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
+        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        simpleRouteActionData: transferData
+      });
+
+      expect(validRoute).toBeDefined();
+      expect(validRoute.originChainID).toBe(10);
+      expect(validRoute.destinationChainID).toBe(8453);
+      expect(validRoute.targetTokens).toBeDefined();
+      expect(validRoute.rewardTokens).toBeDefined();
+      expect(validRoute.rewardTokenBalances).toBeDefined();
+      expect(validRoute.proverContract).toBeDefined();
+      expect(validRoute.destinationChainActions).toBeDefined();
+      expect(validRoute.expiryTime).toBeDefined();
+    })
+
+    test("validCustomTokens", async () => {
+      const validRoute = routesService.createSimpleRoute({
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
+        receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleRouteActionData: transferData
@@ -44,8 +66,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
+        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleRouteActionData: transferData,
@@ -57,8 +79,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
+        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
         simpleRouteActionData: transferData
@@ -69,8 +91,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 42161,
         destinationChainID: 10,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getTokenAddress(42161, "USDC"),
+        receivingToken: RoutesService.getTokenAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "Prover",
         simpleRouteActionData: transferData
@@ -83,8 +105,30 @@ describe("RoutesService", () => {
       const validRoute = routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [NetworkTokens[8453].USDC],
-        rewardTokens: [NetworkTokens[10].USDC],
+        targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
+        rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
+        rewardTokenBalances: [BigInt(1000000)],
+        prover: "HyperProver",
+        destinationChainActions: [transferData],
+      })
+
+      expect(validRoute).toBeDefined();
+      expect(validRoute.originChainID).toBe(10);
+      expect(validRoute.destinationChainID).toBe(8453);
+      expect(validRoute.targetTokens).toBeDefined();
+      expect(validRoute.rewardTokens).toBeDefined();
+      expect(validRoute.rewardTokenBalances).toBeDefined();
+      expect(validRoute.proverContract).toBeDefined();
+      expect(validRoute.destinationChainActions).toBeDefined();
+      expect(validRoute.expiryTime).toBeDefined();
+    })
+
+    test("validCustomTokens", async () => {
+      const validRoute = routesService.createRoute({
+        originChainID: 10,
+        destinationChainID: 8453,
+        targetTokens: ["0x0555E30da8f98308EdB960aa94C0Db47230d2B9c"],
+        rewardTokens: ["0x68f180fcCe6836688e9084f035309E29Bf0A2095"],
         rewardTokenBalances: [BigInt(1000000)],
         prover: "HyperProver",
         destinationChainActions: [transferData],
@@ -117,8 +161,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [NetworkTokens[8453].USDC],
-        rewardTokens: [NetworkTokens[10].USDC],
+        targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
+        rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
         rewardTokenBalances: [BigInt(1000000)],
         prover: "HyperProver",
         destinationChainActions: [transferData],
@@ -126,24 +170,24 @@ describe("RoutesService", () => {
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
-    test("invalidAmount", async () => {
-      expect(() => routesService.createSimpleRoute({
+    test("invalidRewardTokenBalance", async () => {
+      expect(() => routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
-        amount: BigInt(-1),
-        prover: 'HyperProver',
-        simpleRouteActionData: transferData
-      })).toThrow("Invalid amount");
+        targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
+        rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
+        rewardTokenBalances: [BigInt(-1)],
+        prover: "HyperProver",
+        destinationChainActions: [transferData],
+      })).toThrow("Invalid reward token balance");
     })
 
     test("invalidProverForChain", async () => {
       expect(() => routesService.createRoute({
         originChainID: 42161,
         destinationChainID: 10,
-        targetTokens: [NetworkTokens[10].USDC],
-        rewardTokens: [NetworkTokens[42161].USDC],
+        targetTokens: [RoutesService.getTokenAddress(10, "USDC")],
+        rewardTokens: [RoutesService.getTokenAddress(42161, "USDC")],
         rewardTokenBalances: [BigInt(1000000)],
         prover: "Prover",
         destinationChainActions: [transferData],

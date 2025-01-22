@@ -1,6 +1,8 @@
+import { Hex } from "viem";
 import { getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "./constants";
 import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types";
+
 
 import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes";
 
@@ -24,7 +26,7 @@ export class RoutesService {
   createSimpleRoute({
     originChainID,
     destinationChainID,
-    acquiringToken,
+    receivingToken,
     spendingToken,
     amount,
     prover = "HyperProver",
@@ -39,14 +41,11 @@ export class RoutesService {
       throw new Error("Invalid amount");
     }
 
-    const targetToken = RoutesService.getNetworkTokenAddress(originChainID, acquiringToken);
-    const rewardToken = RoutesService.getNetworkTokenAddress(destinationChainID, spendingToken);
-
     return {
       originChainID,
       destinationChainID,
-      targetTokens: [targetToken],
-      rewardTokens: [rewardToken],
+      targetTokens: [receivingToken],
+      rewardTokens: [spendingToken],
       rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
       destinationChainActions: [simpleRouteActionData],
@@ -119,7 +118,7 @@ export class RoutesService {
     return proverContract;
   }
 
-  static getNetworkTokenAddress(chainID: ChainId, token: Token): Hex {
+  static getTokenAddress(chainID: ChainId, token: Token): Hex {
     const networkToken = NetworkTokens[chainID][token];
     if (!networkToken) {
       throw new Error(`Token ${token} not found on chain ${chainID}`);
