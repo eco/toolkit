@@ -1,5 +1,5 @@
 import axios, { AxiosInstance } from "axios";
-import { OpenQuotingClient_ApiRequest_Quotes, OpenQuotingClient_ApiResponse_Quotes } from "./types";
+import { OpenQuotingAPI } from "./types";
 import { Route } from "../routes/types";
 
 export class OpenQuotingClient {
@@ -24,8 +24,8 @@ export class OpenQuotingClient {
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided route information.
    */
-  async requestQuotesForRoute(route: Route): Promise<OpenQuotingClient_ApiResponse_Quotes> {
-    const payload: OpenQuotingClient_ApiRequest_Quotes = {
+  async requestQuotesForRoute(route: Route) {
+    const payload: OpenQuotingAPI.Interfaces[OpenQuotingAPI.Endpoints.Quotes]["Request"] = {
       dAppID: this.dAppID,
       intentData: {
         originChainID: route.originChainID.toString(),
@@ -39,7 +39,7 @@ export class OpenQuotingClient {
       }
     }
 
-    const response = await this.axiosInstance.post<OpenQuotingClient_ApiResponse_Quotes>("/api/v1/quotes", payload);
+    const response = await this.axiosInstance.post<OpenQuotingAPI.Interfaces[OpenQuotingAPI.Endpoints.Quotes]["Response"]>(OpenQuotingAPI.Endpoints.Quotes, payload);
     return response.data;
   }
 }
