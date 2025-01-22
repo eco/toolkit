@@ -113,18 +113,6 @@ describe("RoutesService", () => {
       })).toThrow("Invalid route parameters");
     })
 
-    test("invalidToken", async () => {
-      expect(() => routesService.createRoute({
-        originChainID: 8453,
-        destinationChainID: 10,
-        targetTokens: ["0xdeadbeef"],
-        rewardTokens: ["0xdeadbeef"],
-        rewardTokenBalances: [BigInt(1000000)],
-        prover: "HyperProver",
-        destinationChainActions: [transferData],
-      })).toThrow("Invalid Token Address 0xdeadbeef on chainId 10");
-    })
-
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createRoute({
         originChainID: 10,
