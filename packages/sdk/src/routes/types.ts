@@ -1,7 +1,6 @@
 import { Hex } from "viem"
 
 export type ChainId = 10 | 5000 | 8453 | 42161
-
 export type Token = "USDC" | "USDbC" | "USDCe" | "USDT"
 
 export type Route = {
@@ -18,8 +17,8 @@ export type Route = {
 export type CreateSimpleRouteParams = {
   originChainID: ChainId
   destinationChainID: ChainId
-  acquiringToken: Token
-  spendingToken: Token
+  receivingToken: Hex
+  spendingToken: Hex
   amount: bigint
   prover?: "HyperProver" | "Prover"
   simpleRouteActionData: Hex

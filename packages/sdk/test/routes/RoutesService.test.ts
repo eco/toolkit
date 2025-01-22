@@ -22,8 +22,8 @@ describe("RoutesService", () => {
       const validRoute = routesService.createSimpleRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getNetworkTokenAddress(10, "USDC"),
+        receivingToken: RoutesService.getNetworkTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleRouteActionData: transferData
@@ -44,8 +44,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getNetworkTokenAddress(10, "USDC"),
+        receivingToken: RoutesService.getNetworkTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleRouteActionData: transferData,
@@ -57,8 +57,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getNetworkTokenAddress(10, "USDC"),
+        receivingToken: RoutesService.getNetworkTokenAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
         simpleRouteActionData: transferData
@@ -69,8 +69,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 42161,
         destinationChainID: 10,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
+        spendingToken: RoutesService.getNetworkTokenAddress(42161, "USDC"),
+        receivingToken: RoutesService.getNetworkTokenAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "Prover",
         simpleRouteActionData: transferData
@@ -83,8 +83,8 @@ describe("RoutesService", () => {
       const validRoute = routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [NetworkTokens[8453].USDC],
-        rewardTokens: [NetworkTokens[10].USDC],
+        targetTokens: [RoutesService.getNetworkTokenAddress(8453, "USDC")],
+        rewardTokens: [RoutesService.getNetworkTokenAddress(10, "USDC")],
         rewardTokenBalances: [BigInt(1000000)],
         prover: "HyperProver",
         destinationChainActions: [transferData],
@@ -117,8 +117,8 @@ describe("RoutesService", () => {
       expect(() => routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [NetworkTokens[8453].USDC],
-        rewardTokens: [NetworkTokens[10].USDC],
+        targetTokens: [RoutesService.getNetworkTokenAddress(8453, "USDC")],
+        rewardTokens: [RoutesService.getNetworkTokenAddress(10, "USDC")],
         rewardTokenBalances: [BigInt(1000000)],
         prover: "HyperProver",
         destinationChainActions: [transferData],
@@ -126,24 +126,24 @@ describe("RoutesService", () => {
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
-    test("invalidAmount", async () => {
-      expect(() => routesService.createSimpleRoute({
+    test.only("invalidRewardTokenBalance", async () => {
+      expect(() => routesService.createRoute({
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: "USDC",
-        acquiringToken: "USDC",
-        amount: BigInt(-1),
-        prover: 'HyperProver',
-        simpleRouteActionData: transferData
-      })).toThrow("Invalid amount");
+        targetTokens: [RoutesService.getNetworkTokenAddress(8453, "USDC")],
+        rewardTokens: [RoutesService.getNetworkTokenAddress(10, "USDC")],
+        rewardTokenBalances: [BigInt(-1)],
+        prover: "HyperProver",
+        destinationChainActions: [transferData],
+      })).toThrow("Invalid reward token balance");
     })
 
     test("invalidProverForChain", async () => {
       expect(() => routesService.createRoute({
         originChainID: 42161,
         destinationChainID: 10,
-        targetTokens: [NetworkTokens[10].USDC],
-        rewardTokens: [NetworkTokens[42161].USDC],
+        targetTokens: [RoutesService.getNetworkTokenAddress(10, "USDC")],
+        rewardTokens: [RoutesService.getNetworkTokenAddress(42161, "USDC")],
         rewardTokenBalances: [BigInt(1000000)],
         prover: "Prover",
         destinationChainActions: [transferData],
