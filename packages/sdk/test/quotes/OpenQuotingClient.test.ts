@@ -35,13 +35,12 @@ describe("OpenQuotingClient", () => {
 
   describe("requestQuotesForRoute", () => {
     test("valid", async () => {
-      const response = await openQuotingClient.requestQuotesForRoute(validRoute);
+      const quotes = await openQuotingClient.requestQuotesForRoute(validRoute);
 
-      expect(response).toBeDefined();
-      expect(response.data).toBeDefined();
-      expect(response.data.length).toBeGreaterThan(0);
+      expect(quotes).toBeDefined();
+      expect(quotes.length).toBeGreaterThan(0);
 
-      for (const quote of response.data) {
+      for (const quote of quotes) {
         expect(quote.receiveSignedIntentUrl).toBeDefined();
         expect(quote.intentSourceContract).toBeDefined();
         expect(quote.quoteData).toBeDefined();
