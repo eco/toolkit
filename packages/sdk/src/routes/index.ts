@@ -118,7 +118,7 @@ export class RoutesService {
     return proverContract;
   }
 
-  static getNetworkTokenAddress(chainID: ChainId, token: Token): Hex {
+  static getTokenAddress(chainID: ChainId, token: Token): Hex {
     const networkToken = NetworkTokens[chainID][token];
     if (!networkToken) {
       throw new Error(`Token ${token} not found on chain ${chainID}`);
