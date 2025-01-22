@@ -1,16 +1,16 @@
 import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI } from "./types";
 import { Route } from "../routes/types";
+import { ECO_SDK_CONFIG } from "../config";
 
 export class OpenQuotingClient {
   private dAppID: string;
-  private readonly openQuotingBaseUrl = "https://aleph2035.ngrok.io"; // TODO: once deployed, change this to the actual URL
   private axiosInstance: AxiosInstance
 
   constructor({ dAppID, customBaseUrl }: { dAppID: string, customBaseUrl?: string }) {
     this.dAppID = dAppID;
     this.axiosInstance = axios.create({
-      baseURL: customBaseUrl || this.openQuotingBaseUrl
+      baseURL: customBaseUrl || ECO_SDK_CONFIG.openQuotingBaseUrl
     });
   }
 
