@@ -2,6 +2,7 @@ import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI, SolverQuote } from "./types";
 import { Route } from "../routes/types";
 import { ECO_SDK_CONFIG } from "../config";
+import { dateToTimestamp } from "../utils";
 
 export class OpenQuotingClient {
   private dAppID: string;
@@ -35,7 +36,7 @@ export class OpenQuotingClient {
         rewardTokenBalances: route.rewardTokenBalances.map((amount) => amount.toString()),
         proverContract: route.proverContract,
         destinationChainActions: route.destinationChainActions,
-        expiryTime: Math.floor(route.expiryTime.getTime() / 1000).toString()
+        expiryTime: dateToTimestamp(route.expiryTime).toString()
       }
     }
 
