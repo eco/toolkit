@@ -33,5 +33,5 @@ export type SolverQuote = {
 export type QuoteData = {
   rewardTokens: Hex[]
   rewardTokenAmounts: string[]
-  expiryTime: string
+  expiryTime: string // seconds since epoch
 }

@@ -1,5 +1,5 @@
 import { encodePacked, keccak256 } from "viem";
-import { dateToTimestamp, generateRandomHex } from "../utils";
+import { generateRandomHex } from "../utils";
 import { SetupIntentForPublishingParams } from "./types";
 
 import { EcoProtocolAddresses, encodeRoute, encodeReward, EcoChainIds } from "@eco-foundation/routes";
@@ -37,7 +37,7 @@ export class IntentsService {
     const reward = {
       creator,
       prover: intentData.proverContract,
-      deadline: dateToTimestamp(intentData.expiryTime),
+      deadline: BigInt(quote.quoteData.expiryTime),
       nativeValue: 0n,
       tokens: rewardTokens,
     }
