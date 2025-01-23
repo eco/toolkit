@@ -1,7 +1,6 @@
 import { describe, test, expect, beforeAll } from "vitest";
 import { RoutesService } from "../../src/routes";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
-import { NetworkTokens } from "../../src/routes/constants";
 import { getSecondsFromNow } from "../../src/utils";
 
 describe("RoutesService", () => {

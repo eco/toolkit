@@ -4,9 +4,13 @@
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "rules": {
+    "@typescript-eslint/no-namespace": "off"
+  }
 }

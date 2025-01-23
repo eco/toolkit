@@ -1,18 +1,5 @@
 import { Hex } from "viem"
-
-export type ChainId = 10 | 5000 | 8453 | 42161
-export type Token = "USDC" | "USDbC" | "USDCe" | "USDT"
-
-export type Route = {
-  originChainID: ChainId
-  destinationChainID: ChainId
-  targetTokens: Hex[]
-  rewardTokens: Hex[]
-  rewardTokenBalances: bigint[]
-  proverContract: Hex
-  destinationChainActions: Hex[]
-  expiryTime: Date
-}
+import { ChainId } from "../constants/types"
 
 export type CreateSimpleRouteParams = {
   originChainID: ChainId
