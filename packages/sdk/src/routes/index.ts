@@ -1,7 +1,9 @@
 import { Hex } from "viem";
 import { getSecondsFromNow, isAmountInvalid } from "../utils";
-import { NetworkTokens } from "./constants";
-import { ChainId, CreateRouteParams, CreateSimpleRouteParams, Route, Token } from "./types";
+import { NetworkTokens } from "../constants";
+import { CreateRouteParams, CreateSimpleRouteParams } from "./types";
+import { IntentData } from "../intents/types";
+import { ChainId, Token } from "../constants/types";
 
 
 import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes";
@@ -32,7 +34,7 @@ export class RoutesService {
     prover = "HyperProver",
     simpleRouteActionData,
     expiryTime = getSecondsFromNow(60)
-  }: CreateSimpleRouteParams): Route {
+  }: CreateSimpleRouteParams): IntentData {
     // validate
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
@@ -71,7 +73,7 @@ export class RoutesService {
     prover = "HyperProver",
     destinationChainActions,
     expiryTime = getSecondsFromNow(2 * 60 * 60) // 2 hours from now
-  }: CreateRouteParams): Route {
+  }: CreateRouteParams): IntentData {
     // validate params
     if (!targetTokens.length || !rewardTokens.length || !rewardTokenBalances.length || !destinationChainActions.length) {
       throw new Error("Invalid route parameters");

@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI, SolverQuote } from "./types";
-import { Route } from "../routes/types";
+import { IntentData } from "../intents/types";
 import { ECO_SDK_CONFIG } from "../config";
 import { dateToTimestamp } from "../utils";
 
@@ -18,25 +18,25 @@ export class OpenQuotingClient {
   /**
    * Requests quotes for a given route.
    *
-   * @param route - The route for which quotes are being requested.
+   * @param intentData - The intentData for which quotes are being requested.
    * @returns A promise that resolves to an `OpenQuotingClient_ApiResponse_Quotes` object containing the quotes.
    * @throws An error if the request fails.
    *
    * @remarks
-   * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided route information.
+   * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intentData information.
    */
-  async requestQuotesForRoute(route: Route): Promise<SolverQuote[]> {
+  async requestQuotesForIntent(intentData: IntentData): Promise<SolverQuote[]> {
     const payload: OpenQuotingAPI.Quotes.Request = {
       dAppID: this.dAppID,
       intentData: {
-        originChainID: route.originChainID.toString(),
-        destinationChainID: route.destinationChainID.toString(),
-        targetTokens: route.targetTokens,
-        rewardTokens: route.rewardTokens,
-        rewardTokenBalances: route.rewardTokenBalances.map((amount) => amount.toString()),
-        proverContract: route.proverContract,
-        destinationChainActions: route.destinationChainActions,
-        expiryTime: dateToTimestamp(route.expiryTime).toString()
+        originChainID: intentData.originChainID.toString(),
+        destinationChainID: intentData.destinationChainID.toString(),
+        targetTokens: intentData.targetTokens,
+        rewardTokens: intentData.rewardTokens,
+        rewardTokenBalances: intentData.rewardTokenBalances.map((amount) => amount.toString()),
+        proverContract: intentData.proverContract,
+        destinationChainActions: intentData.destinationChainActions,
+        expiryTime: dateToTimestamp(intentData.expiryTime).toString()
       }
     }
 
