@@ -1,8 +1,8 @@
-import { encodePacked, keccak256 } from "viem";
+import { keccak256 } from "viem";
 import { generateRandomHex } from "../utils";
 import { SetupIntentForPublishingParams } from "./types";
-
-import { EcoProtocolAddresses, encodeRoute, encodeReward, EcoChainIds } from "@eco-foundation/routes";
+import { encodeRoute, encodeReward, encodeIntent } from "./utils";
+import { EcoProtocolAddresses, EcoChainIds } from "@eco-foundation/routes";
 import { ChainId } from "../constants/types";
 
 export class IntentsService {
@@ -33,24 +33,22 @@ export class IntentsService {
       destination: BigInt(intentData.destinationChainID),
       inbox: EcoProtocolAddresses[this.getEcoChainId(intentData.destinationChainID)].Inbox,
       calls: calls,
-    }
+    } as const;
     const reward = {
       creator,
       prover: intentData.proverContract,
       deadline: BigInt(quote.quoteData.expiryTime),
       nativeValue: 0n,
       tokens: rewardTokens,
-    }
+    } as const;
+    const intent = {
+      route: { ...route },
+      reward: { ...reward },
+    } as const;
+
     const routeHash = keccak256(encodeRoute(route))
     const rewardHash = keccak256(encodeReward(reward))
-    const intentHash = keccak256(
-      encodePacked(['bytes32', 'bytes32'], [routeHash, rewardHash]),
-    )
-
-    const intent = {
-      route,
-      reward,
-    } as const;
+    const intentHash = keccak256(encodeIntent(intent))
 
     return {
       salt,
