@@ -73,7 +73,6 @@ describe("IntentsService", () => {
     });
 
     test("invalid intent data", async () => {
-      const creator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294";
       const intentData: IntentData = {
         ...validIntentData,
         destinationChainActions: []
@@ -84,7 +83,6 @@ describe("IntentsService", () => {
     });
 
     test("invalid quote data", async () => {
-      const creator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294";
       const intentData = validIntentData;
       const quote: SolverQuote = {
         ...validQuote,
