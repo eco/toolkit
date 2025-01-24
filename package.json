@@ -11,11 +11,11 @@
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
     "changeset": "changeset",
     "update-versions": "changeset version",
-    "publish-packages": "turbo run build lint check-types && changeset version && changeset publish"
+    "publish-packages": "turbo run build lint check-types && changeset version && changeset publish && git push --follow-tags"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.11",
-    "@eco-foundation/routes-ts": "^1.5.23",
+    "@eco-foundation/routes-ts": "^1.6.10",
     "prettier": "^3.2.5",
     "turbo": "^2.3.3",
     "typescript": "5.5.4"
