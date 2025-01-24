@@ -1,11 +1,10 @@
-import { Hex } from "viem";
-import { getSecondsFromNow, isAmountInvalid } from "../utils";
+import { Hex, isAddress } from "viem";
+import { generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
-import { CreateRouteParams, CreateSimpleRouteParams } from "./types";
-import { IntentData } from "../intents/types";
+import { CreateRouteParams, CreateSimpleRouteParams, SetupIntentForPublishingParams, IntentData } from "./types";
 import { ChainId, Token } from "../constants/types";
 
-import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes-ts";
+import { EcoChainIds, EcoProtocolAddresses, hashIntent } from "@eco-foundation/routes-ts";
 
 export class RoutesService {
   private isPreprod: boolean;
@@ -96,9 +95,75 @@ export class RoutesService {
     }
   }
 
+  /**
+   * Sets up an intent for publishing by validating the provided parameters and generating the necessary data structures.
+   *
+   * @param {SetupIntentForPublishingParams} params - The parameters required to set up the intent for publishing.
+   *
+   * @returns {object} An object containing the salt, routeHash, rewardHash, intentHash, and the intent itself.
+   * 
+   * @throws {Error} If the creator address is invalid.
+   * @throws {Error} If the targetTokens and destinationChainActions arrays do not have the same length.
+   * @throws {Error} If the rewardTokens and rewardTokenAmounts arrays do not have the same length.
+   */
+  setupIntentForPublishing({ creator, intentData, quote }: SetupIntentForPublishingParams) {
+    // validate
+    if (!isAddress(creator, { strict: false })) {
+      throw new Error("Invalid creator address")
+    }
+    if (intentData.targetTokens.length !== intentData.destinationChainActions.length) {
+      throw new Error("Invalid intentData: targetTokens and destinationChainActions must have the same length")
+    }
+    if (quote.quoteData.rewardTokens.length !== quote.quoteData.rewardTokenAmounts.length) {
+      throw new Error("Invalid quoteData: rewardTokens and rewardTokenAmounts must have the same length")
+    }
+    const calls = intentData.targetTokens.map((targetToken, index) => {
+      return {
+        target: targetToken,
+        data: intentData.destinationChainActions[index]!,
+        value: 0n,
+      }
+    })
+    const rewardTokens = quote.quoteData.rewardTokens.map((rewardToken, index) => {
+      return {
+        token: rewardToken,
+        amount: BigInt(quote.quoteData.rewardTokenAmounts[index]!),
+      }
+    })
+    const salt = generateRandomHex()
+    const route = {
+      salt: salt,
+      source: BigInt(intentData.originChainID),
+      destination: BigInt(intentData.destinationChainID),
+      inbox: EcoProtocolAddresses[this.getEcoChainId(intentData.destinationChainID)].Inbox,
+      calls: calls,
+    } as const;
+    const reward = {
+      creator,
+      prover: intentData.proverContract,
+      deadline: BigInt(quote.quoteData.expiryTime),
+      nativeValue: 0n,
+      tokens: rewardTokens,
+    } as const;
+    const intent = {
+      route: { ...route },
+      reward: { ...reward },
+    } as const;
+
+    const { routeHash, rewardHash, intentHash } = hashIntent(intent)
+
+    return {
+      salt,
+      routeHash,
+      rewardHash,
+      intentHash,
+      intent
+    }
+  }
+
   private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: ChainId): Hex {
     let proverContract: Hex;
-    const ecoChainID: EcoChainIds = `${chainID}${this.isPreprod ? "-pre" : ""}`;
+    const ecoChainID: EcoChainIds = this.getEcoChainId(chainID);
     switch (prover) {
       case "HyperProver": {
         proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
@@ -117,6 +182,10 @@ export class RoutesService {
       }
     }
     return proverContract;
+  }
+
+  private getEcoChainId(chainId: ChainId): EcoChainIds {
+    return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
   static getTokenAddress(chainID: ChainId, token: Token): Hex {

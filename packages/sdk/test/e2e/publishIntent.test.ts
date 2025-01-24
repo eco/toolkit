@@ -4,19 +4,17 @@ import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { IntentSourceAbi } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, IntentsService, selectCheapestQuote } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
 
 describe("publishIntent", () => {
   let account: PrivateKeyAccount
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
-  let intentsService: IntentsService
 
   beforeAll(() => {
     routesService = new RoutesService()
     openQuotingClient = new OpenQuotingClient({ dAppID: "test" })
-    intentsService = new IntentsService()
     account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
     baseWalletClient = createWalletClient({
       account,
@@ -53,7 +51,7 @@ describe("publishIntent", () => {
     // setup the intent for publishing
     const {
       intent,
-    } = intentsService.setupIntentForPublishing({
+    } = routesService.setupIntentForPublishing({
       creator: account.address,
       intentData,
       quote: selectedQuote

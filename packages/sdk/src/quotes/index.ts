@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI, SolverQuote } from "./types";
-import { IntentData } from "../intents/types";
+import { IntentData } from "../routes/types";
 import { ECO_SDK_CONFIG } from "../config";
 import { dateToTimestamp } from "../utils";
 
