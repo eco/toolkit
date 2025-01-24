@@ -1,8 +1,7 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { OpenQuotingClient } from "../../src/quotes";
-import { RoutesService } from "../../src/routes";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
-import { IntentData } from "../../src/intents/types";
+
+import { RoutesService, OpenQuotingClient, IntentData } from "../../src";
 import { getSecondsFromNow } from "../../src/utils";
 
 describe("OpenQuotingClient", () => {
