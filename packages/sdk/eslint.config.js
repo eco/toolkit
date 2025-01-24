@@ -1,6 +1,11 @@
-import { nextJsConfig } from "@repo/eslint-config/next-js";
+import { config as baseConfig } from "@repo/eslint-config/base";
 
 /** @type {import("eslint").Linter.Config} */
 export default [
-  ...nextJsConfig,
+  ...baseConfig,
+  {
+    rules: {
+      "@typescript-eslint/no-namespace": "off",
+    }
+  }
 ]

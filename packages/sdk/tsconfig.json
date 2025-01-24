@@ -1,12 +1,16 @@
 {
-  "extends": "@repo/typescript-config/base.json",
+  "extends": "@repo/typescript-config/library.json",
   "compilerOptions": {
     "outDir": "dist"
   },
   "include": [
-    "src"
+    "src",
+    "test"
   ],
   "exclude": [
     "node_modules"
-  ]
+  ],
+  "rules": {
+    "@typescript-eslint/no-namespace": "off"
+  }
 }

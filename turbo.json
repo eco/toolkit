@@ -19,10 +19,17 @@
         "^lint"
       ]
     },
-    "topo": {
+    "test": {
       "dependsOn": [
-        "^topo"
+        "^test"
       ]
+    },
+    "test:watch": {
+      "dependsOn": [
+        "^test:watch"
+      ],
+      "cache": false,
+      "persistent": true
     },
     "check-types": {
       "dependsOn": [
