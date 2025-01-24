@@ -3,7 +3,7 @@
 ## Installing
 Install the package and peer dependency:
 ``` sh
-npm install @eco-foundation/sdk @eco-foundation@1.x
+npm install @eco-foundation/routes-sdk @eco-foundation/routes-ts@1.5.x
 ```
 
 ## Testing
