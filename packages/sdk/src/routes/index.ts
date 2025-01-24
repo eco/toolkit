@@ -161,6 +161,16 @@ export class RoutesService {
     }
   }
 
+  /**
+   * Returns the EcoChainId for a given chainId, appending "-pre" if the environment is pre-production.
+   *
+   * @param chainId - The chain ID to be converted to an EcoChainId.
+   * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
+   */
+  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
+    return `${chainId}${this.isPreprod ? "-pre" : ""}`
+  }
+
   private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: RoutesSupportedChainId): Hex {
     let proverContract: Hex;
     const ecoChainID: EcoChainIds = this.getEcoChainId(chainID);
@@ -182,10 +192,6 @@ export class RoutesService {
       }
     }
     return proverContract;
-  }
-
-  private getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
-    return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
   static getTokenAddress(chainID: RoutesSupportedChainId, token: RoutesSupportedToken): Hex {
