@@ -14,7 +14,7 @@ export function isAmountInvalid(amount: bigint): boolean {
 }
 
 export function sum(items: (bigint | string | number)[]): bigint {
-  return items.reduce<bigint>((acc, amount) => acc + BigInt(amount), 0n)
+  return items.reduce<bigint>((acc, amount) => acc + BigInt(amount), BigInt(0))
 }
 
 export function generateRandomHex(length = 32): Hex {

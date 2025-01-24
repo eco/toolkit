@@ -121,7 +121,7 @@ export class RoutesService {
       return {
         target: targetToken,
         data: intentData.destinationChainActions[index]!,
-        value: 0n,
+        value: BigInt(0),
       }
     })
     const rewardTokens = quote.quoteData.rewardTokens.map((rewardToken, index) => {
@@ -142,7 +142,7 @@ export class RoutesService {
       creator,
       prover: intentData.proverContract,
       deadline: BigInt(quote.quoteData.expiryTime),
-      nativeValue: 0n,
+      nativeValue: BigInt(0),
       tokens: rewardTokens,
     } as const;
     const intent = {
