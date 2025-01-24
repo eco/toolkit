@@ -1,5 +1,5 @@
-import { describe, test, expect, beforeAll } from "vitest";
-import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, encodeFunctionData, erc20Abi } from "viem";
+import { describe, test, expect, beforeAll, vi } from "vitest";
+import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, encodeFunctionData, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { IntentSourceAbi } from "@eco-foundation/routes"
@@ -47,7 +47,6 @@ describe("publishIntent", () => {
       simpleRouteActionData: action,
     })
 
-    // get quotes for the intent data and select a quote
     const quotes = await openQuotingClient.requestQuotesForIntent(intentData)
     const selectedQuote = selectCheapestQuote(quotes)
 
@@ -61,8 +60,13 @@ describe("publishIntent", () => {
     })
     expect(intent).toBeDefined()
 
+    const publicClient = createPublicClient({
+      chain: base,
+      transport: webSocket(process.env.VITE_BASE_RPC_URL!)
+    })
+
     // approve
-    await baseWalletClient.writeContract({
+    const approveTxHash = await baseWalletClient.writeContract({
       abi: erc20Abi,
       address: spendingToken,
       functionName: 'approve',
@@ -71,8 +75,10 @@ describe("publishIntent", () => {
       account: account
     })
 
+    await publicClient.waitForTransactionReceipt({ hash: approveTxHash })
+
     // publish intent onchain
-    await baseWalletClient.writeContract({
+    const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: selectedQuote.intentSourceContract,
       functionName: 'publishIntent',
@@ -80,5 +86,7 @@ describe("publishIntent", () => {
       chain: base,
       account
     })
-  })
+
+    await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  }, 15_000)
 })
