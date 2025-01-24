@@ -6,11 +6,15 @@
     "test:watch": "turbo test:watch",
     "build": "turbo build",
     "dev": "turbo dev",
+    "check-types": "turbo check-types",
     "lint": "turbo lint",
     "format": "prettier --write \"**/*.{ts,tsx,md}\"",
-    "check-types": "turbo check-types"
+    "changeset": "changeset",
+    "update-versions": "changeset version",
+    "publish-packages": "turbo run build lint test && changeset version && changeset publish"
   },
   "devDependencies": {
+    "@changesets/cli": "^2.27.11",
     "@eco-foundation/routes-ts": "^1.5.23",
     "prettier": "^3.2.5",
     "turbo": "^2.3.3",
