@@ -7,7 +7,7 @@ export type CreateSimpleRouteParams = {
   receivingToken: Hex
   spendingToken: Hex
   amount: bigint
-  prover?: "HyperProver" | "Prover"
+  prover?: "HyperProver" | "StorageProver"
   simpleRouteActionData: Hex
   expiryTime?: Date
 }
@@ -18,7 +18,7 @@ export type CreateRouteParams = {
   targetTokens: Hex[]
   rewardTokens: Hex[]
   rewardTokenBalances: bigint[]
-  prover: "HyperProver" | "Prover" | Hex
+  prover: "HyperProver" | "StorageProver" | Hex
   destinationChainActions: Hex[]
   expiryTime?: Date
 }

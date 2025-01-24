@@ -1,9 +1,11 @@
 import { Hex } from "viem"
 import { ChainId } from "../constants/types"
+import { SolverQuote } from "../quotes/types"
 
 export type SetupIntentForPublishingParams = {
   creator: Hex
   intentData: IntentData
+  quote: SolverQuote
 }
 
 export type IntentData = {
