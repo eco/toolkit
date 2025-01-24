@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, vi } from "vitest";
+import { describe, test, expect, beforeAll } from "vitest";
 import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, encodeFunctionData, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { IntentSourceAbi } from "@eco-foundation/routes"
+import { IntentSourceAbi } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient, IntentsService, selectCheapestQuote } from "../../src";
 
