@@ -1,5 +1,5 @@
 import { Hex, isAddress } from "viem";
-import { generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
+import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
 import { CreateRouteParams, CreateSimpleRouteParams, SetupIntentForPublishingParams, IntentData } from "./types";
 import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
@@ -141,7 +141,7 @@ export class RoutesService {
     const reward = {
       creator,
       prover: intentData.proverContract,
-      deadline: BigInt(quote.quoteData.expiryTime),
+      deadline: dateToTimestamp(getSecondsFromNow(90 * 60)), // 90 minutes from now
       nativeValue: BigInt(0),
       tokens: rewardTokens,
     } as const;
