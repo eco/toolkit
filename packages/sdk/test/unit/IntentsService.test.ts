@@ -12,7 +12,7 @@ describe("IntentsService", () => {
 
   let validIntentData: IntentData;
   let validQuote: SolverQuote;
-  let creator: Hex;
+  let validCreator: Hex;
 
   beforeAll(() => {
     routesService = new RoutesService();
@@ -30,7 +30,7 @@ describe("IntentsService", () => {
         args: ['0xe494e1285d741F90b4BA51482fa7c1031B2DD294', BigInt(1000000)]
       })
     });
-    creator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294"
+    validCreator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294"
   })
 
   beforeEach(() => {
@@ -46,7 +46,8 @@ describe("IntentsService", () => {
   });
 
   describe("setupIntentForPublishing", () => {
-    test("valid", async () => {
+    test("valid", () => {
+      const creator = validCreator;
       const intentData = validIntentData;
       const quote = validQuote;
 
@@ -64,24 +65,26 @@ describe("IntentsService", () => {
     });
 
     test("invalid creator address", () => {
-      creator = "0x";
+      const creator = "0x";
       const intentData = validIntentData;
       const quote = validQuote;
 
-      expect(() => intentsService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Address "0x" is invalid.`);
+      expect(() => intentsService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Invalid creator address`);
     });
 
-    test("invalid intent data", async () => {
+    test("invalid intent data", () => {
+      const creator = validCreator;
       const intentData: IntentData = {
         ...validIntentData,
         destinationChainActions: []
       };
       const quote = validQuote;
 
-      expect(() => intentsService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Cannot read properties of undefined (reading 'length')`);
+      expect(() => intentsService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Invalid intentData: targetTokens and destinationChainActions must have the same length`);
     });
 
-    test("invalid quote data", async () => {
+    test("invalid quote data", () => {
+      const creator = validCreator;
       const intentData = validIntentData;
       const quote: SolverQuote = {
         ...validQuote,
@@ -91,8 +94,7 @@ describe("IntentsService", () => {
         }
       };
 
-      expect(() => intentsService.setupIntentForPublishing({ creator, intentData, quote })).toThrow("Cannot convert undefined to a BigInt");
+      expect(() => intentsService.setupIntentForPublishing({ creator, intentData, quote })).toThrow("Invalid quoteData: rewardTokens and rewardTokenAmounts must have the same length");
     });
-
   });
 });

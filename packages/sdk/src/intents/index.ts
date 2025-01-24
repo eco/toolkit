@@ -2,6 +2,7 @@ import { generateRandomHex } from "../utils";
 import { SetupIntentForPublishingParams } from "./types";
 import { EcoProtocolAddresses, EcoChainIds, hashIntent } from "@eco-foundation/routes-ts";
 import { ChainId } from "../constants/types";
+import { isAddress } from "viem";
 
 export class IntentsService {
   private isPreprod: boolean
@@ -11,6 +12,16 @@ export class IntentsService {
   }
 
   setupIntentForPublishing({ creator, intentData, quote }: SetupIntentForPublishingParams) {
+    // validate
+    if (!isAddress(creator, { strict: false })) {
+      throw new Error("Invalid creator address")
+    }
+    if (intentData.targetTokens.length !== intentData.destinationChainActions.length) {
+      throw new Error("Invalid intentData: targetTokens and destinationChainActions must have the same length")
+    }
+    if (quote.quoteData.rewardTokens.length !== quote.quoteData.rewardTokenAmounts.length) {
+      throw new Error("Invalid quoteData: rewardTokens and rewardTokenAmounts must have the same length")
+    }
     const calls = intentData.targetTokens.map((targetToken, index) => {
       return {
         target: targetToken,
