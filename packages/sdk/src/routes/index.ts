@@ -1,5 +1,5 @@
 import { Hex, isAddress } from "viem";
-import { generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
+import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
 import { CreateRouteParams, CreateSimpleRouteParams, SetupIntentForPublishingParams, IntentData } from "./types";
 import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
@@ -121,7 +121,7 @@ export class RoutesService {
       return {
         target: targetToken,
         data: intentData.destinationChainActions[index]!,
-        value: 0n,
+        value: BigInt(0),
       }
     })
     const rewardTokens = quote.quoteData.rewardTokens.map((rewardToken, index) => {
@@ -141,8 +141,8 @@ export class RoutesService {
     const reward = {
       creator,
       prover: intentData.proverContract,
-      deadline: BigInt(quote.quoteData.expiryTime),
-      nativeValue: 0n,
+      deadline: dateToTimestamp(getSecondsFromNow(90 * 60)), // 90 minutes from now
+      nativeValue: BigInt(0),
       tokens: rewardTokens,
     } as const;
     const intent = {
@@ -159,6 +159,16 @@ export class RoutesService {
       intentHash,
       intent
     }
+  }
+
+  /**
+   * Returns the EcoChainId for a given chainId, appending "-pre" if the environment is pre-production.
+   *
+   * @param chainId - The chain ID to be converted to an EcoChainId.
+   * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
+   */
+  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
+    return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
   private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: RoutesSupportedChainId): Hex {
@@ -182,10 +192,6 @@ export class RoutesService {
       }
     }
     return proverContract;
-  }
-
-  private getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
-    return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
   static getTokenAddress(chainID: RoutesSupportedChainId, token: RoutesSupportedToken): Hex {
