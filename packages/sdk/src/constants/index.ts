@@ -1,7 +1,7 @@
 import { Hex } from "viem";
-import { Token, ChainId } from "./types";
+import { RoutesSupportedToken, RoutesSupportedChainId } from "./types";
 
-export const NetworkTokens: Record<ChainId, Partial<Record<Token, Hex | undefined>>> = {
+export const NetworkTokens: Record<RoutesSupportedChainId, Partial<Record<RoutesSupportedToken, Hex | undefined>>> = {
   10: {
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     USDCe: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",

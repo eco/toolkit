@@ -4,3 +4,5 @@ export type { CreateSimpleRouteParams, CreateRouteParams, SetupIntentForPublishi
 export { OpenQuotingClient } from "./quotes";
 export type { SolverQuote, QuoteData } from "./quotes/types";
 export { selectCheapestQuote } from "./quotes/quoteSelectors";
+
+export type { RoutesSupportedChainId, RoutesSupportedToken } from "./constants/types";
