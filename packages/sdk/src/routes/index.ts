@@ -2,7 +2,7 @@ import { Hex, isAddress } from "viem";
 import { generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
 import { CreateRouteParams, CreateSimpleRouteParams, SetupIntentForPublishingParams, IntentData } from "./types";
-import { ChainId, Token } from "../constants/types";
+import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
 
 import { EcoChainIds, EcoProtocolAddresses, hashIntent } from "@eco-foundation/routes-ts";
 
@@ -161,7 +161,7 @@ export class RoutesService {
     }
   }
 
-  private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: ChainId): Hex {
+  private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: RoutesSupportedChainId): Hex {
     let proverContract: Hex;
     const ecoChainID: EcoChainIds = this.getEcoChainId(chainID);
     switch (prover) {
@@ -184,11 +184,11 @@ export class RoutesService {
     return proverContract;
   }
 
-  private getEcoChainId(chainId: ChainId): EcoChainIds {
+  private getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
-  static getTokenAddress(chainID: ChainId, token: Token): Hex {
+  static getTokenAddress(chainID: RoutesSupportedChainId, token: RoutesSupportedToken): Hex {
     const networkToken = NetworkTokens[chainID][token];
     if (!networkToken) {
       throw new Error(`Token ${token} not found on chain ${chainID}`);
@@ -196,7 +196,7 @@ export class RoutesService {
     return networkToken;
   }
 
-  static validateNetworkTokenAddress(chainID: ChainId, address: Hex) {
+  static validateNetworkTokenAddress(chainID: RoutesSupportedChainId, address: Hex) {
     const isValidToken = Object.values(NetworkTokens[chainID]).some((token) => token === address);
     if (!isValidToken) {
       throw new Error(`Invalid Token Address ${address} on chainId ${chainID}`);

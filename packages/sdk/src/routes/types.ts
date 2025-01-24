@@ -1,10 +1,10 @@
 import { Hex } from "viem"
-import { ChainId } from "../constants/types"
+import { RoutesSupportedChainId } from "../constants/types"
 import { SolverQuote } from "../quotes/types"
 
 export type CreateSimpleRouteParams = {
-  originChainID: ChainId
-  destinationChainID: ChainId
+  originChainID: RoutesSupportedChainId
+  destinationChainID: RoutesSupportedChainId
   receivingToken: Hex
   spendingToken: Hex
   amount: bigint
@@ -14,8 +14,8 @@ export type CreateSimpleRouteParams = {
 }
 
 export type CreateRouteParams = {
-  originChainID: ChainId
-  destinationChainID: ChainId
+  originChainID: RoutesSupportedChainId
+  destinationChainID: RoutesSupportedChainId
   targetTokens: Hex[]
   rewardTokens: Hex[]
   rewardTokenBalances: bigint[]
@@ -31,8 +31,8 @@ export type SetupIntentForPublishingParams = {
 }
 
 export type IntentData = {
-  originChainID: ChainId
-  destinationChainID: ChainId
+  originChainID: RoutesSupportedChainId
+  destinationChainID: RoutesSupportedChainId
   targetTokens: Hex[]
   rewardTokens: Hex[]
   rewardTokenBalances: bigint[]
