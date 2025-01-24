@@ -1,8 +1,6 @@
-import { keccak256 } from "viem";
 import { generateRandomHex } from "../utils";
 import { SetupIntentForPublishingParams } from "./types";
-import { encodeRoute, encodeReward, encodeIntent } from "./utils";
-import { EcoProtocolAddresses, EcoChainIds } from "@eco-foundation/routes";
+import { EcoProtocolAddresses, EcoChainIds, hashIntent } from "@eco-foundation/routes-ts";
 import { ChainId } from "../constants/types";
 
 export class IntentsService {
@@ -46,9 +44,7 @@ export class IntentsService {
       reward: { ...reward },
     } as const;
 
-    const routeHash = keccak256(encodeRoute(route))
-    const rewardHash = keccak256(encodeReward(reward))
-    const intentHash = keccak256(encodeIntent(intent))
+    const { routeHash, rewardHash, intentHash } = hashIntent(intent)
 
     return {
       salt,

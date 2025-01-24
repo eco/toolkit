@@ -93,7 +93,7 @@ describe("RoutesService", () => {
         spendingToken: RoutesService.getTokenAddress(42161, "USDC"),
         receivingToken: RoutesService.getTokenAddress(10, "USDC"),
         amount: BigInt(1000000),
-        prover: "Prover",
+        prover: "StorageProver",
         simpleRouteActionData: transferData
       })).toThrow("No default prover found for this chain");
     })
@@ -188,7 +188,7 @@ describe("RoutesService", () => {
         targetTokens: [RoutesService.getTokenAddress(10, "USDC")],
         rewardTokens: [RoutesService.getTokenAddress(42161, "USDC")],
         rewardTokenBalances: [BigInt(1000000)],
-        prover: "Prover",
+        prover: "StorageProver",
         destinationChainActions: [transferData],
       })).toThrow("No default prover found for this chain");
     })

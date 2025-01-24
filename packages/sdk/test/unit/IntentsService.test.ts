@@ -1,11 +1,10 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { encodeFunctionData, erc20Abi, Hex, keccak256 } from "viem";
+import { encodeFunctionData, erc20Abi, Hex } from "viem";
 
-import { EcoProtocolAddresses } from "@eco-foundation/routes";
+import { EcoProtocolAddresses, hashRoute, hashReward, hashIntent } from "@eco-foundation/routes-ts";
 
 import { RoutesService, IntentsService, SolverQuote, IntentData } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
-import { encodeRoute, encodeReward, encodeIntent } from "../../src/intents/utils";
 
 describe("IntentsService", () => {
   let routesService: RoutesService;
@@ -59,9 +58,9 @@ describe("IntentsService", () => {
       expect(routeHash).toBeDefined();
       expect(rewardHash).toBeDefined();
       expect(intentHash).toBeDefined();
-      expect(keccak256(encodeRoute(intent.route))).toBe(routeHash);
-      expect(keccak256(encodeReward(intent.reward))).toBe(rewardHash);
-      expect(keccak256(encodeIntent(intent))).toBe(intentHash);
+      expect(hashRoute(intent.route)).toBe(routeHash);
+      expect(hashReward(intent.reward)).toBe(rewardHash);
+      expect(hashIntent(intent)).toEqual({ intentHash, routeHash, rewardHash });
     });
 
     test("invalid creator address", () => {

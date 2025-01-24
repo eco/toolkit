@@ -5,8 +5,7 @@ import { CreateRouteParams, CreateSimpleRouteParams } from "./types";
 import { IntentData } from "../intents/types";
 import { ChainId, Token } from "../constants/types";
 
-
-import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes";
+import { EcoChainIds, EcoProtocolAddresses } from "@eco-foundation/routes-ts";
 
 export class RoutesService {
   private isPreprod: boolean;
@@ -97,7 +96,7 @@ export class RoutesService {
     }
   }
 
-  private getProverContract(prover: "HyperProver" | "Prover" | Hex, chainID: ChainId): Hex {
+  private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: ChainId): Hex {
     let proverContract: Hex;
     const ecoChainID: EcoChainIds = `${chainID}${this.isPreprod ? "-pre" : ""}`;
     switch (prover) {
@@ -105,7 +104,7 @@ export class RoutesService {
         proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
         break;
       }
-      case "Prover": {
+      case "StorageProver": {
         const defaultProver = EcoProtocolAddresses[ecoChainID].Prover;
         if (!defaultProver) {
           throw new Error("No default prover found for this chain");
