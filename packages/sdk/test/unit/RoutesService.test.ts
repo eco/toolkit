@@ -63,6 +63,8 @@ describe("RoutesService", () => {
       expect(validRoute.expiryTime).toBeDefined();
     })
 
+
+
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createSimpleRoute({
         originChainID: 10,
@@ -226,12 +228,29 @@ describe("RoutesService", () => {
       };
     });
 
-    test("valid", () => {
+    test("validWithQuote", () => {
       const creator = validCreator;
       const intentData = validIntentData;
       const quote = validQuote;
 
       const { intent, intentHash, routeHash, rewardHash } = routesService.setupIntentForPublishing({ creator, intentData, quote });
+
+      expect(intent).toBeDefined();
+      expect(intent.route).toBeDefined();
+      expect(intent.reward).toBeDefined();
+      expect(routeHash).toBeDefined();
+      expect(rewardHash).toBeDefined();
+      expect(intentHash).toBeDefined();
+      expect(hashRoute(intent.route)).toBe(routeHash);
+      expect(hashReward(intent.reward)).toBe(rewardHash);
+      expect(hashIntent(intent)).toEqual({ intentHash, routeHash, rewardHash });
+    });
+
+    test("validWithoutQuote", () => {
+      const creator = validCreator;
+      const intentData = validIntentData;
+
+      const { intent, intentHash, routeHash, rewardHash } = routesService.setupIntentForPublishing({ creator, intentData });
 
       expect(intent).toBeDefined();
       expect(intent.route).toBeDefined();
@@ -252,7 +271,7 @@ describe("RoutesService", () => {
       expect(() => routesService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Invalid creator address`);
     });
 
-    test("invalid intent data", () => {
+    test("invalid intent data actions", () => {
       const creator = validCreator;
       const intentData: IntentData = {
         ...validIntentData,
@@ -261,6 +280,16 @@ describe("RoutesService", () => {
       const quote = validQuote;
 
       expect(() => routesService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Invalid intentData: targetTokens and destinationChainActions must have the same length`);
+    });
+
+    test("invalid intent data reward", () => {
+      const creator = validCreator;
+      const intentData: IntentData = {
+        ...validIntentData,
+        rewardTokenBalances: [],
+      };
+
+      expect(() => routesService.setupIntentForPublishing({ creator, intentData })).toThrow(`Invalid intentData: rewardTokens and rewardTokenBalances must have the same length`);
     });
 
     test("invalid quote data", () => {
