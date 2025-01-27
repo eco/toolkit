@@ -18,16 +18,16 @@ describe("RoutesService", () => {
     })
   })
 
-  describe("createSimpleRoute", () => {
+  describe("createSimpleIntent", () => {
     test("valid", async () => {
-      const validRoute = routesService.createSimpleRoute({
+      const validRoute = routesService.createSimpleIntent({
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getTokenAddress(10, "USDC"),
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleRouteActionData: transferData
+        simpleIntentActionData: transferData
       });
 
       expect(validRoute).toBeDefined();
@@ -42,14 +42,14 @@ describe("RoutesService", () => {
     })
 
     test("validCustomTokens", async () => {
-      const validRoute = routesService.createSimpleRoute({
+      const validRoute = routesService.createSimpleIntent({
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
         receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleRouteActionData: transferData
+        simpleIntentActionData: transferData
       });
 
       expect(validRoute).toBeDefined();
@@ -66,46 +66,46 @@ describe("RoutesService", () => {
 
 
     test("invalidExpiryTime", async () => {
-      expect(() => routesService.createSimpleRoute({
+      expect(() => routesService.createSimpleIntent({
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getTokenAddress(10, "USDC"),
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleRouteActionData: transferData,
+        simpleIntentActionData: transferData,
         expiryTime: getSecondsFromNow(50),
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
     test("invalidAmount", async () => {
-      expect(() => routesService.createSimpleRoute({
+      expect(() => routesService.createSimpleIntent({
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getTokenAddress(10, "USDC"),
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
-        simpleRouteActionData: transferData
+        simpleIntentActionData: transferData
       })).toThrow("Invalid amount");
     })
 
     test("invalidProverForChain", async () => {
-      expect(() => routesService.createSimpleRoute({
+      expect(() => routesService.createSimpleIntent({
         originChainID: 42161,
         destinationChainID: 10,
         spendingToken: RoutesService.getTokenAddress(42161, "USDC"),
         receivingToken: RoutesService.getTokenAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "StorageProver",
-        simpleRouteActionData: transferData
+        simpleIntentActionData: transferData
       })).toThrow("No default prover found for this chain");
     })
   })
 
-  describe("createRoute", () => {
+  describe("createIntent", () => {
     test("valid", async () => {
-      const validRoute = routesService.createRoute({
+      const validRoute = routesService.createIntent({
         originChainID: 10,
         destinationChainID: 8453,
         targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
@@ -127,7 +127,7 @@ describe("RoutesService", () => {
     })
 
     test("validCustomTokens", async () => {
-      const validRoute = routesService.createRoute({
+      const validRoute = routesService.createIntent({
         originChainID: 10,
         destinationChainID: 8453,
         targetTokens: ["0x0555E30da8f98308EdB960aa94C0Db47230d2B9c"],
@@ -149,7 +149,7 @@ describe("RoutesService", () => {
     })
 
     test("empty", async () => {
-      expect(() => routesService.createRoute({
+      expect(() => routesService.createIntent({
         originChainID: 10,
         destinationChainID: 8453,
         targetTokens: [],
@@ -161,7 +161,7 @@ describe("RoutesService", () => {
     })
 
     test("invalidExpiryTime", async () => {
-      expect(() => routesService.createRoute({
+      expect(() => routesService.createIntent({
         originChainID: 10,
         destinationChainID: 8453,
         targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
@@ -174,7 +174,7 @@ describe("RoutesService", () => {
     })
 
     test("invalidRewardTokenBalance", async () => {
-      expect(() => routesService.createRoute({
+      expect(() => routesService.createIntent({
         originChainID: 10,
         destinationChainID: 8453,
         targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
@@ -186,7 +186,7 @@ describe("RoutesService", () => {
     })
 
     test("invalidProverForChain", async () => {
-      expect(() => routesService.createRoute({
+      expect(() => routesService.createIntent({
         originChainID: 42161,
         destinationChainID: 10,
         targetTokens: [RoutesService.getTokenAddress(10, "USDC")],
@@ -204,14 +204,14 @@ describe("RoutesService", () => {
     let validCreator: Hex;
 
     beforeAll(() => {
-      validIntentData = routesService.createSimpleRoute({
+      validIntentData = routesService.createSimpleIntent({
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getTokenAddress(10, "USDC"),
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleRouteActionData: transferData
+        simpleIntentActionData: transferData
       });
       validCreator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294"
     })

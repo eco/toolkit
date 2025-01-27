@@ -2,14 +2,14 @@ import { Hex } from "viem"
 import { RoutesSupportedChainId } from "../constants/types"
 import { SolverQuote } from "../quotes/types"
 
-export type CreateSimpleRouteParams = {
+export type CreateSimpleIntentParams = {
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId
   receivingToken: Hex
   spendingToken: Hex
   amount: bigint
   prover?: "HyperProver" | "StorageProver"
-  simpleRouteActionData: Hex
+  simpleIntentActionData: Hex
   expiryTime?: Date
 }
 

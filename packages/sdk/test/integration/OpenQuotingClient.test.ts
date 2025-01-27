@@ -21,14 +21,14 @@ describe("OpenQuotingClient", () => {
   });
 
   beforeEach(() => {
-    validIntentData = routesService.createSimpleRoute({
+    validIntentData = routesService.createSimpleIntent({
       originChainID: 10,
       destinationChainID: 8453,
       spendingToken: RoutesService.getTokenAddress(10, "USDC"),
       receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
       amount: BigInt(1000000),
       prover: 'HyperProver',
-      simpleRouteActionData: transferData
+      simpleIntentActionData: transferData
     });
   })
 

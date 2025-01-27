@@ -41,13 +41,13 @@ describe("publishIntent", () => {
   })
 
   beforeEach(() => {
-    intentData = routesService.createSimpleRoute({
+    intentData = routesService.createSimpleIntent({
       originChainID: originChain.id,
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
       amount,
-      simpleRouteActionData: action,
+      simpleIntentActionData: action,
     })
   })
 

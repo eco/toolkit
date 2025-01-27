@@ -1,7 +1,7 @@
 import { Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
-import { CreateRouteParams, CreateSimpleRouteParams, SetupIntentForPublishingParams, IntentData } from "./types";
+import { CreateRouteParams, CreateSimpleIntentParams, SetupIntentForPublishingParams, IntentData } from "./types";
 import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
 
 import { EcoChainIds, EcoProtocolAddresses, hashIntent } from "@eco-foundation/routes-ts";
@@ -16,23 +16,23 @@ export class RoutesService {
   /**
    * Creates a simple route.
    *
-   * @param {CreateSimpleRouteParams} params - The parameters for creating the simple route.
+   * @param {CreateSimpleIntentParams} params - The parameters for creating the simple route.
    * 
-   * @returns {Route} The created route.
+   * @returns {IntentData} The created intent data.
    * 
    * @throws {Error} If the expiry time is in the past or the amount is invalid.
    */
 
-  createSimpleRoute({
+  createSimpleIntent({
     originChainID,
     destinationChainID,
     receivingToken,
     spendingToken,
     amount,
     prover = "HyperProver",
-    simpleRouteActionData,
+    simpleIntentActionData,
     expiryTime = getSecondsFromNow(60)
-  }: CreateSimpleRouteParams): IntentData {
+  }: CreateSimpleIntentParams): IntentData {
     // validate
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
@@ -48,7 +48,7 @@ export class RoutesService {
       rewardTokens: [spendingToken],
       rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
-      destinationChainActions: [simpleRouteActionData],
+      destinationChainActions: [simpleIntentActionData],
       expiryTime
     }
   }
@@ -58,11 +58,11 @@ export class RoutesService {
    *
    * @param {CreateRouteParams} params - The parameters for creating the route.
    * 
-   * @returns {Route} The created route.
+   * @returns {IntentData} The created intent data.
    * 
    * @throws {Error} If the parameters, expiry time, reward token balances or tokens are invalid.
    */
-  createRoute({
+  createIntent({
     originChainID,
     destinationChainID,
     targetTokens,
