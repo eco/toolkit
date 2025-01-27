@@ -1,16 +1,29 @@
-import { describe, test, expect, beforeAll } from "vitest";
-import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, encodeFunctionData, erc20Abi, createPublicClient } from "viem";
+import { describe, test, expect, beforeAll, beforeEach } from "vitest";
+import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { IntentSourceAbi } from "@eco-foundation/routes-ts";
+import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote, IntentData, SimpleIntentActionData } from "../../src";
 
 describe("publishIntent", () => {
   let account: PrivateKeyAccount
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
+  let action: SimpleIntentActionData
+  let intentData: IntentData
+
+  const publicClient = createPublicClient({
+    chain: base,
+    transport: webSocket(process.env.VITE_BASE_RPC_URL!)
+  })
+
+  const amount = BigInt(10000) // 1 cent
+  const originChain = base
+  const destinationChain = optimism
+  const receivingToken = RoutesService.getTokenAddress(destinationChain.id, "USDC")
+  const spendingToken = RoutesService.getTokenAddress(originChain.id, "USDC")
 
   beforeAll(() => {
     routesService = new RoutesService()
@@ -20,31 +33,25 @@ describe("publishIntent", () => {
       account,
       transport: webSocket(process.env.VITE_BASE_RPC_URL!)
     })
+    action = {
+      functionName: 'transfer',
+      recipient: account.address
+    }
   })
 
-  test("onchain", async () => {
-    const amount = BigInt(10000) // 1 cent
-    const recipient = account.address
-    const originChain = base
-    const destinationChain = optimism
-    const receivingToken = RoutesService.getTokenAddress(destinationChain.id, "USDC")
-    const spendingToken = RoutesService.getTokenAddress(originChain.id, "USDC")
-    const action = encodeFunctionData({
-      abi: erc20Abi,
-      functionName: 'transfer',
-      args: [recipient, amount]
-    })
-
-    // create valid intent data
-    const intentData = routesService.createSimpleRoute({
+  beforeEach(() => {
+    intentData = routesService.createSimpleIntent({
       originChainID: originChain.id,
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
       amount,
-      simpleRouteActionData: action,
+      simpleIntentActionData: action,
     })
+  })
 
+  test("onchain with quote", async () => {
+    // request quotes
     const quotes = await openQuotingClient.requestQuotesForIntent(intentData)
     const selectedQuote = selectCheapestQuote(quotes)
 
@@ -58,18 +65,13 @@ describe("publishIntent", () => {
     })
     expect(intent).toBeDefined()
 
-    const publicClient = createPublicClient({
-      chain: base,
-      transport: webSocket(process.env.VITE_BASE_RPC_URL!)
-    })
-
     // approve
     const approveTxHash = await baseWalletClient.writeContract({
       abi: erc20Abi,
       address: spendingToken,
       functionName: 'approve',
       args: [selectedQuote.intentSourceContract, amount],
-      chain: base,
+      chain: originChain,
       account: account
     })
 
@@ -81,7 +83,45 @@ describe("publishIntent", () => {
       address: selectedQuote.intentSourceContract,
       functionName: 'publishIntent',
       args: [intent, true],
-      chain: base,
+      chain: originChain,
+      account
+    })
+
+    await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  }, 20_000)
+
+  test("onchain without quote", async () => {
+    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    expect(intentSourceContract).toBeDefined()
+
+    // setup the intent for publishing
+    const {
+      intent,
+    } = routesService.setupIntentForPublishing({
+      creator: account.address,
+      intentData
+    })
+    expect(intent).toBeDefined()
+
+    // approve
+    const approveTxHash = await baseWalletClient.writeContract({
+      abi: erc20Abi,
+      address: spendingToken,
+      functionName: 'approve',
+      args: [intentSourceContract, amount],
+      chain: originChain,
+      account: account
+    })
+
+    await publicClient.waitForTransactionReceipt({ hash: approveTxHash })
+
+    // publish intent onchain
+    const publishTxHash = await baseWalletClient.writeContract({
+      abi: IntentSourceAbi,
+      address: intentSourceContract,
+      functionName: 'publishIntent',
+      args: [intent, true],
+      chain: originChain,
       account
     })
 

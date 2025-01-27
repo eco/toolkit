@@ -1,7 +1,7 @@
-import { Hex, isAddress } from "viem";
+import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
-import { CreateRouteParams, CreateSimpleRouteParams, SetupIntentForPublishingParams, IntentData } from "./types";
+import { CreateRouteParams, CreateSimpleIntentParams, SetupIntentForPublishingParams, IntentData } from "./types";
 import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
 
 import { EcoChainIds, EcoProtocolAddresses, hashIntent } from "@eco-foundation/routes-ts";
@@ -16,23 +16,23 @@ export class RoutesService {
   /**
    * Creates a simple route.
    *
-   * @param {CreateSimpleRouteParams} params - The parameters for creating the simple route.
+   * @param {CreateSimpleIntentParams} params - The parameters for creating the simple route.
    * 
-   * @returns {Route} The created route.
+   * @returns {IntentData} The created intent data.
    * 
    * @throws {Error} If the expiry time is in the past or the amount is invalid.
    */
 
-  createSimpleRoute({
+  createSimpleIntent({
     originChainID,
     destinationChainID,
     receivingToken,
     spendingToken,
     amount,
+    simpleIntentActionData,
     prover = "HyperProver",
-    simpleRouteActionData,
     expiryTime = getSecondsFromNow(60)
-  }: CreateSimpleRouteParams): IntentData {
+  }: CreateSimpleIntentParams): IntentData {
     // validate
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
@@ -41,6 +41,13 @@ export class RoutesService {
       throw new Error("Invalid amount");
     }
 
+    // create calldata
+    const data = encodeFunctionData({
+      abi: erc20Abi,
+      functionName: simpleIntentActionData.functionName,
+      args: simpleIntentActionData.functionName === 'transfer' ? [simpleIntentActionData.recipient, amount] : [simpleIntentActionData.sender, simpleIntentActionData.recipient, amount]
+    })
+
     return {
       originChainID,
       destinationChainID,
@@ -48,7 +55,7 @@ export class RoutesService {
       rewardTokens: [spendingToken],
       rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
-      destinationChainActions: [simpleRouteActionData],
+      destinationChainActions: [data],
       expiryTime
     }
   }
@@ -58,11 +65,11 @@ export class RoutesService {
    *
    * @param {CreateRouteParams} params - The parameters for creating the route.
    * 
-   * @returns {Route} The created route.
+   * @returns {IntentData} The created intent data.
    * 
    * @throws {Error} If the parameters, expiry time, reward token balances or tokens are invalid.
    */
-  createRoute({
+  createIntent({
     originChainID,
     destinationChainID,
     targetTokens,
@@ -114,7 +121,10 @@ export class RoutesService {
     if (intentData.targetTokens.length !== intentData.destinationChainActions.length) {
       throw new Error("Invalid intentData: targetTokens and destinationChainActions must have the same length")
     }
-    if (quote.quoteData.rewardTokens.length !== quote.quoteData.rewardTokenAmounts.length) {
+    if (!quote && intentData.rewardTokens.length !== intentData.rewardTokenBalances.length) {
+      throw new Error("Invalid intentData: rewardTokens and rewardTokenBalances must have the same length")
+    }
+    if (quote && quote.quoteData.rewardTokens.length !== quote.quoteData.rewardTokenAmounts.length) {
       throw new Error("Invalid quoteData: rewardTokens and rewardTokenAmounts must have the same length")
     }
     const calls = intentData.targetTokens.map((targetToken, index) => {
@@ -124,10 +134,10 @@ export class RoutesService {
         value: BigInt(0),
       }
     })
-    const rewardTokens = quote.quoteData.rewardTokens.map((rewardToken, index) => {
+    const rewardTokens = (quote ? quote.quoteData.rewardTokens : intentData.rewardTokens).map((rewardToken, index) => {
       return {
         token: rewardToken,
-        amount: BigInt(quote.quoteData.rewardTokenAmounts[index]!),
+        amount: BigInt((quote ? quote.quoteData.rewardTokenAmounts : intentData.rewardTokenBalances)[index]!),
       }
     })
     const salt = generateRandomHex()

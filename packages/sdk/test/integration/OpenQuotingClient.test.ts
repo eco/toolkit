@@ -1,34 +1,32 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { encodeFunctionData, erc20Abi, Hex } from "viem";
 
-import { RoutesService, OpenQuotingClient, IntentData } from "../../src";
+import { RoutesService, OpenQuotingClient, IntentData, SimpleIntentActionData } from "../../src";
 import { getSecondsFromNow } from "../../src/utils";
 
 describe("OpenQuotingClient", () => {
   let routesService: RoutesService;
   let openQuotingClient: OpenQuotingClient;
-  let transferData: Hex;
+  let action: SimpleIntentActionData;
   let validIntentData: IntentData;
 
   beforeAll(() => {
     routesService = new RoutesService();
     openQuotingClient = new OpenQuotingClient({ dAppID: "test" });
-    transferData = encodeFunctionData({
-      abi: erc20Abi,
+    action = {
       functionName: 'transfer',
-      args: ['0xe494e1285d741F90b4BA51482fa7c1031B2DD294', BigInt(1000000)]
-    })
+      recipient: '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
+    }
   });
 
   beforeEach(() => {
-    validIntentData = routesService.createSimpleRoute({
+    validIntentData = routesService.createSimpleIntent({
       originChainID: 10,
       destinationChainID: 8453,
       spendingToken: RoutesService.getTokenAddress(10, "USDC"),
       receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
       amount: BigInt(1000000),
       prover: 'HyperProver',
-      simpleRouteActionData: transferData
+      simpleIntentActionData: action
     });
   })
 

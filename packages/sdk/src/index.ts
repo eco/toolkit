@@ -1,5 +1,5 @@
 export { RoutesService } from "./routes/RoutesService";
-export type { CreateSimpleRouteParams, CreateRouteParams, SetupIntentForPublishingParams, IntentData } from "./routes/types";
+export type { CreateSimpleIntentParams, CreateRouteParams, SetupIntentForPublishingParams, SimpleIntentActionData, IntentData } from "./routes/types";
 
 export { OpenQuotingClient } from "./quotes/OpenQuotingClient";
 export type { SolverQuote, QuoteData } from "./quotes/types";
