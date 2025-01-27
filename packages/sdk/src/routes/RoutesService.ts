@@ -1,4 +1,4 @@
-import { Hex, isAddress } from "viem";
+import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { NetworkTokens } from "../constants";
 import { CreateRouteParams, CreateSimpleIntentParams, SetupIntentForPublishingParams, IntentData } from "./types";
@@ -29,8 +29,8 @@ export class RoutesService {
     receivingToken,
     spendingToken,
     amount,
-    prover = "HyperProver",
     simpleIntentActionData,
+    prover = "HyperProver",
     expiryTime = getSecondsFromNow(60)
   }: CreateSimpleIntentParams): IntentData {
     // validate
@@ -41,6 +41,13 @@ export class RoutesService {
       throw new Error("Invalid amount");
     }
 
+    // create calldata
+    const data = encodeFunctionData({
+      abi: erc20Abi,
+      functionName: simpleIntentActionData.functionName,
+      args: simpleIntentActionData.functionName === 'transfer' ? [simpleIntentActionData.recipient, amount] : [simpleIntentActionData.sender, simpleIntentActionData.recipient, amount]
+    })
+
     return {
       originChainID,
       destinationChainID,
@@ -48,7 +55,7 @@ export class RoutesService {
       rewardTokens: [spendingToken],
       rewardTokenBalances: [amount],
       proverContract: this.getProverContract(prover, originChainID),
-      destinationChainActions: [simpleIntentActionData],
+      destinationChainActions: [data],
       expiryTime
     }
   }

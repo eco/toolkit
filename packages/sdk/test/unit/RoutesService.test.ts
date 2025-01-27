@@ -2,20 +2,19 @@ import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex } from "viem";
 import { EcoProtocolAddresses, hashIntent, hashReward, hashRoute } from "@eco-foundation/routes-ts";
 
-import { RoutesService, IntentData, SolverQuote } from "../../src";
+import { RoutesService, IntentData, SolverQuote, SimpleIntentActionData } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 
 describe("RoutesService", () => {
   let routesService: RoutesService;
-  let transferData: Hex;
+  let simpleIntentActionData: SimpleIntentActionData
 
   beforeAll(() => {
     routesService = new RoutesService();
-    transferData = encodeFunctionData({
-      abi: erc20Abi,
+    simpleIntentActionData = {
       functionName: 'transfer',
-      args: ['0xe494e1285d741F90b4BA51482fa7c1031B2DD294', BigInt(1000000)]
-    })
+      recipient: '0xe494e1285d741F90b4BA51482fa7c1031B2DD294',
+    }
   })
 
   describe("createSimpleIntent", () => {
@@ -27,7 +26,7 @@ describe("RoutesService", () => {
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData: transferData
+        simpleIntentActionData
       });
 
       expect(validRoute).toBeDefined();
@@ -49,7 +48,7 @@ describe("RoutesService", () => {
         receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData: transferData
+        simpleIntentActionData
       });
 
       expect(validRoute).toBeDefined();
@@ -63,8 +62,6 @@ describe("RoutesService", () => {
       expect(validRoute.expiryTime).toBeDefined();
     })
 
-
-
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createSimpleIntent({
         originChainID: 10,
@@ -73,7 +70,7 @@ describe("RoutesService", () => {
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData: transferData,
+        simpleIntentActionData,
         expiryTime: getSecondsFromNow(50),
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
@@ -86,7 +83,7 @@ describe("RoutesService", () => {
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
-        simpleIntentActionData: transferData
+        simpleIntentActionData
       })).toThrow("Invalid amount");
     })
 
@@ -98,12 +95,22 @@ describe("RoutesService", () => {
         receivingToken: RoutesService.getTokenAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "StorageProver",
-        simpleIntentActionData: transferData
+        simpleIntentActionData
       })).toThrow("No default prover found for this chain");
     })
   })
 
   describe("createIntent", () => {
+    let transferData: Hex;
+
+    beforeAll(() => {
+      transferData = encodeFunctionData({
+        abi: erc20Abi,
+        functionName: 'transfer',
+        args: ['0xe494e1285d741F90b4BA51482fa7c1031B2DD294', BigInt(1000000)]
+      })
+    })
+
     test("valid", async () => {
       const validRoute = routesService.createIntent({
         originChainID: 10,
@@ -211,7 +218,7 @@ describe("RoutesService", () => {
         receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData: transferData
+        simpleIntentActionData
       });
       validCreator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294"
     })

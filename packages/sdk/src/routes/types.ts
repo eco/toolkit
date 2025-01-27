@@ -9,8 +9,21 @@ export type CreateSimpleIntentParams = {
   spendingToken: Hex
   amount: bigint
   prover?: "HyperProver" | "StorageProver"
-  simpleIntentActionData: Hex
+  simpleIntentActionData: SimpleIntentActionData
   expiryTime?: Date
+}
+
+export type SimpleIntentActionData = SimpleIntentActionData_Transfer | SimpleIntentActionData_TransferFrom
+
+export type SimpleIntentActionData_Transfer = {
+  functionName: 'transfer'
+  recipient: Hex
+}
+
+export type SimpleIntentActionData_TransferFrom = {
+  functionName: 'transferFrom'
+  recipient: Hex
+  sender: Hex
 }
 
 export type CreateRouteParams = {

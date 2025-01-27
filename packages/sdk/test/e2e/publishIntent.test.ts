@@ -1,17 +1,17 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, encodeFunctionData, erc20Abi, createPublicClient } from "viem";
+import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote, IntentData } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote, IntentData, SimpleIntentActionData } from "../../src";
 
 describe("publishIntent", () => {
   let account: PrivateKeyAccount
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
-  let action: Hex
+  let action: SimpleIntentActionData
   let intentData: IntentData
 
   const publicClient = createPublicClient({
@@ -33,11 +33,10 @@ describe("publishIntent", () => {
       account,
       transport: webSocket(process.env.VITE_BASE_RPC_URL!)
     })
-    action = encodeFunctionData({
-      abi: erc20Abi,
+    action = {
       functionName: 'transfer',
-      args: [account.address, amount]
-    })
+      recipient: account.address
+    }
   })
 
   beforeEach(() => {
