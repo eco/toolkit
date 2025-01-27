@@ -114,7 +114,10 @@ export class RoutesService {
     if (intentData.targetTokens.length !== intentData.destinationChainActions.length) {
       throw new Error("Invalid intentData: targetTokens and destinationChainActions must have the same length")
     }
-    if (quote.quoteData.rewardTokens.length !== quote.quoteData.rewardTokenAmounts.length) {
+    if (!quote && intentData.rewardTokens.length !== intentData.rewardTokenBalances.length) {
+      throw new Error("Invalid intentData: rewardTokens and rewardTokenBalances must have the same length")
+    }
+    if (quote && quote.quoteData.rewardTokens.length !== quote.quoteData.rewardTokenAmounts.length) {
       throw new Error("Invalid quoteData: rewardTokens and rewardTokenAmounts must have the same length")
     }
     const calls = intentData.targetTokens.map((targetToken, index) => {
@@ -124,10 +127,10 @@ export class RoutesService {
         value: BigInt(0),
       }
     })
-    const rewardTokens = quote.quoteData.rewardTokens.map((rewardToken, index) => {
+    const rewardTokens = (quote ? quote.quoteData.rewardTokens : intentData.rewardTokens).map((rewardToken, index) => {
       return {
         token: rewardToken,
-        amount: BigInt(quote.quoteData.rewardTokenAmounts[index]!),
+        amount: BigInt((quote ? quote.quoteData.rewardTokenAmounts : intentData.rewardTokenBalances)[index]!),
       }
     })
     const salt = generateRandomHex()

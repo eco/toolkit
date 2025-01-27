@@ -27,7 +27,7 @@ export type CreateRouteParams = {
 export type SetupIntentForPublishingParams = {
   creator: Hex
   intentData: IntentData
-  quote: SolverQuote
+  quote?: SolverQuote
 }
 
 export type IntentData = {
