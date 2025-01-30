@@ -2,9 +2,9 @@ import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
+import { EcoProtocolAddresses, IntentSourceAbi, IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote, IntentData, SimpleIntentActionData } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote, SimpleIntentActionData } from "../../src";
 
 describe("publishIntent", () => {
   let account: PrivateKeyAccount
@@ -12,7 +12,7 @@ describe("publishIntent", () => {
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
   let action: SimpleIntentActionData
-  let intentData: IntentData
+  let intent: IntentType
 
   const publicClient = createPublicClient({
     chain: base,
@@ -40,7 +40,8 @@ describe("publishIntent", () => {
   })
 
   beforeEach(() => {
-    intentData = routesService.createSimpleIntent({
+    intent = routesService.createSimpleIntent({
+      creator: account.address,
       originChainID: originChain.id,
       destinationChainID: destinationChain.id,
       receivingToken,
@@ -52,18 +53,15 @@ describe("publishIntent", () => {
 
   test("onchain with quote", async () => {
     // request quotes
-    const quotes = await openQuotingClient.requestQuotesForIntent(intentData)
+    const quotes = await openQuotingClient.requestQuotesForIntent(intent)
     const selectedQuote = selectCheapestQuote(quotes)
 
     // setup the intent for publishing
-    const {
+    const quotedIntent = routesService.applyQuoteToIntent({
       intent,
-    } = routesService.setupIntentForPublishing({
-      creator: account.address,
-      intentData,
       quote: selectedQuote
     })
-    expect(intent).toBeDefined()
+    expect(quotedIntent).toBeDefined()
 
     // approve
     const approveTxHash = await baseWalletClient.writeContract({
@@ -93,15 +91,6 @@ describe("publishIntent", () => {
   test("onchain without quote", async () => {
     const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
     expect(intentSourceContract).toBeDefined()
-
-    // setup the intent for publishing
-    const {
-      intent,
-    } = routesService.setupIntentForPublishing({
-      creator: account.address,
-      intentData
-    })
-    expect(intent).toBeDefined()
 
     // approve
     const approveTxHash = await baseWalletClient.writeContract({

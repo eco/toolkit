@@ -1,25 +1,30 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 
-import { RoutesService, OpenQuotingClient, IntentData, SimpleIntentActionData } from "../../src";
-import { getSecondsFromNow } from "../../src/utils";
+import { RoutesService, OpenQuotingClient, SimpleIntentActionData } from "../../src";
+import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
+import { zeroHash } from "viem";
+import { IntentType } from "@eco-foundation/routes-ts";
 
 describe("OpenQuotingClient", () => {
   let routesService: RoutesService;
   let openQuotingClient: OpenQuotingClient;
   let action: SimpleIntentActionData;
-  let validIntentData: IntentData;
+  let validIntent: IntentType;
+
+  const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
 
   beforeAll(() => {
     routesService = new RoutesService();
     openQuotingClient = new OpenQuotingClient({ dAppID: "test" });
     action = {
       functionName: 'transfer',
-      recipient: '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
+      recipient: creator
     }
   });
 
   beforeEach(() => {
-    validIntentData = routesService.createSimpleIntent({
+    validIntent = routesService.createSimpleIntent({
+      creator,
       originChainID: 10,
       destinationChainID: 8453,
       spendingToken: RoutesService.getTokenAddress(10, "USDC"),
@@ -32,7 +37,7 @@ describe("OpenQuotingClient", () => {
 
   describe("requestQuotesForIntent", () => {
     test("valid", async () => {
-      const quotes = await openQuotingClient.requestQuotesForIntent(validIntentData);
+      const quotes = await openQuotingClient.requestQuotesForIntent(validIntent);
 
       expect(quotes).toBeDefined();
       expect(quotes.length).toBeGreaterThan(0);
@@ -42,61 +47,113 @@ describe("OpenQuotingClient", () => {
         expect(quote.intentSourceContract).toBeDefined();
         expect(quote.quoteData).toBeDefined();
         expect(quote.quoteData.expiryTime).toBeDefined();
-        expect(quote.quoteData.rewardTokens).toBeDefined();
-        expect(quote.quoteData.rewardTokens.length).toBeGreaterThan(0);
-        expect(quote.quoteData.rewardTokenAmounts).toBeDefined();
-        expect(quote.quoteData.rewardTokenAmounts.length).toBeGreaterThan(0);
+        expect(quote.quoteData.tokens).toBeDefined();
+        expect(quote.quoteData.tokens.length).toBeGreaterThan(0);
+        for (const token of quote.quoteData.tokens) {
+          expect(token).toBeDefined();
+          expect(token.balance).toBeDefined();
+          expect(token.balance).toBeGreaterThan(0);
+          expect(token.token).toBeDefined();
+        }
       }
     });
 
     test("empty", async () => {
-      const emptyRoute: IntentData = {
-        originChainID: 10,
-        destinationChainID: 8453,
-        targetTokens: [],
-        rewardTokens: [],
-        rewardTokenBalances: [],
-        destinationChainActions: [],
-        proverContract: "0x0",
-        expiryTime: new Date()
+      const emptyIntent: IntentType = {
+        route: {
+          salt: "0x",
+          source: BigInt(10),
+          destination: BigInt(8453),
+          inbox: "0x",
+          calls: []
+        },
+        reward: {
+          creator: "0x0",
+          prover: "0x0",
+          deadline: BigInt(0),
+          nativeValue: BigInt(0),
+          tokens: []
+        }
       }
 
-      await expect(openQuotingClient.requestQuotesForIntent(emptyRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForIntent(emptyIntent)).rejects.toThrow("Request failed with status code 400");
     })
 
-    test("invalidRewardToken", async () => {
-      const invalidRoute = validIntentData;
-      invalidRoute.rewardTokens = ["0x0"];
+    test("invalid:route.source", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.route.source = BigInt(0);
 
-      await expect(openQuotingClient.requestQuotesForIntent(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
 
-    test("invalidTargetToken", async () => {
-      const invalidRoute = validIntentData;
-      invalidRoute.targetTokens = ["0x0"];
+    test("invalid:route.destination", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.route.destination = BigInt(0);
 
-      await expect(openQuotingClient.requestQuotesForIntent(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
 
-    test("invalidExpiryTime", async () => {
-      const invalidRoute = validIntentData;
-      invalidRoute.expiryTime = getSecondsFromNow(50); // must be 60 seconds in the future or more
+    test("invalid:route.salt", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.route.salt = "0x0";
 
-      await expect(openQuotingClient.requestQuotesForIntent(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
 
-    test("invalidRewardTokenBalance", async () => {
-      const invalidRoute = validIntentData;
-      invalidRoute.rewardTokenBalances = [BigInt(-1)];
+    test("invalid:route.inbox", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.route.inbox = "0x0";
 
-      await expect(openQuotingClient.requestQuotesForIntent(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
 
-    test("invalidProver", async () => {
-      const invalidRoute = validIntentData;
-      invalidRoute.proverContract = "0x0";
+    test("invalid:route.calls", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.route.calls = [{ target: "0x0", data: zeroHash, value: BigInt(0) }];
 
-      await expect(openQuotingClient.requestQuotesForIntent(invalidRoute)).rejects.toThrow("Request failed with status code 400");
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+
+      invalidIntent.route.calls = [{ target: RoutesService.getTokenAddress(10, "USDC"), data: zeroHash, value: BigInt(-1) }];
+
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+    })
+
+    test("invalid:reward.creator", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.reward.creator = "0x0";
+
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+    })
+
+    test("invalid:reward.prover", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.reward.prover = "0x0";
+
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+    })
+
+    test("invalid:reward.deadline", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.reward.deadline = dateToTimestamp(getSecondsFromNow(50)); // must be 60 seconds in the future or more
+
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+    })
+
+    test("invalid:reward.nativeValue", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.reward.nativeValue = BigInt(-1);
+
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+    })
+
+    test("invalid:reward.tokens", async () => {
+      const invalidIntent = validIntent;
+      invalidIntent.reward.tokens = [{ token: "0x0", amount: BigInt(1000000) }];
+
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
+
+      invalidIntent.reward.tokens = [{ token: RoutesService.getTokenAddress(10, "USDC"), amount: BigInt(-1) }];
+      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
   });
 });
