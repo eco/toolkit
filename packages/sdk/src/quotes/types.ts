@@ -7,15 +7,27 @@ export namespace OpenQuotingAPI {
   export namespace Quotes {
     export interface Request {
       dAppID: string;
-      intentData: {
-        originChainID: string
-        destinationChainID: string
-        targetTokens: Hex[]
-        rewardTokens: Hex[]
-        rewardTokenBalances: string[]
-        proverContract: Hex
-        destinationChainActions: Hex[]
-        expiryTime: string
+      intent: {
+        routeData: {
+          originChainID: string
+          destinationChainID: string
+          inboxContract: Hex
+          calls: {
+            target: Hex
+            data: Hex
+            value: string
+          }[]
+        },
+        rewardData: {
+          creator: Hex
+          proverContract: Hex
+          deadline: string
+          nativeValue: string
+          tokens: {
+            token: Hex
+            amount: string
+          }[]
+        }
       }
     }
     export interface Response {
@@ -31,7 +43,9 @@ export type SolverQuote = {
 }
 
 export type QuoteData = {
-  rewardTokens: Hex[]
-  rewardTokenAmounts: string[]
+  tokens: {
+    token: Hex,
+    balance: string
+  }[]
   expiryTime: string // seconds since epoch
 }

@@ -1,8 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI, SolverQuote } from "./types";
-import { IntentData } from "../routes/types";
 import { ECO_SDK_CONFIG } from "../config";
-import { dateToTimestamp } from "../utils";
+import { IntentType } from "@eco-foundation/routes-ts";
 
 export class OpenQuotingClient {
   private dAppID: string;
@@ -16,27 +15,39 @@ export class OpenQuotingClient {
   }
 
   /**
-   * Requests quotes for a given route.
+   * Requests quotes for a given intent.
    *
-   * @param intentData - The intentData for which quotes are being requested.
+   * @param intent - The intent for which quotes are being requested.
    * @returns A promise that resolves to an `OpenQuotingClient_ApiResponse_Quotes` object containing the quotes.
    * @throws An error if the request fails.
    *
    * @remarks
-   * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intentData information.
+   * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intent information.
    */
-  async requestQuotesForIntent(intentData: IntentData): Promise<SolverQuote[]> {
+  async requestQuotesForIntent(intent: IntentType): Promise<SolverQuote[]> {
     const payload: OpenQuotingAPI.Quotes.Request = {
       dAppID: this.dAppID,
-      intentData: {
-        originChainID: intentData.originChainID.toString(),
-        destinationChainID: intentData.destinationChainID.toString(),
-        targetTokens: intentData.targetTokens,
-        rewardTokens: intentData.rewardTokens,
-        rewardTokenBalances: intentData.rewardTokenBalances.map((amount) => amount.toString()),
-        proverContract: intentData.proverContract,
-        destinationChainActions: intentData.destinationChainActions,
-        expiryTime: dateToTimestamp(intentData.expiryTime).toString()
+      intent: {
+        routeData: {
+          originChainID: intent.route.source.toString(),
+          destinationChainID: intent.route.destination.toString(),
+          inboxContract: intent.route.inbox,
+          calls: intent.route.calls.map((call) => ({
+            target: call.target,
+            data: call.data,
+            value: call.value.toString()
+          }))
+        },
+        rewardData: {
+          creator: intent.reward.creator,
+          proverContract: intent.reward.prover,
+          deadline: intent.reward.deadline.toString(),
+          nativeValue: intent.reward.nativeValue.toString(),
+          tokens: intent.reward.tokens.map((token) => ({
+            token: token.token,
+            amount: token.amount.toString()
+          }))
+        }
       }
     }
 
