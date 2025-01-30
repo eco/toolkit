@@ -8,8 +8,8 @@ export const NetworkTokens: Record<RoutesSupportedChainId, Partial<Record<Routes
     USDT: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
   },
   5000: {
-    USDC: "0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE",
-    USDT: "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+    USDC: "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+    USDT: "0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE",
   },
   8453: {
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
