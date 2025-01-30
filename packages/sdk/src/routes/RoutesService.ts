@@ -21,7 +21,7 @@ export class RoutesService {
    * 
    * @returns {IntentType} The created intent.
    * 
-   * @throws {Error} If the expiry time is in the past or the amount is invalid.
+   * @throws {Error} If the creator address is invalid, the amount is invalid, or the expiry time is in the past. Or if there is no prover for the specified configuration.
    */
 
   createSimpleIntent({
@@ -89,7 +89,7 @@ export class RoutesService {
    * 
    * @returns {IntentType} The created intent.
    * 
-   * @throws {Error} If the parameters, expiry time, reward token balances or tokens are invalid.
+   * @throws {Error} If the creator address is invalid, calls or tokens are invalid, or the expiry time is in the past.
    */
   createIntent({
     creator,
@@ -133,15 +133,13 @@ export class RoutesService {
   }
 
   /**
-   * Sets up an intent for publishing by validating the provided parameters and generating the necessary data structures.
+   * Applies a quote to an intent, modifying the reward tokens.
    *
-   * @param {ApplyQuoteToIntentParams} params - The parameters required to set up the intent for publishing.
+   * @param {ApplyQuoteToIntentParams} params - The parameters for applying the quote to the intent.
    *
-   * @returns {object} An object containing the salt, routeHash, rewardHash, intentHash, and the intent itself.
+   * @returns {IntentType} The intent with the quote applied.
    * 
-   * @throws {Error} If the creator address is invalid.
-   * @throws {Error} If the targetTokens and destinationChainActions arrays do not have the same length.
-   * @throws {Error} If the rewardTokens and rewardTokenAmounts arrays do not have the same length.
+   * @throws {Error} If the quote is invalid.
    */
   applyQuoteToIntent({ intent, quote }: ApplyQuoteToIntentParams): IntentType {
     if (!quote.quoteData.tokens.length) {
