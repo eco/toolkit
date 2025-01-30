@@ -18,9 +18,9 @@
         <li><a href="#quick-start">Quick Start</a></li>
       </ul>
     </li>
-    <li>
+    <!-- <li>
       <a href="#full-examples">Full Examples</a>
-    </li>
+    </li> -->
     <li>
       <a href="#testing">Testing</a>
     </li>
@@ -37,7 +37,7 @@
 # Getting Started
 
 ## Installing
-Install the package and the [@eco-foundation/routes-ts](https://npmjs.com/package/@co-foundation/routes-ts) peer dependency to your project:
+Install the package and the [@eco-foundation/routes-ts](https://npmjs.com/package/@eco-foundation/routes-ts) peer dependency to your project:
 ``` sh
 npm install @eco-foundation/routes-sdk @eco-foundation/routes-ts
 ```
@@ -52,17 +52,16 @@ npm install @eco-foundation/routes-ts@latest
 ```
 To install the latest contracts, and the SDK will use them.
 
-Note: Upgrading the routes-ts package by a minor or major version might require upgrading the SDK as well, run:
+*Note: Upgrading the routes-ts package by a minor or major version might require upgrading the SDK as well, run:*
 ```
 npm install @eco-foundation/routes-sdk@latest
 ```
-To install the latest version of the SDK.
+*To install the latest version of the SDK.*
 
 ## Quick Start
 
 ### Create a simple intent
-To create a simple stable send intent, create an instance of the `RoutesService` and call `createSimpleIntent`. Pass in the required parameters
-
+To create a simple stable send intent, create an instance of the `RoutesService` and call `createSimpleIntent` with the required parameters:
 ``` ts
 import { RoutesService, SimpleIntentActionData } from '@eco-foundation/routes-sdk';
 
@@ -72,7 +71,7 @@ const spendingToken = RoutesService.getTokenAddress(originChainID, 'USDC');
 const destinationChainID = 8453; // base
 const receivingToken = RoutesService.getTokenAddress(destinationChainID, 'USDC');
 
-const amount = BigInt(1000000);
+const amount = BigInt(1000000); // 1 USDC
 
 const simpleIntentActionData: SimpleIntentActionData = {
   functionName: 'transfer',
@@ -93,11 +92,10 @@ const intent = routesService.createSimpleIntent({
 })
 ```
 
-### Request quotes for an intent and select a quote
+### Request quotes for an intent and select a quote (optional but recommended)
 To request quotes for an intent and select the cheapest quote, use the `OpenQuotingClient` and `selectCheapestQuote` functions.
 
-Then, you can apply the quote by calling `applyQuoteToIntent` on the `RoutesService` instance.
-
+Then, you can apply the quote by calling `applyQuoteToIntent` on the `RoutesService` instance:
 ``` ts
 import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-sdk';
 
@@ -109,11 +107,11 @@ if (!quotes.length) {
 // select quote
 const selectedQuote = selectCheapestQuote(quotes);
 
-// apply quote
+// apply quote to intent
 const intentWithQuote = routesService.applyQuoteToIntent({ intent, quote: selectedQuote });
 ```
 
-#### Custom selectors
+#### Custom selectors (optional)
 Depending on your use case, you might want to select some quote based on some other criteria, not just the cheapest. You can create a custom selector function to do this.
 
 ``` ts
@@ -180,17 +178,23 @@ catch (error) {
 
 [See more from viem's docs](https://viem.sh/)
 
+*Note: A quote will provide the address of an IntentSource contract for you, but if you aren't using a quote you can get the defaut IntentSource contract like so:*
+``` ts
+import { EcoProtocolAddresses } from '@eco-foundation/routes-ts';
+
+const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChainID)].IntentSource;
+```
+
+<!--
 # Full examples
 
-// FIXME: Add full examples and link here
+// TODO: Add full examples and link here
 For full examples of creating an intent and tracking it until it's fulfilled, see the [examples](./examples) directory.
-
+-->
 
 # Testing
 
-Create a `.env` file in the sdk directory and populate it with all the environment variables listed in [`.env.example`](./.env.example)
-
-Run tests:
+First, create a .env file in the sdk directory and populate it with all the environment variables listed in [`.env.example`](./.env.example). Then to run tests, run:
 ``` sh
 npm run test
 ```
