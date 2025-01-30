@@ -1,8 +1,10 @@
 import { Hex } from "viem"
 import { RoutesSupportedChainId } from "../constants/types"
 import { SolverQuote } from "../quotes/types"
+import { IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
+  creator: Hex
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId
   receivingToken: Hex
@@ -27,29 +29,27 @@ export type SimpleIntentActionData_TransferFrom = {
 }
 
 export type CreateRouteParams = {
+  creator: Hex
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId
-  targetTokens: Hex[]
-  rewardTokens: Hex[]
-  rewardTokenBalances: bigint[]
+  calls: IntentCall[]
+  tokens: IntentToken[]
   prover: "HyperProver" | "StorageProver" | Hex
-  destinationChainActions: Hex[]
   expiryTime?: Date
 }
 
-export type SetupIntentForPublishingParams = {
-  creator: Hex
-  intentData: IntentData
-  quote?: SolverQuote
+export type ApplyQuoteToIntentParams = {
+  intent: IntentType
+  quote: SolverQuote
 }
 
-export type IntentData = {
-  originChainID: RoutesSupportedChainId
-  destinationChainID: RoutesSupportedChainId
-  targetTokens: Hex[]
-  rewardTokens: Hex[]
-  rewardTokenBalances: bigint[]
-  proverContract: Hex
-  destinationChainActions: Hex[]
-  expiryTime: Date
+type IntentCall = {
+  target: Hex
+  data: Hex
+  value: bigint
+}
+
+type IntentToken = {
+  token: Hex
+  amount: bigint
 }
