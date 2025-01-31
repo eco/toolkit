@@ -1,9 +1,11 @@
 import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI, SolverQuote } from "./types";
 import { ECO_SDK_CONFIG } from "../config";
+import { sleep } from "../utils";
 import { IntentType } from "@eco-foundation/routes-ts";
 
 export class OpenQuotingClient {
+  private readonly MAX_RETRIES = 5;
   private dAppID: string;
   private axiosInstance: AxiosInstance
 
@@ -19,7 +21,7 @@ export class OpenQuotingClient {
    *
    * @param intent - The intent for which quotes are being requested.
    * @returns A promise that resolves to an `OpenQuotingClient_ApiResponse_Quotes` object containing the quotes.
-   * @throws An error if the request fails.
+   * @throws An error if multiple requests fail.
    *
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intent information.
@@ -51,7 +53,23 @@ export class OpenQuotingClient {
       }
     }
 
-    const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
-    return response.data.data;
+    // try 5 times before giving up and throwing the last error
+    let numAttemptsLeft = this.MAX_RETRIES;
+    let error;
+
+    while (numAttemptsLeft > 0) {
+      try {
+        const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
+        return response.data.data;
+      }
+      catch (err) {
+        error = err;
+        if (--numAttemptsLeft > 0) {
+          // wait for 1 second before retrying
+          await sleep(1000);
+        }
+      }
+    }
+    throw error!;
   }
 }

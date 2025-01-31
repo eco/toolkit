@@ -20,3 +20,8 @@ export function sum(items: (bigint | string | number)[]): bigint {
 export function generateRandomHex(length = 32): Hex {
   return `0x${randomBytes(length).toString('hex')}`
 }
+
+// sleep for the given number of milliseconds
+export async function sleep(ms: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, ms));
+}
