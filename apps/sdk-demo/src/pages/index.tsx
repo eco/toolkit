@@ -10,6 +10,8 @@ const Home: NextPage = () => {
       </Head>
       <main>
         Eco Routes SDK Demo
+      // TODO: add in the SDK demo here
+      // connect wallet, then select route (origin chain and token, destination chain and token), amount and recipient. Then select quote, then confirm and send before it expires
       </main>
     </div>
   );
