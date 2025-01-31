@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 
-import { RoutesService, OpenQuotingClient, SimpleIntentActionData } from "../../src";
+import { RoutesService, OpenQuotingClient, SimpleIntentActionData, RoutesSupportedToken } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 import { zeroHash } from "viem";
 import { IntentType } from "@eco-foundation/routes-ts";
@@ -27,8 +27,8 @@ describe("OpenQuotingClient", () => {
       creator,
       originChainID: 10,
       destinationChainID: 8453,
-      spendingToken: RoutesService.getTokenAddress(10, "USDC"),
-      receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
+      spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+      receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
       amount: BigInt(1000000),
       prover: 'HyperProver',
       simpleIntentActionData: action
@@ -113,7 +113,7 @@ describe("OpenQuotingClient", () => {
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
 
-      invalidIntent.route.calls = [{ target: RoutesService.getTokenAddress(10, "USDC"), data: zeroHash, value: BigInt(-1) }];
+      invalidIntent.route.calls = [{ target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC), data: zeroHash, value: BigInt(-1) }];
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
@@ -152,7 +152,7 @@ describe("OpenQuotingClient", () => {
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
 
-      invalidIntent.reward.tokens = [{ token: RoutesService.getTokenAddress(10, "USDC"), amount: BigInt(-1) }];
+      invalidIntent.reward.tokens = [{ token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC), amount: BigInt(-1) }];
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
   });
