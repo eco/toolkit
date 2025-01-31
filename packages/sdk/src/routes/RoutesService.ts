@@ -21,9 +21,8 @@ export class RoutesService {
    * 
    * @returns {IntentType} The created intent.
    * 
-   * @throws {Error} If the creator address is invalid, the amount is invalid, or the expiry time is in the past. Or if there is no prover for the specified configuration.
+   * @throws {Error} If the creator address is invalid, the origin and destination chain are the same, the amount is invalid, or the expiry time is in the past. Or if there is no prover for the specified configuration.
    */
-
   createSimpleIntent({
     creator,
     originChainID,
@@ -38,6 +37,9 @@ export class RoutesService {
     // validate
     if (!isAddress(creator, { strict: false })) {
       throw new Error("Invalid creator address");
+    }
+    if (originChainID === destinationChainID) {
+      throw new Error("originChainID and destinationChainID cannot be the same");
     }
     if (isAmountInvalid(amount)) {
       throw new Error("Invalid amount");
@@ -89,7 +91,7 @@ export class RoutesService {
    * 
    * @returns {IntentType} The created intent.
    * 
-   * @throws {Error} If the creator address is invalid, calls or tokens are invalid, or the expiry time is in the past.
+   * @throws {Error} If the creator address is invalid, the origin and destination chain are the same, the calls or tokens are invalid, or the expiry time is in the past.
    */
   createIntent({
     creator,
@@ -103,6 +105,9 @@ export class RoutesService {
     // validate
     if (!isAddress(creator, { strict: false })) {
       throw new Error("Invalid creator address");
+    }
+    if (originChainID === destinationChainID) {
+      throw new Error("originChainID and destinationChainID cannot be the same");
     }
     if (!calls.length || calls.some(call => !isAddress(call.target, { strict: false }) || isAmountInvalid(call.value))) {
       throw new Error("Invalid calls");

@@ -123,18 +123,17 @@ describe("RoutesService", () => {
       })).toThrow("Invalid creator address");
     })
 
-    test("invalidExpiryTime", async () => {
+    test("invalidChainIDs", async () => {
       expect(() => routesService.createSimpleIntent({
         creator,
         originChainID: 10,
-        destinationChainID: 8453,
+        destinationChainID: 10,
         spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData,
-        expiryTime: getSecondsFromNow(50),
-      })).toThrow("Expiry time must be 60 seconds or more in the future");
+        simpleIntentActionData
+      })).toThrow("originChainID and destinationChainID cannot be the same");
     })
 
     test("invalidAmount", async () => {
@@ -148,6 +147,20 @@ describe("RoutesService", () => {
         prover: 'HyperProver',
         simpleIntentActionData
       })).toThrow("Invalid amount");
+    })
+
+    test("invalidExpiryTime", async () => {
+      expect(() => routesService.createSimpleIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        simpleIntentActionData,
+        expiryTime: getSecondsFromNow(50),
+      })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
     test("invalidProverForChain", async () => {
@@ -291,6 +304,24 @@ describe("RoutesService", () => {
         }],
         prover: "HyperProver",
       })).toThrow("Invalid creator address");
+    })
+
+    test("invalidChainIDs", async () => {
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 10,
+        calls: [{
+          target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("originChainID and destinationChainID cannot be the same");
     })
 
     test("invalidExpiryTime", async () => {
