@@ -29,7 +29,7 @@ describe("OpenQuotingClient", () => {
       destinationChainID: 8453,
       spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
       receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
-      amount: BigInt(1000000),
+      amount: BigInt(10000), // 1 cent
       prover: 'HyperProver',
       simpleIntentActionData: action
     });
@@ -51,8 +51,8 @@ describe("OpenQuotingClient", () => {
         expect(quote.quoteData.tokens.length).toBeGreaterThan(0);
         for (const token of quote.quoteData.tokens) {
           expect(token).toBeDefined();
-          expect(token.balance).toBeDefined();
-          expect(token.balance).toBeGreaterThan(0);
+          expect(token.amount).toBeDefined();
+          expect(BigInt(token.amount)).toBeGreaterThan(0);
           expect(token.token).toBeDefined();
         }
       }
@@ -156,4 +156,4 @@ describe("OpenQuotingClient", () => {
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
   });
-});
+}, 60_000);

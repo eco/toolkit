@@ -152,9 +152,9 @@ export class RoutesService {
     }
 
     // only thing affected by the quote is the reward tokens
-    intent.reward.tokens = quote.quoteData.tokens.map(({ token, balance }) => ({
+    intent.reward.tokens = quote.quoteData.tokens.map(({ token, amount }) => ({
       token: token,
-      amount: BigInt(balance)
+      amount: BigInt(amount)
     }))
 
     return intent;

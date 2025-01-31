@@ -463,7 +463,7 @@ describe("RoutesService", () => {
         quoteData: {
           tokens: [{
             token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-            balance: "1000000",
+            amount: "1000000",
           }],
           expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString()
         }

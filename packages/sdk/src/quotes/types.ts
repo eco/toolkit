@@ -45,7 +45,7 @@ export type SolverQuote = {
 export type QuoteData = {
   tokens: {
     token: Hex,
-    balance: string
+    amount: string
   }[]
   expiryTime: string // seconds since epoch
 }
