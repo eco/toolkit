@@ -7,7 +7,7 @@ export namespace OpenQuotingAPI {
   export namespace Quotes {
     export interface Request {
       dAppID: string;
-      intent: {
+      intentData: {
         routeData: {
           originChainID: string
           destinationChainID: string

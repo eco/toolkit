@@ -27,7 +27,7 @@ export class OpenQuotingClient {
   async requestQuotesForIntent(intent: IntentType): Promise<SolverQuote[]> {
     const payload: OpenQuotingAPI.Quotes.Request = {
       dAppID: this.dAppID,
-      intent: {
+      intentData: {
         routeData: {
           originChainID: intent.route.source.toString(),
           destinationChainID: intent.route.destination.toString(),
