@@ -1,5 +1,6 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
+import DemoView from '../views/demo/demo-view';
 
 const Home: NextPage = () => {
   return (
@@ -9,9 +10,10 @@ const Home: NextPage = () => {
         <link href="/favicon.ico" rel="icon" />
       </Head>
       <main>
-        Eco Routes SDK Demo
-      // TODO: add in the SDK demo here
-      // connect wallet, then select route (origin chain and token, destination chain and token), amount and recipient. Then select quote, then confirm and send before it expires
+        <div>
+          <span className='text-3xl mx-2'>Eco Routes SDK Demo</span>
+        </div>
+        <DemoView />
       </main>
     </div>
   );
