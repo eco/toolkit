@@ -131,7 +131,7 @@ export default function DemoView() {
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2 p-1 border-1">
             <span className="text-xl">Origin</span>
-            <div className="flex">
+            <div className="flex gap-1">
               <span>Chain:</span>
               <select onChange={(e) => {
                 const chainId = parseInt(e.target.value) as RoutesSupportedChainId
@@ -154,12 +154,12 @@ export default function DemoView() {
                 ))}
               </select>
             </div>
-            <div className="flex">
+            <div className="flex gap-1">
               <span>Token:</span>
-              <input type="text" className="border-1" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
+              <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
             </div>
             <div className="flex gap-2">
-              {originTokensAvailable.map((tokenConfig) => (
+              Stables available: {originTokensAvailable.map((tokenConfig) => (
                 <a key={tokenConfig.id} onClick={() => setOriginToken(tokenConfig.address)}>{tokenConfig.id}</a>
               ))}
             </div>
@@ -167,13 +167,12 @@ export default function DemoView() {
 
           <div className="flex flex-col gap-1 p-1 border-1">
             <span className="text-xl">Destination</span>
-            <div className="flex">
+            <div className="flex gap-1">
               <span>Chain:</span>
               <select onChange={(e) => {
                 const chainId = parseInt(e.target.value) as RoutesSupportedChainId
                 if (destinationToken && destinationChain) {
                   const destinationTokenConfig = getAvailableTokens(destinationChain).find((token) => token.address === destinationToken)
-
                   const existingToken = getAvailableTokens(chainId).find((token) => token.id === destinationTokenConfig?.id)
                   if (existingToken) {
                     setDestinationToken(existingToken.address)
@@ -190,12 +189,12 @@ export default function DemoView() {
                 ))}
               </select>
             </div>
-            <div className="flex">
+            <div className="flex gap-1">
               <span>Token:</span>
-              <input type="text" className="border-1" value={destinationToken} onChange={(e) => setDestinationToken(e.target.value)} />
+              <input type="text" className="border-1 w-full" value={destinationToken} onChange={(e) => setDestinationToken(e.target.value)} />
             </div>
             <div className="flex gap-2">
-              {destinationTokensAvailable.map((tokenConfig) => (
+              Stables available: {destinationTokensAvailable.map((tokenConfig) => (
                 <a key={tokenConfig.id} onClick={() => setDestinationToken(tokenConfig.address)}>{tokenConfig.id}</a>
               ))}
             </div>
@@ -247,7 +246,7 @@ export default function DemoView() {
       )}
 
       {intent && selectedQuote && (
-        <button onClick={console.log}>Publish Quoted Intent</button>
+        <button onClick={() => console.log(routesService.applyQuoteToIntent({ intent, quote: selectedQuote }))}>Publish Quoted Intent</button>
       )}
     </div>
   );
