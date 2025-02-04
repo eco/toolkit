@@ -199,10 +199,6 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
-        }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
@@ -252,10 +248,6 @@ describe("RoutesService", () => {
           target: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
           data: transferData,
           value: BigInt(0),
-        }],
-        callTokens: [{
-          token: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
-          amount: BigInt(1000000),
         }],
         tokens: [{
           token: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
@@ -307,10 +299,6 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
-        }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
@@ -329,10 +317,6 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(10, "USDC"),
-          amount: BigInt(1000000),
-        }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
@@ -350,10 +334,6 @@ describe("RoutesService", () => {
           target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
-        }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
         }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
@@ -374,10 +354,6 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
-        }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(-1),
@@ -393,10 +369,6 @@ describe("RoutesService", () => {
           target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
-        }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(100000)
         }],
         tokens: [],
         prover: "HyperProver",
@@ -411,71 +383,8 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000)
-        }],
         tokens: [{
           token: "0x",
-          amount: BigInt(1000000),
-        }],
-        prover: "HyperProver",
-      })).toThrow("Invalid tokens");
-    })
-
-    test("invalidCallTokens", async () => {
-      expect(() => routesService.createIntent({
-        creator,
-        originChainID: 10,
-        destinationChainID: 8453,
-        calls: [{
-          target: RoutesService.getStableAddress(8453, "USDC"),
-          data: transferData,
-          value: BigInt(0),
-        }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(-1),
-        }],
-        tokens: [{
-          token: RoutesService.getStableAddress(10, "USDC"),
-          amount: BigInt(1000000),
-        }],
-        prover: "HyperProver",
-      })).toThrow("Invalid tokens");
-
-      expect(() => routesService.createIntent({
-        creator,
-        originChainID: 10,
-        destinationChainID: 8453,
-        calls: [{
-          target: RoutesService.getStableAddress(8453, "USDC"),
-          data: transferData,
-          value: BigInt(0),
-        }],
-        callTokens: [],
-        tokens: [{
-          token: RoutesService.getStableAddress(10, "USDC"),
-          amount: BigInt(1000000),
-        }],
-        prover: "HyperProver",
-      })).toThrow("Invalid tokens");
-
-      expect(() => routesService.createIntent({
-        creator,
-        originChainID: 10,
-        destinationChainID: 8453,
-        calls: [{
-          target: RoutesService.getStableAddress(8453, "USDC"),
-          data: transferData,
-          value: BigInt(0),
-        }],
-        callTokens: [{
-          token: "0x",
-          amount: BigInt(100000)
-        }],
-        tokens: [{
-          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -491,10 +400,6 @@ describe("RoutesService", () => {
           target: "0x0",
           data: transferData,
           value: BigInt(0),
-        }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
         }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
@@ -512,10 +417,6 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(-1),
         }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
-        }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
@@ -528,10 +429,6 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [],
-        callTokens: [{
-          token: RoutesService.getStableAddress(8453, "USDC"),
-          amount: BigInt(1000000),
-        }],
         tokens: [{
           token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
@@ -549,10 +446,6 @@ describe("RoutesService", () => {
           target: RoutesService.getStableAddress(10, "USDC"),
           data: transferData,
           value: BigInt(0),
-        }],
-        callTokens: [{
-          token: RoutesService.getStableAddress(10, "USDC"),
-          amount: BigInt(1000000),
         }],
         tokens: [{
           token: RoutesService.getStableAddress(42161, "USDC"),

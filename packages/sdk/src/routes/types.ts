@@ -20,7 +20,6 @@ export type CreateRouteParams = {
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId
   calls: IntentCall[]
-  callTokens: IntentToken[]
   tokens: IntentToken[]
   prover: "HyperProver" | "StorageProver" | Hex
   expiryTime?: Date

@@ -61,7 +61,6 @@ describe("OpenQuotingClient", () => {
           destination: BigInt(8453),
           inbox: "0x",
           calls: [],
-          tokens: []
         },
         reward: {
           creator: "0x0",

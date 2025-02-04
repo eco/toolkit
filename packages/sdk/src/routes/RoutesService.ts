@@ -70,12 +70,6 @@ export class RoutesService {
             value: BigInt(0),
           }
         ],
-        tokens: [
-          {
-            token: receivingToken,
-            amount,
-          }
-        ]
       },
       reward: {
         creator,
@@ -106,7 +100,6 @@ export class RoutesService {
     originChainID,
     destinationChainID,
     calls,
-    callTokens,
     tokens,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
@@ -120,9 +113,6 @@ export class RoutesService {
     }
     if (!calls.length || calls.some(call => !isAddress(call.target, { strict: false }) || isAmountInvalid(call.value))) {
       throw new Error("Invalid calls");
-    }
-    if (!callTokens.length || callTokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
-      throw new Error("Invalid callTokens");
     }
     if (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
       throw new Error("Invalid tokens");
@@ -138,7 +128,6 @@ export class RoutesService {
         destination: BigInt(destinationChainID),
         inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
         calls,
-        tokens: callTokens
       },
       reward: {
         creator,
