@@ -105,7 +105,7 @@ export default function PublishIntent({ intent, quote }: Props) {
   if (!intent || !quote) return null
 
   return (
-    <div>
+    <div className="m-4 flex flex-col gap-4">
       <button onClick={publishIntent}>Publish Quoted Intent</button>
       {isPublishing && (
         <div>
