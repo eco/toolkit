@@ -1,7 +1,7 @@
 import type { NextPage } from 'next';
 import Head from 'next/head';
 import DemoView from '../views/demo/demo-view';
-import Header from '../views/demo/components/header';
+import Header from '../components/header';
 import { useAccount } from 'wagmi';
 
 const Home: NextPage = () => {
