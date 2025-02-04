@@ -1,5 +1,3 @@
-'use client'
-
 import { useEffect, useMemo, useState } from "react";
 import { RoutesSupportedChainId, RoutesService } from "@eco-foundation/routes-sdk"
 import { formatUnits, Hex, isAddress } from "viem";
@@ -190,9 +188,7 @@ export default function CreateIntent({
             )}
           </div>
         </div>
-
       </div>
-
     </div>
   )
 }

@@ -5,8 +5,8 @@ import { RoutesService, SolverQuote, OpenQuotingClient } from "@eco-foundation/r
 import { IntentType } from "@eco-foundation/routes-ts";
 import CreateIntent from "./components/create-intent";
 import SelectQuote from "./components/select-quote";
+import PublishIntent from "./components/publish-intent";
 
-const routesService = new RoutesService({ isPreprod: true })
 const openQuotingClient = new OpenQuotingClient({ dAppID: "sdk-demo", customBaseUrl: "https://quotes-preprod.eco.com" })
 
 export default function DemoView() {
@@ -32,12 +32,8 @@ export default function DemoView() {
   return (
     <div>
       <CreateIntent onNewIntent={setIntent} />
-
       <SelectQuote intent={intent} quotes={quotes} onQuoteSelected={setSelectedQuote} />
-
-      {intent && selectedQuote && (
-        <button onClick={() => console.log(routesService.applyQuoteToIntent({ intent, quote: selectedQuote }))}>Publish Quoted Intent</button>
-      )}
+      <PublishIntent intent={intent} quote={selectedQuote} />
     </div>
   );
 }
