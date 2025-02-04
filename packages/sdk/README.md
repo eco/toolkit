@@ -63,7 +63,7 @@ npm install @eco-foundation/routes-sdk@latest
 ### Create a simple intent
 To create a simple stable send intent, create an instance of the `RoutesService` and call `createSimpleIntent` with the required parameters:
 ``` ts
-import { RoutesService, SimpleIntentActionData, RoutesSupportedChainId, RoutesSupportedToken } from '@eco-foundation/routes-sdk';
+import { RoutesService, RoutesSupportedChainId, RoutesSupportedToken } from '@eco-foundation/routes-sdk';
 
 const address = '0x1234567890123456789012345678901234567890'
 const originChainID = RoutesSupportedChainId.Optimism;
@@ -72,11 +72,6 @@ const destinationChainID = RoutesSupportedChainId.Base;
 const receivingToken = RoutesService.getTokenAddress(destinationChainID, RoutesSupportedToken.USDC);
 
 const amount = BigInt(1000000); // 1 USDC
-
-const simpleIntentActionData: SimpleIntentActionData = {
-  functionName: 'transfer',
-  recipient: address,
-}
 
 const routesService = new RoutesService();
 
@@ -88,7 +83,7 @@ const intent = routesService.createSimpleIntent({
   destinationChainID,
   receivingToken,
   amount,
-  simpleIntentActionData
+  recipient: address, // optional, defaults to the creator if not passed
 })
 ```
 
