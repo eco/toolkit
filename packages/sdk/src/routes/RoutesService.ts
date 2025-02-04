@@ -1,8 +1,7 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
-import { NetworkTokens } from "../constants";
+import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
 import { CreateRouteParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
-import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
 
 import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config";
@@ -30,13 +29,16 @@ export class RoutesService {
     receivingToken,
     spendingToken,
     amount,
-    simpleIntentActionData,
+    recipient = creator,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
   }: CreateSimpleIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
       throw new Error("Invalid creator address");
+    }
+    if (!isAddress(recipient, { strict: false })) {
+      throw new Error("Invalid recipient address");
     }
     if (originChainID === destinationChainID) {
       throw new Error("originChainID and destinationChainID cannot be the same");
@@ -51,8 +53,8 @@ export class RoutesService {
     // create calldata
     const data = encodeFunctionData({
       abi: erc20Abi,
-      functionName: simpleIntentActionData.functionName,
-      args: simpleIntentActionData.functionName === 'transfer' ? [simpleIntentActionData.recipient, amount] : [simpleIntentActionData.sender, simpleIntentActionData.recipient, amount]
+      functionName: 'transfer',
+      args: [recipient, amount]
     })
 
     return {
@@ -68,6 +70,12 @@ export class RoutesService {
             value: BigInt(0),
           }
         ],
+        tokens: [
+          {
+            token: receivingToken,
+            amount,
+          }
+        ]
       },
       reward: {
         creator,
@@ -98,6 +106,7 @@ export class RoutesService {
     originChainID,
     destinationChainID,
     calls,
+    callTokens,
     tokens,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
@@ -112,6 +121,9 @@ export class RoutesService {
     if (!calls.length || calls.some(call => !isAddress(call.target, { strict: false }) || isAmountInvalid(call.value))) {
       throw new Error("Invalid calls");
     }
+    if (!callTokens.length || callTokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
+      throw new Error("Invalid callTokens");
+    }
     if (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
       throw new Error("Invalid tokens");
     }
@@ -125,7 +137,8 @@ export class RoutesService {
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
         inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
-        calls
+        calls,
+        tokens: callTokens
       },
       reward: {
         creator,
@@ -193,19 +206,20 @@ export class RoutesService {
     return proverContract;
   }
 
-  static getTokenAddress(chainID: RoutesSupportedChainId, token: RoutesSupportedToken): Hex {
-    const networkToken = NetworkTokens[chainID][token];
-    if (!networkToken) {
-      throw new Error(`Token ${token} not found on chain ${chainID}`);
+  static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {
+    const stableAddress = stableAddresses[chainID][stable];
+    if (!stableAddress) {
+      throw new Error(`Stable ${stable} not found on chain ${chainID}`);
     }
-    return networkToken;
+    return stableAddress;
   }
 
-  static validateNetworkTokenAddress(chainID: RoutesSupportedChainId, address: Hex) {
-    const isValidToken = Object.values(NetworkTokens[chainID]).some((token) => token === address);
-    if (!isValidToken) {
-      throw new Error(`Invalid Token Address ${address} on chainId ${chainID}`);
+  static getStableFromAddress(chainID: RoutesSupportedChainId, address: Hex): RoutesSupportedStable | undefined {
+    for (const stable in stableAddresses[chainID]) {
+      if (stableAddresses[chainID][stable as RoutesSupportedStable]?.toLowerCase() === address.toLowerCase()) {
+        return stable as RoutesSupportedStable;
+      }
     }
-    return address;
+    throw new Error(`Stable not found for address ${address} on chain ${chainID}`);
   }
 }

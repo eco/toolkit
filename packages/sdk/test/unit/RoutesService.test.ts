@@ -2,21 +2,16 @@ import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, SolverQuote, SimpleIntentActionData, RoutesSupportedToken } from "../../src";
+import { RoutesService, SolverQuote } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 
 describe("RoutesService", () => {
   let routesService: RoutesService;
-  let simpleIntentActionData: SimpleIntentActionData
 
   const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
 
   beforeAll(() => {
     routesService = new RoutesService();
-    simpleIntentActionData = {
-      functionName: 'transfer',
-      recipient: creator,
-    }
   })
 
   describe("createSimpleIntent", () => {
@@ -25,11 +20,10 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData
       });
 
       expect(validIntent).toBeDefined();
@@ -74,7 +68,6 @@ describe("RoutesService", () => {
         receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData
       });
 
       expect(validIntent).toBeDefined();
@@ -115,12 +108,24 @@ describe("RoutesService", () => {
         creator: "0x",
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData
       })).toThrow("Invalid creator address");
+    })
+
+    test("invalidRecipient", async () => {
+      expect(() => routesService.createSimpleIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        recipient: "0x"
+      })).toThrow("Invalid recipient address");
     })
 
     test("invalidChainIDs", async () => {
@@ -128,11 +133,10 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 10,
-        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData
       })).toThrow("originChainID and destinationChainID cannot be the same");
     })
 
@@ -141,11 +145,10 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
-        simpleIntentActionData
       })).toThrow("Invalid amount");
     })
 
@@ -154,11 +157,10 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData,
         expiryTime: getSecondsFromNow(50),
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
@@ -168,11 +170,10 @@ describe("RoutesService", () => {
         creator,
         originChainID: 42161,
         destinationChainID: 10,
-        spendingToken: RoutesService.getTokenAddress(42161, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(42161, "USDC"),
+        receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "StorageProver",
-        simpleIntentActionData
       })).toThrow("No default prover found for this chain");
     })
   })
@@ -194,12 +195,16 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [{
-          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -248,6 +253,10 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+          amount: BigInt(1000000),
+        }],
         tokens: [{
           token: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
           amount: BigInt(1000000),
@@ -294,12 +303,16 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [{
-          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -312,12 +325,16 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 10,
         calls: [{
-          target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(10, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(10, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -330,12 +347,16 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [{
-          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -349,12 +370,16 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [{
-          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(-1),
         }],
         prover: "HyperProver",
@@ -365,11 +390,94 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [{
-          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(100000)
+        }],
         tokens: [],
+        prover: "HyperProver",
+      })).toThrow("Invalid tokens");
+
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: RoutesService.getStableAddress(8453, "USDC"),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000)
+        }],
+        tokens: [{
+          token: "0x",
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("Invalid tokens");
+    })
+
+    test("invalidCallTokens", async () => {
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: RoutesService.getStableAddress(8453, "USDC"),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(-1),
+        }],
+        tokens: [{
+          token: RoutesService.getStableAddress(10, "USDC"),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("Invalid tokens");
+
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: RoutesService.getStableAddress(8453, "USDC"),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        callTokens: [],
+        tokens: [{
+          token: RoutesService.getStableAddress(10, "USDC"),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("Invalid tokens");
+
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: RoutesService.getStableAddress(8453, "USDC"),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        callTokens: [{
+          token: "0x",
+          amount: BigInt(100000)
+        }],
+        tokens: [{
+          token: RoutesService.getStableAddress(10, "USDC"),
+          amount: BigInt(1000000),
+        }],
         prover: "HyperProver",
       })).toThrow("Invalid tokens");
     })
@@ -384,8 +492,12 @@ describe("RoutesService", () => {
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -396,12 +508,16 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [{
-          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(8453, "USDC"),
           data: transferData,
           value: BigInt(-1),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -412,8 +528,12 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         calls: [],
+        callTokens: [{
+          token: RoutesService.getStableAddress(8453, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(10, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
@@ -426,12 +546,16 @@ describe("RoutesService", () => {
         originChainID: 42161,
         destinationChainID: 10,
         calls: [{
-          target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          target: RoutesService.getStableAddress(10, "USDC"),
           data: transferData,
           value: BigInt(0),
         }],
+        callTokens: [{
+          token: RoutesService.getStableAddress(10, "USDC"),
+          amount: BigInt(1000000),
+        }],
         tokens: [{
-          token: RoutesService.getTokenAddress(42161, RoutesSupportedToken.USDC),
+          token: RoutesService.getStableAddress(42161, "USDC"),
           amount: BigInt(1000000),
         }],
         prover: "StorageProver",
@@ -448,11 +572,11 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-        simpleIntentActionData
+
       });
     })
 
@@ -462,7 +586,7 @@ describe("RoutesService", () => {
         intentSourceContract: EcoProtocolAddresses[10].IntentSource,
         quoteData: {
           tokens: [{
-            token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+            token: RoutesService.getStableAddress(10, "USDC"),
             amount: "1000000",
           }],
           expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString()

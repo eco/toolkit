@@ -1,6 +1,6 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 
-import { RoutesService, OpenQuotingClient, SimpleIntentActionData, RoutesSupportedToken } from "../../src";
+import { RoutesService, OpenQuotingClient } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 import { zeroHash } from "viem";
 import { IntentType } from "@eco-foundation/routes-ts";
@@ -8,7 +8,6 @@ import { IntentType } from "@eco-foundation/routes-ts";
 describe("OpenQuotingClient", () => {
   let routesService: RoutesService;
   let openQuotingClient: OpenQuotingClient;
-  let action: SimpleIntentActionData;
   let validIntent: IntentType;
 
   const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
@@ -16,10 +15,6 @@ describe("OpenQuotingClient", () => {
   beforeAll(() => {
     routesService = new RoutesService();
     openQuotingClient = new OpenQuotingClient({ dAppID: "test" });
-    action = {
-      functionName: 'transfer',
-      recipient: creator
-    }
   });
 
   beforeEach(() => {
@@ -27,11 +22,11 @@ describe("OpenQuotingClient", () => {
       creator,
       originChainID: 10,
       destinationChainID: 8453,
-      spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
-      receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+      spendingToken: RoutesService.getStableAddress(10, "USDC"),
+      receivingToken: RoutesService.getStableAddress(8453, "USDC"),
       amount: BigInt(10000), // 1 cent
       prover: 'HyperProver',
-      simpleIntentActionData: action
+      recipient: creator,
     });
   })
 
@@ -65,7 +60,8 @@ describe("OpenQuotingClient", () => {
           source: BigInt(10),
           destination: BigInt(8453),
           inbox: "0x",
-          calls: []
+          calls: [],
+          tokens: []
         },
         reward: {
           creator: "0x0",
@@ -113,7 +109,7 @@ describe("OpenQuotingClient", () => {
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
 
-      invalidIntent.route.calls = [{ target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC), data: zeroHash, value: BigInt(-1) }];
+      invalidIntent.route.calls = [{ target: RoutesService.getStableAddress(10, "USDC"), data: zeroHash, value: BigInt(-1) }];
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
@@ -152,7 +148,7 @@ describe("OpenQuotingClient", () => {
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
 
-      invalidIntent.reward.tokens = [{ token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC), amount: BigInt(-1) }];
+      invalidIntent.reward.tokens = [{ token: RoutesService.getStableAddress(10, "USDC"), amount: BigInt(-1) }];
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })
   });

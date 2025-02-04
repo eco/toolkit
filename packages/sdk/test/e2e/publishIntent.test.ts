@@ -4,14 +4,13 @@ import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentSourceAbi, IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote, SimpleIntentActionData, RoutesSupportedToken } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
 
 describe("publishIntent", () => {
   let account: PrivateKeyAccount
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
-  let action: SimpleIntentActionData
   let intent: IntentType
 
   const publicClient = createPublicClient({
@@ -22,8 +21,8 @@ describe("publishIntent", () => {
   const amount = BigInt(10000) // 1 cent
   const originChain = base
   const destinationChain = optimism
-  const receivingToken = RoutesService.getTokenAddress(destinationChain.id, RoutesSupportedToken.USDC)
-  const spendingToken = RoutesService.getTokenAddress(originChain.id, RoutesSupportedToken.USDC)
+  const receivingToken = RoutesService.getStableAddress(destinationChain.id, "USDC")
+  const spendingToken = RoutesService.getStableAddress(originChain.id, "USDC")
 
   beforeAll(() => {
     routesService = new RoutesService()
@@ -33,10 +32,6 @@ describe("publishIntent", () => {
       account,
       transport: webSocket(process.env.VITE_BASE_RPC_URL!)
     })
-    action = {
-      functionName: 'transfer',
-      recipient: account.address
-    }
   })
 
   beforeEach(() => {
@@ -47,7 +42,7 @@ describe("publishIntent", () => {
       receivingToken,
       spendingToken,
       amount,
-      simpleIntentActionData: action,
+      recipient: account.address
     })
   })
 
