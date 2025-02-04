@@ -19,6 +19,7 @@ export default function DemoView() {
       openQuotingClient.requestQuotesForIntent(intent).then((quotes) => {
         setQuotes(quotes)
       }).catch((error) => {
+        alert('Could not fetch quotes: ' + error.message)
         console.error(error)
       })
     }

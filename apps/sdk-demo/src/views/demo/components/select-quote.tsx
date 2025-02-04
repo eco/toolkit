@@ -32,12 +32,14 @@ export default function SelectQuote({ intent, quotes, onQuoteSelected }: Props) 
             </div>
           ))}
         </div>
-        <pre>
-          {`const quotes = await (new OpenQuotingClient()).requestQuotesForIntent(intent);
+        <div className="h-full">
+          <pre className="h-full">
+            {`const quotes = await (new OpenQuotingClient()).requestQuotesForIntent(intent);
           
-          console.log(quotes);
-          ${JSON.stringify(quotes, null, 2)}`}
-        </pre>
+              console.log(quotes);
+              ${JSON.stringify(quotes, null, 2)}`}
+          </pre>
+        </div>
       </div>
 
     </div>
