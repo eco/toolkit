@@ -1,2 +1,14 @@
-export type RoutesSupportedChainId = 10 | 5000 | 8453 | 42161
-export type RoutesSupportedToken = "USDC" | "USDbC" | "USDCe" | "USDT"
+
+export enum RoutesSupportedChainId {
+  Optimism = 10,
+  Mantle = 5000,
+  Base = 8453,
+  Arbitrum = 42161
+}
+
+export enum RoutesSupportedToken {
+  USDC = "USDC",
+  USDbC = "USDbC",
+  USDCe = "USDCe",
+  USDT = "USDT"
+}

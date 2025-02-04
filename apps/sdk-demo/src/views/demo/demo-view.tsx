@@ -233,7 +233,7 @@ export default function DemoView() {
                 <span>Amounts requested:</span>
                 <ul className="list-disc">
                   {quote.quoteData.tokens.map((token) => (
-                    <li className="ml-4">{formatUnits(BigInt(token.amount), 6)} {findTokenByAddress(originChain!, token.token)?.id}</li>
+                    <li key={token.token} className="ml-4">{formatUnits(BigInt(token.amount), 6)} {findTokenByAddress(originChain!, token.token)?.id}</li>
                   ))}
                 </ul>
 

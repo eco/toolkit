@@ -1,47 +1,73 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { encodeFunctionData, erc20Abi, Hex } from "viem";
-import { EcoProtocolAddresses, hashIntent, hashReward, hashRoute } from "@eco-foundation/routes-ts";
+import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
+import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, IntentData, SolverQuote, SimpleIntentActionData } from "../../src";
+import { RoutesService, SolverQuote, SimpleIntentActionData, RoutesSupportedToken } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 
 describe("RoutesService", () => {
   let routesService: RoutesService;
   let simpleIntentActionData: SimpleIntentActionData
 
+  const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
+
   beforeAll(() => {
     routesService = new RoutesService();
     simpleIntentActionData = {
       functionName: 'transfer',
-      recipient: '0xe494e1285d741F90b4BA51482fa7c1031B2DD294',
+      recipient: creator,
     }
   })
 
   describe("createSimpleIntent", () => {
     test("valid", async () => {
-      const validRoute = routesService.createSimpleIntent({
+      const validIntent = routesService.createSimpleIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
-        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleIntentActionData
       });
 
-      expect(validRoute).toBeDefined();
-      expect(validRoute.originChainID).toBe(10);
-      expect(validRoute.destinationChainID).toBe(8453);
-      expect(validRoute.targetTokens).toBeDefined();
-      expect(validRoute.rewardTokens).toBeDefined();
-      expect(validRoute.rewardTokenBalances).toBeDefined();
-      expect(validRoute.proverContract).toBeDefined();
-      expect(validRoute.destinationChainActions).toBeDefined();
-      expect(validRoute.expiryTime).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+      }
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBeGreaterThan(0);
+      for (const token of validIntent.reward.tokens) {
+        expect(token.token).toBeDefined();
+        expect(isAddress(token.token, { strict: false })).toBe(true);
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0);
+      }
     })
 
     test("validCustomTokens", async () => {
-      const validRoute = routesService.createSimpleIntent({
+      const validIntent = routesService.createSimpleIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
@@ -51,23 +77,85 @@ describe("RoutesService", () => {
         simpleIntentActionData
       });
 
-      expect(validRoute).toBeDefined();
-      expect(validRoute.originChainID).toBe(10);
-      expect(validRoute.destinationChainID).toBe(8453);
-      expect(validRoute.targetTokens).toBeDefined();
-      expect(validRoute.rewardTokens).toBeDefined();
-      expect(validRoute.rewardTokenBalances).toBeDefined();
-      expect(validRoute.proverContract).toBeDefined();
-      expect(validRoute.destinationChainActions).toBeDefined();
-      expect(validRoute.expiryTime).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+      }
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBeGreaterThan(0);
+      for (const token of validIntent.reward.tokens) {
+        expect(token.token).toBeDefined();
+        expect(isAddress(token.token, { strict: false })).toBe(true);
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0);
+      }
+    })
+
+    test("invalidCreator", async () => {
+      expect(() => routesService.createSimpleIntent({
+        creator: "0x",
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        simpleIntentActionData
+      })).toThrow("Invalid creator address");
+    })
+
+    test("invalidChainIDs", async () => {
+      expect(() => routesService.createSimpleIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 10,
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        simpleIntentActionData
+      })).toThrow("originChainID and destinationChainID cannot be the same");
+    })
+
+    test("invalidAmount", async () => {
+      expect(() => routesService.createSimpleIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+        amount: BigInt(-1),
+        prover: 'HyperProver',
+        simpleIntentActionData
+      })).toThrow("Invalid amount");
     })
 
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createSimpleIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
-        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleIntentActionData,
@@ -75,24 +163,13 @@ describe("RoutesService", () => {
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
-    test("invalidAmount", async () => {
-      expect(() => routesService.createSimpleIntent({
-        originChainID: 10,
-        destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
-        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
-        amount: BigInt(-1),
-        prover: 'HyperProver',
-        simpleIntentActionData
-      })).toThrow("Invalid amount");
-    })
-
     test("invalidProverForChain", async () => {
       expect(() => routesService.createSimpleIntent({
+        creator,
         originChainID: 42161,
         destinationChainID: 10,
-        spendingToken: RoutesService.getTokenAddress(42161, "USDC"),
-        receivingToken: RoutesService.getTokenAddress(10, "USDC"),
+        spendingToken: RoutesService.getTokenAddress(42161, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
         amount: BigInt(1000000),
         prover: "StorageProver",
         simpleIntentActionData
@@ -112,115 +189,271 @@ describe("RoutesService", () => {
     })
 
     test("valid", async () => {
-      const validRoute = routesService.createIntent({
+      const validIntent = routesService.createIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
-        rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
-        rewardTokenBalances: [BigInt(1000000)],
+        calls: [{
+          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
         prover: "HyperProver",
-        destinationChainActions: [transferData],
       })
 
-      expect(validRoute).toBeDefined();
-      expect(validRoute.originChainID).toBe(10);
-      expect(validRoute.destinationChainID).toBe(8453);
-      expect(validRoute.targetTokens).toBeDefined();
-      expect(validRoute.rewardTokens).toBeDefined();
-      expect(validRoute.rewardTokenBalances).toBeDefined();
-      expect(validRoute.proverContract).toBeDefined();
-      expect(validRoute.destinationChainActions).toBeDefined();
-      expect(validRoute.expiryTime).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+      }
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBeGreaterThan(0);
+      for (const token of validIntent.reward.tokens) {
+        expect(token.token).toBeDefined();
+        expect(isAddress(token.token, { strict: false })).toBe(true);
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0);
+      }
     })
 
     test("validCustomTokens", async () => {
-      const validRoute = routesService.createIntent({
+      const validIntent = routesService.createIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: ["0x0555E30da8f98308EdB960aa94C0Db47230d2B9c"],
-        rewardTokens: ["0x68f180fcCe6836688e9084f035309E29Bf0A2095"],
-        rewardTokenBalances: [BigInt(1000000)],
+        calls: [{
+          target: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
+          amount: BigInt(1000000),
+        }],
         prover: "HyperProver",
-        destinationChainActions: [transferData],
       })
 
-      expect(validRoute).toBeDefined();
-      expect(validRoute.originChainID).toBe(10);
-      expect(validRoute.destinationChainID).toBe(8453);
-      expect(validRoute.targetTokens).toBeDefined();
-      expect(validRoute.rewardTokens).toBeDefined();
-      expect(validRoute.rewardTokenBalances).toBeDefined();
-      expect(validRoute.proverContract).toBeDefined();
-      expect(validRoute.destinationChainActions).toBeDefined();
-      expect(validRoute.expiryTime).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+      }
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBeGreaterThan(0);
+      for (const token of validIntent.reward.tokens) {
+        expect(token.token).toBeDefined();
+        expect(isAddress(token.token, { strict: false })).toBe(true);
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0);
+      }
     })
 
-    test("empty", async () => {
+    test("invalidCreator", async () => {
       expect(() => routesService.createIntent({
+        creator: "0x",
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [],
-        rewardTokens: [],
-        rewardTokenBalances: [],
+        calls: [{
+          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
         prover: "HyperProver",
-        destinationChainActions: [],
-      })).toThrow("Invalid route parameters");
+      })).toThrow("Invalid creator address");
+    })
+
+    test("invalidChainIDs", async () => {
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 10,
+        calls: [{
+          target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("originChainID and destinationChainID cannot be the same");
     })
 
     test("invalidExpiryTime", async () => {
       expect(() => routesService.createIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
-        rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
-        rewardTokenBalances: [BigInt(1000000)],
+        calls: [{
+          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
         prover: "HyperProver",
-        destinationChainActions: [transferData],
         expiryTime: getSecondsFromNow(50),
       })).toThrow("Expiry time must be 60 seconds or more in the future");
     })
 
-    test("invalidRewardTokenBalance", async () => {
+    test("invalidTokens", async () => {
       expect(() => routesService.createIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        targetTokens: [RoutesService.getTokenAddress(8453, "USDC")],
-        rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
-        rewardTokenBalances: [BigInt(-1)],
+        calls: [{
+          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(-1),
+        }],
         prover: "HyperProver",
-        destinationChainActions: [transferData],
-      })).toThrow("Invalid reward token balance");
+      })).toThrow("Invalid tokens");
+
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [],
+        prover: "HyperProver",
+      })).toThrow("Invalid tokens");
+    })
+
+    test("invalidCalls", async () => {
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: "0x0",
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("Invalid calls");
+
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [{
+          target: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(-1),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("Invalid calls");
+
+      expect(() => routesService.createIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        calls: [],
+        tokens: [{
+          token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
+        prover: "HyperProver",
+      })).toThrow("Invalid calls");
     })
 
     test("invalidProverForChain", async () => {
       expect(() => routesService.createIntent({
+        creator,
         originChainID: 42161,
         destinationChainID: 10,
-        targetTokens: [RoutesService.getTokenAddress(10, "USDC")],
-        rewardTokens: [RoutesService.getTokenAddress(42161, "USDC")],
-        rewardTokenBalances: [BigInt(1000000)],
+        calls: [{
+          target: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+          data: transferData,
+          value: BigInt(0),
+        }],
+        tokens: [{
+          token: RoutesService.getTokenAddress(42161, RoutesSupportedToken.USDC),
+          amount: BigInt(1000000),
+        }],
         prover: "StorageProver",
-        destinationChainActions: [transferData],
       })).toThrow("No default prover found for this chain");
     })
   })
 
-  describe("setupIntentForPublishing", () => {
-    let validIntentData: IntentData;
+  describe("applyQuoteToIntent", () => {
+    let validIntent: IntentType;
     let validQuote: SolverQuote;
-    let validCreator: Hex;
 
     beforeAll(() => {
-      validIntentData = routesService.createSimpleIntent({
+      validIntent = routesService.createSimpleIntent({
+        creator,
         originChainID: 10,
         destinationChainID: 8453,
-        spendingToken: RoutesService.getTokenAddress(10, "USDC"),
-        receivingToken: RoutesService.getTokenAddress(8453, "USDC"),
+        spendingToken: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+        receivingToken: RoutesService.getTokenAddress(8453, RoutesSupportedToken.USDC),
         amount: BigInt(1000000),
         prover: 'HyperProver',
         simpleIntentActionData
       });
-      validCreator = "0xe494e1285d741F90b4BA51482fa7c1031B2DD294"
     })
 
     beforeEach(() => {
@@ -228,89 +461,63 @@ describe("RoutesService", () => {
         receiveSignedIntentUrl: "https://example.com/endpoint",
         intentSourceContract: EcoProtocolAddresses[10].IntentSource,
         quoteData: {
-          rewardTokens: [RoutesService.getTokenAddress(10, "USDC")],
-          rewardTokenAmounts: ["1000000"],
+          tokens: [{
+            token: RoutesService.getTokenAddress(10, RoutesSupportedToken.USDC),
+            amount: "1000000",
+          }],
           expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString()
         }
       };
     });
 
-    test("validWithQuote", () => {
-      const creator = validCreator;
-      const intentData = validIntentData;
-      const quote = validQuote;
-
-      const { intent, intentHash, routeHash, rewardHash } = routesService.setupIntentForPublishing({ creator, intentData, quote });
+    test("valid", () => {
+      const intent = routesService.applyQuoteToIntent({ intent: validIntent, quote: validQuote });
 
       expect(intent).toBeDefined();
-      expect(intent.route).toBeDefined();
-      expect(intent.reward).toBeDefined();
-      expect(routeHash).toBeDefined();
-      expect(rewardHash).toBeDefined();
-      expect(intentHash).toBeDefined();
-      expect(hashRoute(intent.route)).toBe(routeHash);
-      expect(hashReward(intent.reward)).toBe(rewardHash);
-      expect(hashIntent(intent)).toEqual({ intentHash, routeHash, rewardHash });
-    });
-
-    test("validWithoutQuote", () => {
-      const creator = validCreator;
-      const intentData = validIntentData;
-
-      const { intent, intentHash, routeHash, rewardHash } = routesService.setupIntentForPublishing({ creator, intentData });
-
       expect(intent).toBeDefined();
       expect(intent.route).toBeDefined();
+      expect(intent.route.salt).toBeDefined();
+      expect(intent.route.source).toBeDefined();
+      expect(intent.route.destination).toBeDefined();
+      expect(intent.route.inbox).toBeDefined();
+      expect(isAddress(intent.route.inbox, { strict: false })).toBe(true);
+      expect(intent.route.calls).toBeDefined();
+      expect(intent.route.calls.length).toBeGreaterThan(0);
+      for (const call of intent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+      }
       expect(intent.reward).toBeDefined();
-      expect(routeHash).toBeDefined();
-      expect(rewardHash).toBeDefined();
-      expect(intentHash).toBeDefined();
-      expect(hashRoute(intent.route)).toBe(routeHash);
-      expect(hashReward(intent.reward)).toBe(rewardHash);
-      expect(hashIntent(intent)).toEqual({ intentHash, routeHash, rewardHash });
-    });
+      expect(intent.reward.creator).toBeDefined();
+      expect(isAddress(intent.reward.creator, { strict: false })).toBe(true);
+      expect(intent.reward.prover).toBeDefined();
+      expect(isAddress(intent.reward.prover, { strict: false })).toBe(true);
+      expect(intent.reward.deadline).toBeDefined();
+      expect(intent.reward.nativeValue).toBeDefined();
+      expect(intent.reward.tokens).toBeDefined();
+      expect(intent.reward.tokens.length).toBeGreaterThan(0);
 
-    test("invalid creator address", () => {
-      const creator = "0x";
-      const intentData = validIntentData;
-      const quote = validQuote;
-
-      expect(() => routesService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Invalid creator address`);
-    });
-
-    test("invalid intent data actions", () => {
-      const creator = validCreator;
-      const intentData: IntentData = {
-        ...validIntentData,
-        destinationChainActions: []
-      };
-      const quote = validQuote;
-
-      expect(() => routesService.setupIntentForPublishing({ creator, intentData, quote })).toThrow(`Invalid intentData: targetTokens and destinationChainActions must have the same length`);
-    });
-
-    test("invalid intent data reward", () => {
-      const creator = validCreator;
-      const intentData: IntentData = {
-        ...validIntentData,
-        rewardTokenBalances: [],
-      };
-
-      expect(() => routesService.setupIntentForPublishing({ creator, intentData })).toThrow(`Invalid intentData: rewardTokens and rewardTokenBalances must have the same length`);
+      for (const token of intent.reward.tokens) {
+        expect(token.token).toBeDefined();
+        expect(isAddress(token.token, { strict: false })).toBe(true);
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0);
+      }
     });
 
     test("invalid quote data", () => {
-      const creator = validCreator;
-      const intentData = validIntentData;
+      const intent = validIntent;
       const quote: SolverQuote = {
         ...validQuote,
         quoteData: {
           ...validQuote.quoteData,
-          rewardTokenAmounts: [],
+          tokens: [],
         }
       };
 
-      expect(() => routesService.setupIntentForPublishing({ creator, intentData, quote })).toThrow("Invalid quoteData: rewardTokens and rewardTokenAmounts must have the same length");
+      expect(() => routesService.applyQuoteToIntent({ intent, quote })).toThrow("Invalid quoteData: tokens array must have length greater than 0");
     });
   });
 })
