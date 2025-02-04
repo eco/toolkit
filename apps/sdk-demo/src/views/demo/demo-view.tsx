@@ -1,59 +1,48 @@
 'use client'
 
 import { useEffect, useMemo, useState } from "react";
-import { RoutesSupportedChainId, RoutesSupportedToken, RoutesService, SolverQuote, OpenQuotingClient } from "@eco-foundation/routes-sdk"
-import { formatUnits, isAddress } from "viem";
+import { RoutesSupportedChainId, RoutesSupportedStable, RoutesService, SolverQuote, OpenQuotingClient, stableAddresses } from "@eco-foundation/routes-sdk"
+import { formatUnits, Hex, isAddress } from "viem";
 import { useAccount } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 
-function getAvailableTokens(chain: RoutesSupportedChainId): MyTokenConfig[] {
-  return Object.keys(RoutesSupportedToken).filter((token) => {
-    try {
-      RoutesService.getTokenAddress(chain, token as RoutesSupportedToken)
-      return true
-    }
-    catch {
-      return false
-    }
-  }).map((token) => ({
-    id: token as RoutesSupportedToken,
-    address: RoutesService.getTokenAddress(chain, token as RoutesSupportedToken)
+function getAvailableStables(chain: RoutesSupportedChainId): MyTokenConfig[] {
+  return Object.entries(stableAddresses[chain]).map(([stable, address]) => ({
+    id: stable as RoutesSupportedStable,
+    address
   }))
 }
 
 function findTokenByAddress(chain: RoutesSupportedChainId, address: string): MyTokenConfig | undefined {
-  return getAvailableTokens(chain).find((token) => token.address === address)
+  return getAvailableStables(chain).find((token) => token.address === address)
 }
 
 type MyChainConfig = {
   label: string,
-  tokens: {
-    id: RoutesSupportedToken,
-    address: string
-  }[]
+  stables: MyTokenConfig[]
 }
 
 type MyTokenConfig = {
-  id: RoutesSupportedToken,
-  address: string
+  id: RoutesSupportedStable,
+  address: Hex
 }
 
 const chains: Record<RoutesSupportedChainId, MyChainConfig> = {
-  [RoutesSupportedChainId.Optimism]: {
+  10: {
     label: "Optimism",
-    tokens: getAvailableTokens(RoutesSupportedChainId.Optimism)
+    stables: getAvailableStables(10)
   },
-  [RoutesSupportedChainId.Mantle]: {
+  5000: {
     label: "Mantle",
-    tokens: getAvailableTokens(RoutesSupportedChainId.Mantle)
+    stables: getAvailableStables(5000)
   },
-  [RoutesSupportedChainId.Base]: {
+  8453: {
     label: "Base",
-    tokens: getAvailableTokens(RoutesSupportedChainId.Base)
+    stables: getAvailableStables(8453)
   },
-  [RoutesSupportedChainId.Arbitrum]: {
+  42161: {
     label: "Arbitrum",
-    tokens: getAvailableTokens(RoutesSupportedChainId.Arbitrum)
+    stables: getAvailableStables(42161)
   }
 }
 
@@ -105,10 +94,7 @@ export default function DemoView() {
           destinationChainID: destinationChain,
           receivingToken: destinationToken,
           amount: BigInt(amount),
-          simpleIntentActionData: {
-            functionName: 'transfer',
-            recipient: recipient
-          },
+          recipient,
           prover
         })
 
@@ -121,8 +107,8 @@ export default function DemoView() {
     }
   }, [address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover]);
 
-  const originTokensAvailable = useMemo(() => originChain ? getAvailableTokens(originChain) : [], [originChain]);
-  const destinationTokensAvailable = useMemo(() => destinationChain ? getAvailableTokens(destinationChain) : [], [destinationChain]);
+  const originTokensAvailable = useMemo(() => originChain ? getAvailableStables(originChain) : [], [originChain]);
+  const destinationTokensAvailable = useMemo(() => destinationChain ? getAvailableStables(destinationChain) : [], [destinationChain]);
 
   return (
     <div>
@@ -136,9 +122,9 @@ export default function DemoView() {
               <select onChange={(e) => {
                 const chainId = parseInt(e.target.value) as RoutesSupportedChainId
                 if (originToken && originChain) {
-                  const originTokenConfig = getAvailableTokens(originChain).find((token) => token.address === originToken)
+                  const originTokenConfig = getAvailableStables(originChain).find((token) => token.address === originToken)
 
-                  const existingToken = getAvailableTokens(chainId).find((token) => token.id === originTokenConfig?.id)
+                  const existingToken = getAvailableStables(chainId).find((token) => token.id === originTokenConfig?.id)
                   if (existingToken) {
                     setOriginToken(existingToken.address)
                   }
@@ -172,8 +158,8 @@ export default function DemoView() {
               <select onChange={(e) => {
                 const chainId = parseInt(e.target.value) as RoutesSupportedChainId
                 if (destinationToken && destinationChain) {
-                  const destinationTokenConfig = getAvailableTokens(destinationChain).find((token) => token.address === destinationToken)
-                  const existingToken = getAvailableTokens(chainId).find((token) => token.id === destinationTokenConfig?.id)
+                  const destinationTokenConfig = getAvailableStables(destinationChain).find((token) => token.address === destinationToken)
+                  const existingToken = getAvailableStables(chainId).find((token) => token.id === destinationTokenConfig?.id)
                   if (existingToken) {
                     setDestinationToken(existingToken.address)
                   }
