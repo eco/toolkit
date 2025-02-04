@@ -18,9 +18,9 @@
         <li><a href="#quick-start">Quick Start</a></li>
       </ul>
     </li>
-    <!-- <li>
-      <a href="#full-examples">Full Examples</a>
-    </li> -->
+    <li>
+      <a href="#full-demo">Full Demo</a>
+    </li>
     <li>
       <a href="#testing">Testing</a>
     </li>
