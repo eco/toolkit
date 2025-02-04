@@ -192,11 +192,20 @@ export class RoutesService {
     return proverContract;
   }
 
-  static getStableAddress(chainID: RoutesSupportedChainId, token: RoutesSupportedStable): Hex {
-    const stableAddress = stableAddresses[chainID][token];
+  static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {
+    const stableAddress = stableAddresses[chainID][stable];
     if (!stableAddress) {
-      throw new Error(`Stable ${token} not found on chain ${chainID}`);
+      throw new Error(`Stable ${stable} not found on chain ${chainID}`);
     }
     return stableAddress;
+  }
+
+  static getStableFromAddress(chainID: RoutesSupportedChainId, address: Hex): RoutesSupportedStable | undefined {
+    for (const stable in stableAddresses[chainID]) {
+      if (stableAddresses[chainID][stable as RoutesSupportedStable]?.toLowerCase() === address.toLowerCase()) {
+        return stable as RoutesSupportedStable;
+      }
+    }
+    throw new Error(`Stable not found for address ${address} on chain ${chainID}`);
   }
 }
