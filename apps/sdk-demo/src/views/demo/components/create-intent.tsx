@@ -27,6 +27,8 @@ export default function CreateIntent({
   const [recipient, setRecipient] = useState<string | undefined>();
   const [prover, setProver] = useState<"HyperProver" | "StorageProver">("HyperProver");
 
+  const [isIntentValid, setIsIntentValid] = useState<boolean>(false);
+
   useEffect(() => {
     if (address && originChain && originToken && destinationChain && destinationToken && amount && recipient && prover &&
       isAddress(originToken, { strict: false }) &&
@@ -47,12 +49,16 @@ export default function CreateIntent({
           prover
         })
 
+        setIsIntentValid(true)
         // set intent
         onNewIntent(intent)
       }
       catch (error) {
         console.error(error)
       }
+    }
+    return () => {
+      setIsIntentValid(false)
     }
   }, [address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover]);
 
@@ -155,17 +161,36 @@ export default function CreateIntent({
             </select>
           </div>
         </div>
-        <pre>
-          {`const intent = new RoutesService().createSimpleIntent(${JSON.stringify({
-            originChain,
-            originToken,
-            destinationChain,
-            destinationToken,
-            amount,
-            recipient,
-            prover
-          }, null, 2)})`}
-        </pre>
+        <div className="h-full relative">
+          <pre className="h-full">
+            {`const intent = new RoutesService().createSimpleIntent(${JSON.stringify({
+              originChain,
+              originToken,
+              destinationChain,
+              destinationToken,
+              amount,
+              recipient,
+              prover
+            }, null, 2)})`}
+          </pre>
+          <div className="absolute bottom-0 right-0 p-4 flex items-center gap-1 font-semibold">
+            {isIntentValid ? (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                  <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12Zm13.36-1.814a.75.75 0 1 0-1.22-.872l-3.236 4.53L9.53 12.22a.75.75 0 0 0-1.06 1.06l2.25 2.25a.75.75 0 0 0 1.14-.094l3.75-5.25Z" clipRule="evenodd" />
+                </svg> Valid
+              </>
+            ) : (
+              <>
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="size-6">
+                  <path fillRule="evenodd" d="M2.25 12c0-5.385 4.365-9.75 9.75-9.75s9.75 4.365 9.75 9.75-4.365 9.75-9.75 9.75S2.25 17.385 2.25 12ZM12 8.25a.75.75 0 0 1 .75.75v3.75a.75.75 0 0 1-1.5 0V9a.75.75 0 0 1 .75-.75Zm0 8.25a.75.75 0 1 0 0-1.5.75.75 0 0 0 0 1.5Z" clipRule="evenodd" />
+                </svg>
+                Incomplete
+              </>
+            )}
+          </div>
+        </div>
+
       </div>
 
     </div>
