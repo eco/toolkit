@@ -1,7 +1,7 @@
 # Eco Routes SDK Demo
 This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Next.js](https://nextjs.org/) project bootstrapped with [`create-rainbowkit`](/packages/create-rainbowkit).
 
-Reference this project if you are integrating the Eco Routes SDK into your project. This project demonstrates how to use the Eco Routes SDK to generate and publish an intent.
+Reference this project if you are integrating the Eco Routes SDK into your project. This project demonstrates how to use the Eco Routes SDK to generate, publish and track an intent to fulfillment.
 
 This project uses [`viem`](https://viem.sh) as its web3 library.
 
@@ -31,6 +31,13 @@ To learn more about this stack, take a look at the following resources:
 - [Next.js Documentation](https://nextjs.org/docs) - Learn how to build a Next.js application.
 
 You can check out [the RainbowKit GitHub repository](https://github.com/rainbow-me/rainbowkit) - your feedback and contributions are welcome!
+
+
+## Eco Routes
+
+Find the SDK and Routes npm packages at the following links:
+- [Eco Routes SDK](https://npmjs.com/package/@eco-foundation/routes-sdk)
+- [Eco Routes](https://npmjs.com/package/@eco-foundation/routes-ts)
 
 ## Deploy on Vercel
 

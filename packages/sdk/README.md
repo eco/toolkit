@@ -185,12 +185,9 @@ import { EcoProtocolAddresses } from '@eco-foundation/routes-ts';
 const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChainID)].IntentSource;
 ```
 
-<!--
-# Full examples
+# Full Demo
 
-// TODO: Add full examples and link here
-For full examples of creating an intent and tracking it until it's fulfilled, see the [examples](./examples) directory.
--->
+For a full example of creating an intent and tracking it until it's fulfilled, see the [Eco Routes SDK Demo](../../apps/sdk-demo/).
 
 # Testing
 
