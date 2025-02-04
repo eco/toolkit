@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { RoutesSupportedChainId, RoutesService } from "@eco-foundation/routes-sdk"
-import { formatUnits, Hex, isAddress } from "viem";
+import { formatUnits, isAddress } from "viem";
 import { useAccount } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
@@ -162,12 +162,13 @@ export default function CreateIntent({
         <div className="h-full relative">
           <pre className="h-full">
             {`const intent = new RoutesService().createSimpleIntent(${JSON.stringify({
+              creator: address,
               originChain,
               originToken,
               destinationChain,
               destinationToken,
               amount,
-              recipient,
+              recipient: recipient && recipient !== address ? recipient : undefined,
               prover
             }, null, 2)})`}
           </pre>

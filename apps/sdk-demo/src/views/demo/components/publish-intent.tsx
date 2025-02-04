@@ -29,7 +29,6 @@ export default function PublishIntent({ intent, quote }: Props) {
 
       setIsPublishing(true)
 
-
       const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(intent.route.source) as RoutesSupportedChainId)].IntentSource
 
       // approve the amount for the intent source contract, then publish the intent
@@ -79,7 +78,6 @@ export default function PublishIntent({ intent, quote }: Props) {
           onLogs(logs) {
             if (logs && logs.length > 0) {
               const fulfillmentTxHash = logs[0]!.transactionHash
-              alert('Intent fulfilled: ' + fulfillmentTxHash)
               unwatch()
               resolve(fulfillmentTxHash)
             }
@@ -106,30 +104,34 @@ export default function PublishIntent({ intent, quote }: Props) {
 
   return (
     <div className="m-4 flex flex-col gap-4">
-      <button onClick={publishIntent}>Publish Quoted Intent</button>
-      {isPublishing && (
-        <div>
-          <span>Publishing intent...</span>
+
+      {isPublishing ? (
+        <span>Publishing intent...</span>
+      ) : <button onClick={publishIntent}>Publish Quoted Intent</button>}
+
+      {approvalTxHashes.length > 0 ? (
+        <div className="flex flex-col gap-1">
           <span>Approval transactions:</span>
           <ul>
             {approvalTxHashes.map((txHash) => (
               <li className="ml-4" key={txHash}>{txHash}</li>
             ))}
           </ul>
-          {publishTxHash && (
-            <div>
-              <span>Intent Published:</span>
-              <span>{publishTxHash}</span>
-            </div>
-          )}
-          {fulfillmentTxHash && (
-            <div>
-              <span>Intent fulfilled:</span>
-              <span>{fulfillmentTxHash}</span>
-            </div>
-          )}
         </div>
-      )}
+      ) : <span>Approving..</span>}
+
+      {publishTxHash ? (
+        <div>
+          <span>Intent Published:</span>
+          <span>{publishTxHash}</span>
+        </div>
+      ) : <span>Publishing..</span>}
+      {fulfillmentTxHash ? (
+        <div>
+          <span>Intent fulfilled:</span>
+          <span>{fulfillmentTxHash}</span>
+        </div>
+      ) : <span>Waiting for fulfillment..</span>}
     </div>
   )
 }

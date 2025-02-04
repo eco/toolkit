@@ -94,7 +94,9 @@ Then, you can apply the quote by calling `applyQuoteToIntent` on the `RoutesServ
 ``` ts
 import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-sdk';
 
-const quotes = await OpenQuotingClient.getQuotesForIntent(intent);
+const openQuotingClient = new OpenQuotingClient();
+
+const quotes = await openQuotingClient.requestQuotesForIntent(intent);
 if (!quotes.length) {
   throw new Error('No quotes available');
 }
