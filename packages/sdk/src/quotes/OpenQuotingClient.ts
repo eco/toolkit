@@ -1,8 +1,9 @@
 import axios, { AxiosInstance } from "axios";
+import axiosRetry from "axios-retry";
 import { OpenQuotingAPI, SolverQuote } from "./types";
 import { ECO_SDK_CONFIG } from "../config";
-import { sleep } from "../utils";
 import { IntentType } from "@eco-foundation/routes-ts";
+
 
 export class OpenQuotingClient {
   private readonly MAX_RETRIES = 5;
@@ -14,6 +15,7 @@ export class OpenQuotingClient {
     this.axiosInstance = axios.create({
       baseURL: customBaseUrl || ECO_SDK_CONFIG.openQuotingBaseUrl
     });
+    axiosRetry(this.axiosInstance, { retries: this.MAX_RETRIES, retryDelay: axiosRetry.linearDelay(1000) });
   }
 
   /**
@@ -53,23 +55,7 @@ export class OpenQuotingClient {
       }
     }
 
-    // try 5 times before giving up and throwing the last error
-    let numAttemptsLeft = this.MAX_RETRIES;
-    let error;
-
-    while (numAttemptsLeft > 0) {
-      try {
-        const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
-        return response.data.data;
-      }
-      catch (err) {
-        error = err;
-        if (--numAttemptsLeft > 0) {
-          // wait for 1 second before retrying
-          await sleep(1000);
-        }
-      }
-    }
-    throw error!;
+    const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
+    return response.data.data;
   }
 }
