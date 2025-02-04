@@ -29,13 +29,16 @@ export class RoutesService {
     receivingToken,
     spendingToken,
     amount,
-    simpleIntentActionData,
+    recipient = creator,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
   }: CreateSimpleIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
       throw new Error("Invalid creator address");
+    }
+    if (!isAddress(recipient, { strict: false })) {
+      throw new Error("Invalid recipient address");
     }
     if (originChainID === destinationChainID) {
       throw new Error("originChainID and destinationChainID cannot be the same");
@@ -50,8 +53,8 @@ export class RoutesService {
     // create calldata
     const data = encodeFunctionData({
       abi: erc20Abi,
-      functionName: simpleIntentActionData.functionName,
-      args: simpleIntentActionData.functionName === 'transfer' ? [simpleIntentActionData.recipient, amount] : [simpleIntentActionData.sender, simpleIntentActionData.recipient, amount]
+      functionName: 'transfer',
+      args: [recipient, amount]
     })
 
     return {
@@ -67,6 +70,12 @@ export class RoutesService {
             value: BigInt(0),
           }
         ],
+        tokens: [
+          {
+            token: receivingToken,
+            amount,
+          }
+        ]
       },
       reward: {
         creator,
@@ -97,6 +106,7 @@ export class RoutesService {
     originChainID,
     destinationChainID,
     calls,
+    callTokens,
     tokens,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
@@ -111,6 +121,9 @@ export class RoutesService {
     if (!calls.length || calls.some(call => !isAddress(call.target, { strict: false }) || isAmountInvalid(call.value))) {
       throw new Error("Invalid calls");
     }
+    if (!callTokens.length || callTokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
+      throw new Error("Invalid callTokens");
+    }
     if (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
       throw new Error("Invalid tokens");
     }
@@ -124,7 +137,8 @@ export class RoutesService {
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
         inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
-        calls
+        calls,
+        tokens: callTokens
       },
       reward: {
         creator,

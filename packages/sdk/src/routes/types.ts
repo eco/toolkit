@@ -11,21 +11,8 @@ export type CreateSimpleIntentParams = {
   spendingToken: Hex
   amount: bigint
   prover?: "HyperProver" | "StorageProver"
-  simpleIntentActionData: SimpleIntentActionData
+  recipient?: Hex
   expiryTime?: Date
-}
-
-export type SimpleIntentActionData = SimpleIntentActionData_Transfer | SimpleIntentActionData_TransferFrom
-
-export type SimpleIntentActionData_Transfer = {
-  functionName: 'transfer'
-  recipient: Hex
-}
-
-export type SimpleIntentActionData_TransferFrom = {
-  functionName: 'transferFrom'
-  recipient: Hex
-  sender: Hex
 }
 
 export type CreateRouteParams = {
@@ -33,6 +20,7 @@ export type CreateRouteParams = {
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId
   calls: IntentCall[]
+  callTokens: IntentToken[]
   tokens: IntentToken[]
   prover: "HyperProver" | "StorageProver" | Hex
   expiryTime?: Date
