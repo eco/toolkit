@@ -4,7 +4,7 @@ import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentSourceAbi, IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote, RoutesSupportedToken } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
 
 describe("publishIntent", () => {
   let account: PrivateKeyAccount
@@ -21,8 +21,8 @@ describe("publishIntent", () => {
   const amount = BigInt(10000) // 1 cent
   const originChain = base
   const destinationChain = optimism
-  const receivingToken = RoutesService.getTokenAddress(destinationChain.id, RoutesSupportedToken.USDC)
-  const spendingToken = RoutesService.getTokenAddress(originChain.id, RoutesSupportedToken.USDC)
+  const receivingToken = RoutesService.getStableAddress(destinationChain.id, "USDC")
+  const spendingToken = RoutesService.getStableAddress(originChain.id, "USDC")
 
   beforeAll(() => {
     routesService = new RoutesService()

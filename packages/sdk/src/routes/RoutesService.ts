@@ -1,8 +1,7 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
-import { NetworkTokens } from "../constants";
+import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
 import { CreateRouteParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
-import { RoutesSupportedChainId, RoutesSupportedToken } from "../constants/types";
 
 import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config";
@@ -207,19 +206,20 @@ export class RoutesService {
     return proverContract;
   }
 
-  static getTokenAddress(chainID: RoutesSupportedChainId, token: RoutesSupportedToken): Hex {
-    const networkToken = NetworkTokens[chainID][token];
-    if (!networkToken) {
-      throw new Error(`Token ${token} not found on chain ${chainID}`);
+  static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {
+    const stableAddress = stableAddresses[chainID][stable];
+    if (!stableAddress) {
+      throw new Error(`Stable ${stable} not found on chain ${chainID}`);
     }
-    return networkToken;
+    return stableAddress;
   }
 
-  static validateNetworkTokenAddress(chainID: RoutesSupportedChainId, address: Hex) {
-    const isValidToken = Object.values(NetworkTokens[chainID]).some((token) => token === address);
-    if (!isValidToken) {
-      throw new Error(`Invalid Token Address ${address} on chainId ${chainID}`);
+  static getStableFromAddress(chainID: RoutesSupportedChainId, address: Hex): RoutesSupportedStable | undefined {
+    for (const stable in stableAddresses[chainID]) {
+      if (stableAddresses[chainID][stable as RoutesSupportedStable]?.toLowerCase() === address.toLowerCase()) {
+        return stable as RoutesSupportedStable;
+      }
     }
-    return address;
+    throw new Error(`Stable not found for address ${address} on chain ${chainID}`);
   }
 }

@@ -1,5 +1,5 @@
 import { Hex } from "viem"
-import { RoutesSupportedChainId } from "../constants/types"
+import { RoutesSupportedChainId } from "../constants"
 import { SolverQuote } from "../quotes/types"
 import { IntentType } from "@eco-foundation/routes-ts"
 
