@@ -8,13 +8,24 @@ body {
     Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
 }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
-
 * {
   box-sizing: border-box;
+}
+
+a {
+  cursor: pointer;
+}
+
+a:hover {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+button {
+  background: #2563eb;
+  color: #fff;
+  padding: 2px 8px;
+  cursor: pointer;
 }
 
 pre {
