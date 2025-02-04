@@ -69,7 +69,7 @@ export default function PublishIntent({ intent, quote }: Props) {
           chainId: Number(intent.route.destination) as RoutesSupportedChainId,
           abi: InboxAbi,
           eventName: 'Fulfillment',
-          address: quote.intentSourceContract,
+          address: quotedIntent.route.inbox,
           args: {
             _hash: intentCreatedEvent.args.hash
           },
