@@ -442,7 +442,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
-      })).toThrow("Invalid tokens");
+      })).toThrow("Invalid callTokens");
 
       expect(() => routesService.createIntent({
         creator,
@@ -459,7 +459,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
-      })).toThrow("Invalid tokens");
+      })).toThrow("Invalid callTokens");
 
       expect(() => routesService.createIntent({
         creator,
@@ -479,7 +479,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
-      })).toThrow("Invalid tokens");
+      })).toThrow("Invalid callTokens");
     })
 
     test("invalidCalls", async () => {
