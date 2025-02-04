@@ -1,5 +1,5 @@
 import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
-import { IntentType, IntentSourceAbi, InboxAbi } from "@eco-foundation/routes-ts"
+import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
 import { useChains, useWriteContract } from "wagmi"
 import { waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
@@ -29,6 +29,9 @@ export default function PublishIntent({ intent, quote }: Props) {
 
       setIsPublishing(true)
 
+
+      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(intent.route.source) as RoutesSupportedChainId)].IntentSource
+
       // approve the amount for the intent source contract, then publish the intent
 
       const approveTxHashes = await Promise.all(quotedIntent.reward.tokens.map((rewardToken) => writeContractAsync({
@@ -36,7 +39,7 @@ export default function PublishIntent({ intent, quote }: Props) {
         abi: erc20Abi,
         functionName: 'approve',
         address: rewardToken.token,
-        args: [quote.intentSourceContract, rewardToken.amount]
+        args: [intentSourceContract, rewardToken.amount]
       })))
       await Promise.all(approveTxHashes.map((txHash) => waitForTransactionReceipt(config, { hash: txHash })))
 
@@ -46,7 +49,7 @@ export default function PublishIntent({ intent, quote }: Props) {
         chainId: Number(intent.route.source),
         abi: IntentSourceAbi,
         functionName: 'publishIntent',
-        address: quote.intentSourceContract,
+        address: intentSourceContract,
         args: [quotedIntent, true]
       })
 
