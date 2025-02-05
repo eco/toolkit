@@ -9,13 +9,14 @@ export type CreateSimpleIntentParams = {
   destinationChainID: RoutesSupportedChainId
   receivingToken: Hex
   spendingToken: Hex
+  spendingTokenBalance: bigint
   amount: bigint
   prover?: "HyperProver" | "StorageProver"
   recipient?: Hex
   expiryTime?: Date
 }
 
-export type CreateRouteParams = {
+export type CreateIntentParams = {
   creator: Hex
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId

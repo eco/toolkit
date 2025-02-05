@@ -19,6 +19,7 @@ describe("publishIntent", () => {
   })
 
   const amount = BigInt(10000) // 1 cent
+  const balance = BigInt(1000000000) // 1000 USDC
   const originChain = base
   const destinationChain = optimism
   const receivingToken = RoutesService.getStableAddress(destinationChain.id, "USDC")
@@ -41,6 +42,7 @@ describe("publishIntent", () => {
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
+      spendingTokenBalance: balance,
       amount,
       recipient: account.address
     })
