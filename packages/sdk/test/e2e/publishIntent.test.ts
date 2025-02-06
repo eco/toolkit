@@ -19,6 +19,7 @@ describe("publishIntent", () => {
   })
 
   const amount = BigInt(10000) // 1 cent
+  const balance = BigInt(1000000000) // 1000 USDC
   const originChain = base
   const destinationChain = optimism
   const receivingToken = RoutesService.getStableAddress(destinationChain.id, "USDC")
@@ -41,6 +42,7 @@ describe("publishIntent", () => {
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
+      spendingTokenBalance: balance,
       amount,
       recipient: account.address
     })
@@ -59,23 +61,24 @@ describe("publishIntent", () => {
     expect(quotedIntent).toBeDefined()
 
     // approve
-    const approveTxHash = await baseWalletClient.writeContract({
-      abi: erc20Abi,
-      address: spendingToken,
-      functionName: 'approve',
-      args: [selectedQuote.intentSourceContract, amount],
-      chain: originChain,
-      account: account
-    })
-
-    await publicClient.waitForTransactionReceipt({ hash: approveTxHash })
+    await Promise.all(quotedIntent.reward.tokens.map(async ({ token, amount }) => {
+      const hash = await baseWalletClient.writeContract({
+        abi: erc20Abi,
+        address: token,
+        functionName: 'approve',
+        args: [selectedQuote.intentSourceContract, amount],
+        chain: originChain,
+        account: account
+      })
+      await publicClient.waitForTransactionReceipt({ hash })
+    }))
 
     // publish intent onchain
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: selectedQuote.intentSourceContract,
       functionName: 'publishIntent',
-      args: [intent, true],
+      args: [quotedIntent, true],
       chain: originChain,
       account
     })

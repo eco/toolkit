@@ -21,6 +21,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -65,6 +66,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -109,6 +111,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -121,6 +124,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -134,6 +138,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 10,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -146,10 +151,24 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
       })).toThrow("Invalid amount");
+    })
+
+    test("invalidSpendingTokenBalance", async () => {
+      expect(() => routesService.createSimpleIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(999999),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+      })).toThrow("Insufficient spendingTokenBalance");
     })
 
     test("invalidExpiryTime", async () => {
@@ -158,6 +177,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -171,6 +191,7 @@ describe("RoutesService", () => {
         originChainID: 42161,
         destinationChainID: 10,
         spendingToken: RoutesService.getStableAddress(42161, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "StorageProver",
@@ -573,6 +594,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenBalance: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',

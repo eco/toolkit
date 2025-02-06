@@ -68,6 +68,7 @@ import { RoutesService } from '@eco-foundation/routes-sdk';
 const address = '0x1234567890123456789012345678901234567890'
 const originChainID = 10;
 const spendingToken = RoutesService.getStableAddress(originChainID, 'USDC');
+const spendingTokenBalance = BigInt(10000000); // 10 USDC
 const destinationChainID = 8453;
 const receivingToken = RoutesService.getStableAddress(destinationChainID, 'USDC');
 
@@ -80,6 +81,7 @@ const intent = routesService.createSimpleIntent({
   creator: address,
   originChainID,
   spendingToken,
+  spendingTokenBalance,
   destinationChainID,
   receivingToken,
   amount,
