@@ -61,23 +61,24 @@ describe("publishIntent", () => {
     expect(quotedIntent).toBeDefined()
 
     // approve
-    const approveTxHash = await baseWalletClient.writeContract({
-      abi: erc20Abi,
-      address: spendingToken,
-      functionName: 'approve',
-      args: [selectedQuote.intentSourceContract, amount],
-      chain: originChain,
-      account: account
-    })
-
-    await publicClient.waitForTransactionReceipt({ hash: approveTxHash })
+    await Promise.all(quotedIntent.reward.tokens.map(async ({ token, amount }) => {
+      const hash = await baseWalletClient.writeContract({
+        abi: erc20Abi,
+        address: token,
+        functionName: 'approve',
+        args: [selectedQuote.intentSourceContract, amount],
+        chain: originChain,
+        account: account
+      })
+      await publicClient.waitForTransactionReceipt({ hash })
+    }))
 
     // publish intent onchain
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: selectedQuote.intentSourceContract,
       functionName: 'publishIntent',
-      args: [intent, true],
+      args: [quotedIntent, true],
       chain: originChain,
       account
     })
