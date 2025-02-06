@@ -1,7 +1,7 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
-import { CreateRouteParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
+import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
 
 import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config";
@@ -28,6 +28,7 @@ export class RoutesService {
     destinationChainID,
     receivingToken,
     spendingToken,
+    spendingTokenBalance,
     amount,
     recipient = creator,
     prover = "HyperProver",
@@ -45,6 +46,9 @@ export class RoutesService {
     }
     if (isAmountInvalid(amount)) {
       throw new Error("Invalid amount");
+    }
+    if (spendingTokenBalance < BigInt(amount)) {
+      throw new Error("Insufficient spendingTokenBalance");
     }
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
@@ -85,7 +89,7 @@ export class RoutesService {
         tokens: [
           {
             token: spendingToken,
-            amount: amount
+            amount: spendingTokenBalance
           }
         ]
       }
@@ -110,7 +114,7 @@ export class RoutesService {
     tokens,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
-  }: CreateRouteParams): IntentType {
+  }: CreateIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
       throw new Error("Invalid creator address");
