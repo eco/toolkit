@@ -1,6 +1,14 @@
 import { Hex } from "viem";
 
-export const chainIds = [1, 10, 137, 2741, 5000, 8453, 42161] as const;
+export const chainIds = [
+  1,      // ETH Mainnet
+  10,     // Optimism
+  137,    // Polygon
+  // 2741,// Abstract
+  5000,   // Mantle
+  8453,   // Base
+  42161   // Arbitrum
+] as const;
 export type RoutesSupportedChainId = typeof chainIds[number];
 
 export const stables = ["USDC", "USDbC", "USDCe", "USDT"] as const;
@@ -20,10 +28,10 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
     USDT: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
   },
-  2741: {
-    USDT: "0x0709f39376deee2a2dfc94a58edeb2eb9df012bd",
-    USDCe: "0x84a71ccd554cc1b02749b35d22f684cc8ec987e1",
-  },
+  // 2741: {
+  //   USDT: "0x0709f39376deee2a2dfc94a58edeb2eb9df012bd",
+  //   USDCe: "0x84a71ccd554cc1b02749b35d22f684cc8ec987e1",
+  // },
   5000: {
     USDC: "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
     USDT: "0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE",
