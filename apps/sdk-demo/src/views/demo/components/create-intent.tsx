@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoutesSupportedChainId, RoutesService } from "@eco-foundation/routes-sdk"
-import { formatUnits, isAddress } from "viem";
-import { useAccount } from "wagmi";
+import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams } from "@eco-foundation/routes-sdk"
+import { formatUnits, Hex, isAddress } from "viem";
+import { useAccount, useBalance } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
 import { chains } from "../../../config";
@@ -27,8 +27,13 @@ export default function CreateIntent({
 
   const [isIntentValid, setIsIntentValid] = useState<boolean>(false);
 
+  const { data } = useBalance({
+    chainId: originChain,
+    address: originToken as Hex | undefined
+  })
+
   useEffect(() => {
-    if (address && originChain && originToken && destinationChain && destinationToken && amount && recipient && prover &&
+    if (data && address && originChain && originToken && destinationChain && destinationToken && amount && recipient && prover &&
       isAddress(originToken, { strict: false }) &&
       isAddress(destinationToken, { strict: false }) &&
       isAddress(recipient, { strict: false }) &&
@@ -40,6 +45,7 @@ export default function CreateIntent({
           creator: address,
           originChainID: originChain,
           spendingToken: originToken,
+          spendingTokenBalance: data.value,
           destinationChainID: destinationChain,
           receivingToken: destinationToken,
           amount: BigInt(amount),
@@ -58,7 +64,7 @@ export default function CreateIntent({
     return () => {
       setIsIntentValid(false)
     }
-  }, [address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover]);
+  }, [data, address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover, onNewIntent]);
 
   const originTokensAvailable = useMemo(() => originChain ? getAvailableStables(originChain) : [], [originChain]);
   const destinationTokensAvailable = useMemo(() => destinationChain ? getAvailableStables(destinationChain) : [], [destinationChain]);
@@ -163,14 +169,15 @@ export default function CreateIntent({
           <pre className="h-full">
             {`const intent = new RoutesService().createSimpleIntent(${JSON.stringify({
               creator: address,
-              originChain,
-              originToken,
-              destinationChain,
-              destinationToken,
+              originChainID: originChain,
+              spendingToken: originToken,
+              spendingTokenBalance: data?.value,
+              destinationChainID: destinationChain,
+              receivingToken: destinationToken,
               amount,
               recipient: recipient && recipient !== address ? recipient : undefined,
               prover
-            }, null, 2)})`}
+            } as Partial<CreateSimpleIntentParams>, null, 2)})`}
           </pre>
           <div className="absolute bottom-0 right-0 p-4 flex items-center gap-1 font-semibold">
             {isIntentValid ? (

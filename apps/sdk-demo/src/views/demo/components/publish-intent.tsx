@@ -1,7 +1,7 @@
 import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
 import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
-import { useChains, useWriteContract } from "wagmi"
+import { useWriteContract } from "wagmi"
 import { waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
 import { config } from "../../../wagmi"
@@ -14,7 +14,6 @@ type Props = {
 }
 
 export default function PublishIntent({ intent, quote }: Props) {
-  const chains = useChains()
   const { writeContractAsync } = useWriteContract()
   const [isPublishing, setIsPublishing] = useState<boolean>(false)
 
@@ -29,12 +28,12 @@ export default function PublishIntent({ intent, quote }: Props) {
 
       setIsPublishing(true)
 
-      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(intent.route.source) as RoutesSupportedChainId)].IntentSource
+      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(quotedIntent.route.source) as RoutesSupportedChainId)].IntentSource
 
       // approve the amount for the intent source contract, then publish the intent
 
       const approveTxHashes = await Promise.all(quotedIntent.reward.tokens.map((rewardToken) => writeContractAsync({
-        chainId: Number(intent.route.source),
+        chainId: Number(quotedIntent.route.source),
         abi: erc20Abi,
         functionName: 'approve',
         address: rewardToken.token,
@@ -45,7 +44,7 @@ export default function PublishIntent({ intent, quote }: Props) {
       setApprovalTxHashes(approveTxHashes)
 
       const publishTxHash = await writeContractAsync({
-        chainId: Number(intent.route.source),
+        chainId: Number(quotedIntent.route.source),
         abi: IntentSourceAbi,
         functionName: 'publishIntent',
         address: intentSourceContract,
@@ -68,7 +67,7 @@ export default function PublishIntent({ intent, quote }: Props) {
       const fulfillmentTxHash = await new Promise<Hex>((resolve, reject) => {
         const unwatch = watchContractEvent(config, {
           fromBlock: receipt.blockNumber - BigInt(5),
-          chainId: Number(intent.route.destination) as RoutesSupportedChainId,
+          chainId: Number(quotedIntent.route.destination) as RoutesSupportedChainId,
           abi: InboxAbi,
           eventName: 'Fulfillment',
           address: quotedIntent.route.inbox,
@@ -91,14 +90,14 @@ export default function PublishIntent({ intent, quote }: Props) {
 
       setFulfillmentTxHash(fulfillmentTxHash)
     }
-    catch (error: any) {
-      alert('Could not publish intent: ' + error.message)
+    catch (error) {
+      alert('Could not publish intent: ' + (error as Error).message)
       console.error(error)
     }
     finally {
       setIsPublishing(false)
     }
-  }, [intent, quote])
+  }, [intent, quote, writeContractAsync])
 
   if (!intent || !quote) return null
 
