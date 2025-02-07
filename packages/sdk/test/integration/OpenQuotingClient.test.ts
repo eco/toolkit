@@ -23,7 +23,7 @@ describe("OpenQuotingClient", () => {
       originChainID: 10,
       destinationChainID: 8453,
       spendingToken: RoutesService.getStableAddress(10, "USDC"),
-      spendingTokenBalance: BigInt(1000000000), // 1000 USDC
+      spendingTokenLimit: BigInt(1000000000), // 1000 USDC
       receivingToken: RoutesService.getStableAddress(8453, "USDC"),
       amount: BigInt(10000), // 1 cent
       prover: 'HyperProver',

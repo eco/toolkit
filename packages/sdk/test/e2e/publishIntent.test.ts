@@ -1,8 +1,8 @@
-import { describe, test, expect, beforeAll, beforeEach } from "vitest";
+import { describe, test, expect, beforeAll } from "vitest";
 import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentSourceAbi, IntentType } from "@eco-foundation/routes-ts";
+import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
 
@@ -11,7 +11,6 @@ describe("publishIntent", () => {
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
-  let intent: IntentType
 
   const publicClient = createPublicClient({
     chain: base,
@@ -35,20 +34,18 @@ describe("publishIntent", () => {
     })
   })
 
-  beforeEach(() => {
-    intent = routesService.createSimpleIntent({
+  test("onchain with quote", async () => {
+    const intent = routesService.createSimpleIntent({
       creator: account.address,
       originChainID: originChain.id,
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
-      spendingTokenBalance: balance,
+      spendingTokenLimit: balance,
       amount,
       recipient: account.address
     })
-  })
 
-  test("onchain with quote", async () => {
     // request quotes
     const quotes = await openQuotingClient.requestQuotesForIntent(intent)
     const selectedQuote = selectCheapestQuote(quotes)
@@ -87,6 +84,17 @@ describe("publishIntent", () => {
   }, 20_000)
 
   test("onchain without quote", async () => {
+    const intent = routesService.createSimpleIntent({
+      creator: account.address,
+      originChainID: originChain.id,
+      destinationChainID: destinationChain.id,
+      receivingToken,
+      spendingToken,
+      spendingTokenLimit: amount,
+      amount,
+      recipient: account.address
+    })
+
     const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
     expect(intentSourceContract).toBeDefined()
 

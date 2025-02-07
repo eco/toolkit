@@ -1,6 +1,6 @@
 {
   "name": "@eco-foundation/routes-sdk",
-  "version": "0.5.1",
+  "version": "0.6.0",
   "description": "Eco Routes SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -37,7 +37,7 @@
     "tsup": "^8.3.5",
     "viem": "^2.22.11",
     "vite": "^6.0.9",
-    "vitest": "^3.0.2"
+    "vitest": "^3.0.5"
   },
   "keywords": [
     "sdk",
