@@ -149,16 +149,19 @@ const originPublicClient = createPublicClient({
 })
 
 try {
-  const approveTxHash = await originWalletClient.writeContract({
-    abi: erc20Abi,
-    address: spendingToken,
-    functionName: 'approve',
-    args: [selectedQuote.intentSourceContract, amount],
-    chain: originChain,
-    account
-  })
+  // approve the quoted amount to account for fees
+  await Promise.all(await intentWithQuote.reward.tokens.map(async ({ token, amount }) => {
+    const approveTxHash = await originWalletClient.writeContract({
+      abi: erc20Abi,
+      address: token,
+      functionName: 'approve',
+      args: [selectedQuote.intentSourceContract, amount],
+      chain: originChain,
+      account
+    })
 
-  await originPublicClient.waitForTransactionReceipt({ hash: approveTxHash })
+    await originPublicClient.waitForTransactionReceipt({ hash: approveTxHash })
+  })
 
   const publishTxHash = await originWalletClient.writeContract({
     abi: IntentSourceAbi,
