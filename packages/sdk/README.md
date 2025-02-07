@@ -89,7 +89,7 @@ const intent = routesService.createSimpleIntent({
 })
 ```
 
-### Request quotes for an intent and select a quote (optional but recommended)
+### Request quotes for an intent and select a quote (recommended)
 To request quotes for an intent and select the cheapest quote, use the `OpenQuotingClient` and `selectCheapestQuote` functions.
 
 Then, you can apply the quote by calling `applyQuoteToIntent` on the `RoutesService` instance:
@@ -123,6 +123,9 @@ export function selectMostExpensiveQuote(quotes: SolverQuote[]): SolverQuote {
   });
 }
 ```
+
+#### Implications of not requesting a quote
+If you do not request a quote for your intent and you continue with publishing it, you risk the possibility of your intent not being fulfilled by any solvers (because of an insufficient token limit) or losing any surplus amount from your `spendingTokenLimit` that the solver didn't need to fulfill your intent. This is why requesting a quote is **strongly recommended**.
 
 ### Publishing the intent
 The SDK gives you what you need so that you can publish the intent to the origin chain with whatever web3 library you choose, here is an example of how to publish our quoted intent using `viem`!
