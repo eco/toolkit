@@ -67,6 +67,12 @@ export class RoutesService {
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
         inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        tokens: [
+          {
+            token: receivingToken,
+            amount,
+          }
+        ],
         calls: [
           {
             target: receivingToken,
@@ -74,12 +80,6 @@ export class RoutesService {
             value: BigInt(0),
           }
         ],
-        tokens: [
-          {
-            token: receivingToken,
-            amount,
-          }
-        ]
       },
       reward: {
         creator,
@@ -141,8 +141,8 @@ export class RoutesService {
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
         inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        tokens: callTokens,
         calls,
-        tokens: callTokens
       },
       reward: {
         creator,
