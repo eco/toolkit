@@ -28,7 +28,7 @@ export class RoutesService {
     destinationChainID,
     receivingToken,
     spendingToken,
-    spendingTokenBalance,
+    spendingTokenLimit,
     amount,
     recipient = creator,
     prover = "HyperProver",
@@ -47,8 +47,8 @@ export class RoutesService {
     if (isAmountInvalid(amount)) {
       throw new Error("Invalid amount");
     }
-    if (spendingTokenBalance < BigInt(amount)) {
-      throw new Error("Insufficient spendingTokenBalance");
+    if (spendingTokenLimit < BigInt(amount)) {
+      throw new Error("Insufficient spendingTokenLimit");
     }
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
@@ -89,7 +89,7 @@ export class RoutesService {
         tokens: [
           {
             token: spendingToken,
-            amount: spendingTokenBalance
+            amount: spendingTokenLimit
           }
         ]
       }

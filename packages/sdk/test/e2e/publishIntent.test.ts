@@ -41,7 +41,7 @@ describe("publishIntent", () => {
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
-      spendingTokenBalance: balance,
+      spendingTokenLimit: balance,
       amount,
       recipient: account.address
     })
@@ -90,7 +90,7 @@ describe("publishIntent", () => {
       destinationChainID: destinationChain.id,
       receivingToken,
       spendingToken,
-      spendingTokenBalance: amount,
+      spendingTokenLimit: amount,
       amount,
       recipient: account.address
     })
