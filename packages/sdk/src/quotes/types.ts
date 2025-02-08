@@ -12,6 +12,10 @@ export namespace OpenQuotingAPI {
           originChainID: string
           destinationChainID: string
           inboxContract: Hex
+          tokens: {
+            token: Hex
+            amount: string
+          }[]
           calls: {
             target: Hex
             data: Hex

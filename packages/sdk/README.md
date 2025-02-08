@@ -96,7 +96,9 @@ Then, you can apply the quote by calling `applyQuoteToIntent` on the `RoutesServ
 ``` ts
 import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-sdk';
 
-const quotes = await OpenQuotingClient.getQuotesForIntent(intent);
+const openQuotingClient = new OpenQuotingClient({ dAppID: 'my-dapp' });
+
+const quotes = await openQuotingClient.getQuotesForIntent(intent);
 if (!quotes.length) {
   throw new Error('No quotes available');
 }
@@ -150,7 +152,7 @@ const originPublicClient = createPublicClient({
 
 try {
   // approve the quoted amount to account for fees
-  await Promise.all(await intentWithQuote.reward.tokens.map(async ({ token, amount }) => {
+  await Promise.all(intentWithQuote.reward.tokens.map(async ({ token, amount }) => {
     const approveTxHash = await originWalletClient.writeContract({
       abi: erc20Abi,
       address: token,

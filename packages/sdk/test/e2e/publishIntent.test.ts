@@ -1,13 +1,14 @@
 import { describe, test, expect, beforeAll } from "vitest";
-import { createWalletClient, Hex, webSocket, PrivateKeyAccount, WalletClient, erc20Abi, createPublicClient } from "viem";
+import { createWalletClient, Hex, webSocket, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
 
+const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
+
 describe("publishIntent", () => {
-  let account: PrivateKeyAccount
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
@@ -27,7 +28,7 @@ describe("publishIntent", () => {
   beforeAll(() => {
     routesService = new RoutesService()
     openQuotingClient = new OpenQuotingClient({ dAppID: "test" })
-    account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
+
     baseWalletClient = createWalletClient({
       account,
       transport: webSocket(process.env.VITE_BASE_RPC_URL!)
@@ -35,6 +36,8 @@ describe("publishIntent", () => {
   })
 
   test("onchain with quote", async () => {
+    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+
     const intent = routesService.createSimpleIntent({
       creator: account.address,
       originChainID: originChain.id,
@@ -63,9 +66,9 @@ describe("publishIntent", () => {
         abi: erc20Abi,
         address: token,
         functionName: 'approve',
-        args: [selectedQuote.intentSourceContract, amount],
+        args: [intentSourceContract, amount],
         chain: originChain,
-        account: account
+        account
       })
       await publicClient.waitForTransactionReceipt({ hash })
     }))
@@ -73,7 +76,7 @@ describe("publishIntent", () => {
     // publish intent onchain
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
-      address: selectedQuote.intentSourceContract,
+      address: intentSourceContract,
       functionName: 'publishIntent',
       args: [quotedIntent, true],
       chain: originChain,
