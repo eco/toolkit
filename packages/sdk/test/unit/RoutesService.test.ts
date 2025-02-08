@@ -1,14 +1,17 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, SolverQuote } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 
+const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
+
 describe("RoutesService", () => {
   let routesService: RoutesService;
 
-  const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
+  const creator = account.address
 
   beforeAll(() => {
     routesService = new RoutesService();
@@ -21,7 +24,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -66,7 +69,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -111,7 +114,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -124,7 +127,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -138,7 +141,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 10,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -151,7 +154,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(-1),
         prover: 'HyperProver',
@@ -164,11 +167,11 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(999999),
+        spendingTokenLimit: BigInt(999999),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-      })).toThrow("Insufficient spendingTokenBalance");
+      })).toThrow("Insufficient spendingTokenLimit");
     })
 
     test("invalidExpiryTime", async () => {
@@ -177,7 +180,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
@@ -191,7 +194,7 @@ describe("RoutesService", () => {
         originChainID: 42161,
         destinationChainID: 10,
         spendingToken: RoutesService.getStableAddress(42161, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "StorageProver",
@@ -206,7 +209,7 @@ describe("RoutesService", () => {
       transferData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'transfer',
-        args: ['0xe494e1285d741F90b4BA51482fa7c1031B2DD294', BigInt(1000000)]
+        args: [creator, BigInt(1000000)]
       })
     })
 
@@ -594,7 +597,7 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenBalance: BigInt(10000000),
+        spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
