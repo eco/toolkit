@@ -36,6 +36,10 @@ export class OpenQuotingClient {
           originChainID: intent.route.source.toString(),
           destinationChainID: intent.route.destination.toString(),
           inboxContract: intent.route.inbox,
+          tokens: intent.route.tokens.map((token) => ({
+            token: token.token,
+            amount: token.amount.toString()
+          })),
           calls: intent.route.calls.map((call) => ({
             target: call.target,
             data: call.data,

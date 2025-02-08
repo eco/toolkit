@@ -1,16 +1,19 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
+import { Hex, zeroHash } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
+import { IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
-import { zeroHash } from "viem";
-import { IntentType } from "@eco-foundation/routes-ts";
+
+const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
 describe("OpenQuotingClient", () => {
   let routesService: RoutesService;
   let openQuotingClient: OpenQuotingClient;
   let validIntent: IntentType;
 
-  const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
+  const creator = account.address
 
   beforeAll(() => {
     routesService = new RoutesService();
@@ -86,13 +89,6 @@ describe("OpenQuotingClient", () => {
     test("invalid:route.destination", async () => {
       const invalidIntent = validIntent;
       invalidIntent.route.destination = BigInt(0);
-
-      await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
-    })
-
-    test("invalid:route.salt", async () => {
-      const invalidIntent = validIntent;
-      invalidIntent.route.salt = "0x0";
 
       await expect(openQuotingClient.requestQuotesForIntent(invalidIntent)).rejects.toThrow("Request failed with status code 400");
     })

@@ -1,14 +1,17 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
+import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, SolverQuote } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
 
+const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
+
 describe("RoutesService", () => {
   let routesService: RoutesService;
 
-  const creator = '0xe494e1285d741F90b4BA51482fa7c1031B2DD294'
+  const creator = account.address
 
   beforeAll(() => {
     routesService = new RoutesService();
@@ -206,7 +209,7 @@ describe("RoutesService", () => {
       transferData = encodeFunctionData({
         abi: erc20Abi,
         functionName: 'transfer',
-        args: ['0xe494e1285d741F90b4BA51482fa7c1031B2DD294', BigInt(1000000)]
+        args: [creator, BigInt(1000000)]
       })
     })
 
@@ -463,7 +466,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
-      })).toThrow("Invalid tokens");
+      })).toThrow("Invalid callTokens");
 
       expect(() => routesService.createIntent({
         creator,
@@ -480,7 +483,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
-      })).toThrow("Invalid tokens");
+      })).toThrow("Invalid callTokens");
 
       expect(() => routesService.createIntent({
         creator,
@@ -500,7 +503,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "HyperProver",
-      })).toThrow("Invalid tokens");
+      })).toThrow("Invalid callTokens");
     })
 
     test("invalidCalls", async () => {
