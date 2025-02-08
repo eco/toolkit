@@ -13,10 +13,22 @@ export type MyChainConfig = {
 }
 
 export const chains: Record<RoutesSupportedChainId, MyChainConfig> = {
+  1: {
+    label: "Ethereum Mainnet",
+    stables: getAvailableStables(1)
+  },
   10: {
     label: "Optimism",
     stables: getAvailableStables(10)
   },
+  137: {
+    label: "Polygon",
+    stables: getAvailableStables(137)
+  },
+  // 2741: {
+  //   label: "Abstract",
+  //   stables: getAvailableStables(2741)
+  // },
   5000: {
     label: "Mantle",
     stables: getAvailableStables(5000)

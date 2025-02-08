@@ -35,7 +35,7 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "tsup": "^8.3.5",
-    "viem": "^2.22.11",
+    "viem": "^2.22.23",
     "vite": "^6.0.9",
     "vitest": "^3.0.5"
   },

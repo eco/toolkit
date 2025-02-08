@@ -45,7 +45,7 @@ export default function CreateIntent({
           creator: address,
           originChainID: originChain,
           spendingToken: originToken,
-          spendingTokenBalance: data.value,
+          spendingTokenLimit: data.value,
           destinationChainID: destinationChain,
           receivingToken: destinationToken,
           amount: BigInt(amount),
