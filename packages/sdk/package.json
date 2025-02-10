@@ -1,6 +1,6 @@
 {
   "name": "@eco-foundation/routes-sdk",
-  "version": "0.6.1",
+  "version": "0.6.2",
   "description": "Eco Routes SDK",
   "main": "./dist/index.js",
   "module": "./dist/index.mjs",
@@ -35,7 +35,7 @@
   "devDependencies": {
     "@repo/eslint-config": "*",
     "tsup": "^8.3.5",
-    "viem": "^2.22.11",
+    "viem": "^2.22.12",
     "vite": "^6.0.9",
     "vitest": "^3.0.5"
   },
