@@ -146,7 +146,7 @@ export default function CreateIntent({
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">
-            <span className="text-xl">Amount</span>
+            <span className="text-xl">Desired Amount</span>
             <input type="number" className="border-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
             {amount && <span>({formatUnits(BigInt(amount), 6)} USD)</span>}
           </div>
@@ -171,10 +171,10 @@ export default function CreateIntent({
               creator: address,
               originChainID: originChain,
               spendingToken: originToken,
-              spendingTokenBalance: data?.value,
+              spendingTokenLimit: data ? Number(data.value) : undefined,
               destinationChainID: destinationChain,
               receivingToken: destinationToken,
-              amount,
+              amount: amount ? Number(amount) : undefined,
               recipient: recipient && recipient !== address ? recipient : undefined,
               prover
             } as Partial<CreateSimpleIntentParams>, null, 2)})`}

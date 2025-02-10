@@ -21,7 +21,7 @@ export default function SelectQuote({ intent, quotes, onQuoteSelected }: Props) 
             <div key={quote.receiveSignedIntentUrl} className="p-2 border-1 flex flex-col">
               <span>Quote from {quote.receiveSignedIntentUrl}</span>
               <span>IntentSource Contract: {quote.intentSourceContract}</span>
-              <span>Amounts requested:</span>
+              <span>Amounts requested by solver on the origin chain:</span>
               <ul className="list-disc">
                 {quote.quoteData.tokens.map((token) => (
                   <li key={token.token} className="ml-4">{formatUnits(BigInt(token.amount), 6)} {findTokenByAddress(Number(intent.route.source) as RoutesSupportedChainId, token.token)?.id}</li>
