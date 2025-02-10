@@ -6,14 +6,13 @@ import { waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
 import { config } from "../../../wagmi"
 
-const routesService = new RoutesService({ isPreprod: true })
-
 type Props = {
+  routesService: RoutesService,
   intent: IntentType | undefined,
   quote: SolverQuote | undefined
 }
 
-export default function PublishIntent({ intent, quote }: Props) {
+export default function PublishIntent({ routesService, intent, quote }: Props) {
   const { writeContractAsync } = useWriteContract()
   const [isPublishing, setIsPublishing] = useState<boolean>(false)
 

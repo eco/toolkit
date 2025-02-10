@@ -6,13 +6,13 @@ import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
 import { chains } from "../../../config";
 
-const routesService = new RoutesService({ isPreprod: true })
-
 type Props = {
+  routesService: RoutesService,
   onNewIntent: (intent: IntentType) => void
 }
 
 export default function CreateIntent({
+  routesService,
   onNewIntent
 }: Props) {
   const { address } = useAccount();
