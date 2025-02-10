@@ -161,7 +161,7 @@ describe("RoutesService", () => {
       })).toThrow("Invalid amount");
     })
 
-    test("invalidSpendingTokenBalance", async () => {
+    test("invalidSpendingTokenLimit", async () => {
       expect(() => routesService.createSimpleIntent({
         creator,
         originChainID: 10,

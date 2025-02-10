@@ -18,9 +18,9 @@
         <li><a href="#quick-start">Quick Start</a></li>
       </ul>
     </li>
-    <!-- <li>
-      <a href="#full-examples">Full Examples</a>
-    </li> -->
+    <li>
+      <a href="#full-demo">Full Demo</a>
+    </li>
     <li>
       <a href="#testing">Testing</a>
     </li>
@@ -37,22 +37,22 @@
 # Getting Started
 
 ## Installing
-Install the package and the [@eco-foundation/routes-ts](https://npmjs.com/package/@eco-foundation/routes-ts) peer dependency to your project:
+Install the package and the [`@eco-foundation/routes-ts`](https://npmjs.com/package/@eco-foundation/routes-ts) peer dependency to your project:
 ``` sh
 npm install @eco-foundation/routes-sdk @eco-foundation/routes-ts
 ```
 
 ## Eco Routes peer dependency
 
-The Eco team is constantly improving our protocol and sometimes that involves making upgrades to our contracts, which will generate new contract addresses that we will publish in our routes-ts package. When this happens be aware that if your application is still running with an outdated version of the routes-ts package some intents might not get fulfilled.
+The Eco team is constantly improving our protocol. Sometimes, this involves making upgrades to our contracts, which will generate new contract addresses that we will publish in our routes-ts package. When this happens, be aware that if your application is still running with an outdated version of the routes-ts package, some intents might not get fulfilled.
 
 Upgrading to the latest protocol contracts is easy! Simply run:
 ``` sh
 npm install @eco-foundation/routes-ts@latest
 ```
-To install the latest contracts, and the SDK will use them.
+To install the latest contracts, and the SDK will automatically use them.
 
-*Note: Upgrading the routes-ts package by a minor or major version might require upgrading the SDK as well, run:*
+> **Note:** Upgrading the routes-ts package by a minor or major version might require upgrading the SDK as well, run:
 ```
 npm install @eco-foundation/routes-sdk@latest
 ```
@@ -65,7 +65,7 @@ To create a simple stable send intent, create an instance of the `RoutesService`
 ``` ts
 import { RoutesService } from '@eco-foundation/routes-sdk';
 
-const address = '0x1234567890123456789012345678901234567890'
+const address = '0x1234567890123456789012345678901234567890';
 const originChainID = 10;
 const spendingToken = RoutesService.getStableAddress(originChainID, 'USDC');
 const spendingTokenLimit = BigInt(10000000); // 10 USDC
@@ -98,7 +98,7 @@ import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-s
 
 const openQuotingClient = new OpenQuotingClient({ dAppID: 'my-dapp' });
 
-const quotes = await openQuotingClient.getQuotesForIntent(intent);
+const quotes = await openQuotingClient.requestQuotesForIntent(intent);
 if (!quotes.length) {
   throw new Error('No quotes available');
 }
@@ -114,7 +114,7 @@ const intentWithQuote = routesService.applyQuoteToIntent({ intent, quote: select
 Depending on your use case, you might want to select some quote based on some other criteria, not just the cheapest. You can create a custom selector function to do this.
 
 ``` ts
-import { SolverQuote } from "@eco-foundation/routes-sdk";
+import { SolverQuote } from '@eco-foundation/routes-sdk';
 
 // custom selector fn using SolverQuote type
 export function selectMostExpensiveQuote(quotes: SolverQuote[]): SolverQuote {
@@ -183,19 +183,16 @@ catch (error) {
 
 [See more from viem's docs](https://viem.sh/)
 
-*Note: A quote will provide the address of an IntentSource contract for you, but if you aren't using a quote you can get the defaut IntentSource contract like so:*
+> **Note:** A quote will provide the address of an IntentSource contract for you, but if you aren't using a quote you can get the default IntentSource contract like so:
 ``` ts
 import { EcoProtocolAddresses } from '@eco-foundation/routes-ts';
 
 const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChainID)].IntentSource;
 ```
 
-<!--
-# Full examples
+# Full Demo
 
-// TODO: Add full examples and link here
-For full examples of creating an intent and tracking it until it's fulfilled, see the [examples](./examples) directory.
--->
+For a full example of creating an intent and tracking it until it's fulfilled, see the [Eco Routes SDK Demo](../../apps/sdk-demo/).
 
 # Testing
 
