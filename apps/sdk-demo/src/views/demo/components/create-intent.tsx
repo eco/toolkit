@@ -68,7 +68,7 @@ export default function CreateIntent({
     return () => {
       setIsIntentValid(false)
     }
-  }, [balance, address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover, onNewIntent]);
+  }, [balance, address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover, onNewIntent, routesService]);
 
   const originTokensAvailable = useMemo(() => originChain ? getAvailableStables(originChain) : [], [originChain]);
   const destinationTokensAvailable = useMemo(() => destinationChain ? getAvailableStables(destinationChain) : [], [destinationChain]);

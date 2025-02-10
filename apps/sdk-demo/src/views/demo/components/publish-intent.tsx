@@ -98,7 +98,7 @@ export default function PublishIntent({ routesService, intent, quote }: Props) {
     finally {
       setIsPublishing(false)
     }
-  }, [intent, quote, writeContractAsync])
+  }, [intent, quote, writeContractAsync, routesService])
 
   if (!intent || !quote) return null
 
