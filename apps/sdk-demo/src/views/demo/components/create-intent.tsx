@@ -99,9 +99,12 @@ export default function CreateIntent({
                 ))}
               </select>
             </div>
-            <div className="flex gap-1">
-              <span>Token:</span>
-              <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
+            <div>
+              <div className="flex gap-1">
+                <span>Token:</span>
+                <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
+              </div>
+              {data ? <span className="text-sm italic">Balance: {formatUnits(data.value, 6)}</span> : null}
             </div>
             <div className="flex gap-2">
               Stables available: {originTokensAvailable.map((tokenConfig) => (
