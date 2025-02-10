@@ -6,6 +6,7 @@ import { IntentType } from "@eco-foundation/routes-ts";
 import CreateIntent from "./components/create-intent";
 import SelectQuote from "./components/select-quote";
 import PublishIntent from "./components/publish-intent";
+import EditConfig from "../../components/edit-config";
 
 const openQuotingClient = new OpenQuotingClient({ dAppID: "sdk-demo", customBaseUrl: "https://quotes-preprod.eco.com" })
 
@@ -31,6 +32,7 @@ export default function DemoView() {
 
   return (
     <div>
+      <EditConfig />
       <CreateIntent onNewIntent={setIntent} />
       <SelectQuote intent={intent} quotes={quotes} onQuoteSelected={setSelectedQuote} />
       <PublishIntent intent={intent} quote={selectedQuote} />
