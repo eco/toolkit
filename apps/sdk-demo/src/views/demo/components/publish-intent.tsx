@@ -15,6 +15,7 @@ type Props = {
 export default function PublishIntent({ routesService, intent, quote }: Props) {
   const { writeContractAsync } = useWriteContract()
   const [isPublishing, setIsPublishing] = useState<boolean>(false)
+  const [isPublished, setIsPublished] = useState<boolean>(false)
 
   const [approvalTxHashes, setApprovalTxHashes] = useState<Hex[]>([])
   const [publishTxHash, setPublishTxHash] = useState<Hex | undefined>()
@@ -88,6 +89,7 @@ export default function PublishIntent({ routesService, intent, quote }: Props) {
       })
 
       setFulfillmentTxHash(fulfillmentTxHash)
+      setIsPublished(true)
     }
     catch (error) {
       alert('Could not publish intent: ' + (error as Error).message)
@@ -102,34 +104,41 @@ export default function PublishIntent({ routesService, intent, quote }: Props) {
 
   return (
     <div className="m-4 flex flex-col gap-4">
+      {isPublishing || isPublished ? (
+        <>
+          {isPublishing && <span>Publishing intent...</span>}
+          {approvalTxHashes.length > 0 ? (
+            <div className="flex flex-col gap-1">
+              <span>Approval transactions:</span>
+              <ul>
+                {approvalTxHashes.map((txHash) => (
+                  <li className="ml-4" key={txHash}>{txHash}</li>
+                ))}
+              </ul>
+            </div>
+          ) : <span>Approving..</span>}
 
-      {isPublishing ? (
-        <span>Publishing intent...</span>
+          {publishTxHash ? (
+            <div>
+              <span>Intent Published:</span>
+              <span>{publishTxHash}</span>
+            </div>
+          ) : <span>Publishing..</span>}
+          {fulfillmentTxHash ? (
+            <div>
+              <span>Intent fulfilled:</span>
+              <span>{fulfillmentTxHash}</span>
+            </div>
+          ) : <span>Waiting for fulfillment..</span>}
+
+          {isPublished && (
+            <div className="flex gap-4 align-center">
+              <span>Intent published and fulfilled!</span>
+              <button onClick={() => window.location.reload()}>Restart</button>
+            </div>
+          )}
+        </>
       ) : <button onClick={publishIntent}>Publish Quoted Intent</button>}
-
-      {approvalTxHashes.length > 0 ? (
-        <div className="flex flex-col gap-1">
-          <span>Approval transactions:</span>
-          <ul>
-            {approvalTxHashes.map((txHash) => (
-              <li className="ml-4" key={txHash}>{txHash}</li>
-            ))}
-          </ul>
-        </div>
-      ) : <span>Approving..</span>}
-
-      {publishTxHash ? (
-        <div>
-          <span>Intent Published:</span>
-          <span>{publishTxHash}</span>
-        </div>
-      ) : <span>Publishing..</span>}
-      {fulfillmentTxHash ? (
-        <div>
-          <span>Intent fulfilled:</span>
-          <span>{fulfillmentTxHash}</span>
-        </div>
-      ) : <span>Waiting for fulfillment..</span>}
     </div>
   )
 }
