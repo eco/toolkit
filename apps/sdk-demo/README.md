@@ -1,9 +1,9 @@
 # Eco Routes SDK Demo
-This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Next.js](https://nextjs.org/) project bootstrapped with [`create-rainbowkit`](/packages/create-rainbowkit).
+This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Next.js](https://nextjs.org/) project bootstrapped with [`create-rainbowkit`](https://github.com/rainbow-me/rainbowkit/tree/main/packages/create-rainbowkit).
 
 Reference this project if you are integrating the Eco Routes SDK into your project. This project demonstrates how to use the Eco Routes SDK to generate, publish and track an intent to fulfillment.
 
-This project uses [`viem`](https://viem.sh) as its web3 library.
+This project uses [viem](https://viem.sh).
 
 ## Getting Started
 First, install dependencies:
@@ -11,7 +11,7 @@ First, install dependencies:
 npm ci
 ```
 
-Add the appropriate environment variables to a `.env.local` file in the root of the demo directory. You can ual.ese the `.env.example` file as a template.
+Add the appropriate environment variables to a `.env.local` file in the root of the demo directory. You can use the `.env.example` file as a template.
 
 
 Then, run the development server:
