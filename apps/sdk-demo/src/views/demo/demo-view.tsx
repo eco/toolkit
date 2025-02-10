@@ -31,7 +31,7 @@ export default function DemoView() {
       setSelectedQuote(undefined)
       setQuotes(undefined)
     }
-  }, [intent]);
+  }, [intent, openQuotingClient]);
 
   return (
     <div>

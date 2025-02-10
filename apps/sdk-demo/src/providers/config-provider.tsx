@@ -1,24 +1,21 @@
 import { PropsWithChildren, useContext, useState, createContext } from "react";
 
 type Config = {
+  updateConfig: (newConfig: Partial<Config>) => void
   openQuotingClientUrl?: string
   preprodContracts?: boolean
 }
 
 export const defaultConfig: Config = {
+  updateConfig: () => { },
   openQuotingClientUrl: "https://quotes-preprod.eco.com",
   preprodContracts: true
 }
 
-const ConfigContext = createContext({
-  updateConfig: (newConfig: Partial<Config>) => { },
-  ...defaultConfig
-})
+const ConfigContext = createContext(defaultConfig)
 
 export default function ConfigProvider({ children }: PropsWithChildren) {
-
   const [config, setConfig] = useState<Config>(defaultConfig)
-
   function updateConfig(newConfig: Partial<Config>) {
     setConfig({
       ...config, ...newConfig
@@ -27,8 +24,8 @@ export default function ConfigProvider({ children }: PropsWithChildren) {
 
   return (
     <ConfigContext.Provider value={{
+      ...config,
       updateConfig,
-      ...config
     }}>
       {children}
     </ConfigContext.Provider>
