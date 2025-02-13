@@ -84,7 +84,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ inputs.assumed_role }}
-          role-session-name: ${{ inputs.app_name }}-production-oidc # fix this if we goto prod remove procdcution and make it the gh_env input
+          role-session-name: ${{ inputs.app_name }}-${{ inputs.ghenv }}-oidc # fix this if we goto prod remove procdcution and make it the gh_env input
           aws-region: ${{ inputs.aws_region }}
 
       - name: Fetch secret from AWS Secrets Manager
@@ -110,133 +110,20 @@ jobs:
             echo "Setting $key"
           done < ${{ inputs.env_filepath }}
 
-# echo "LAUNCHDARKLY_SDK_KEY=${{ env.LAUNCHDARKLY_SDK_KEY }}" >> $GITHUB_ENV
-
       - name: Install Vercel CLI
         run: npm install --global vercel@canary
 
 # # # Preview environments # # #
       - name: Pull Vercel Environment Information Preview Environment
-        if: inputs.production == 'false' && inputs.domain_alias == ''
         working-directory: ./apps/sdk-demo
         run: vercel pull --yes --environment=preview --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
 
       - name: Build Project Artifacts Preview Environment
-        if: inputs.production == 'false' && inputs.domain_alias == ''
         working-directory: ./apps/sdk-demo
         run: vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
 
       - name: Update Vercel Preview Environment
-        if: inputs.production == 'false' && inputs.domain_alias == ''
         id: url_deploy_preview
         working-directory: ./apps/sdk-demo
         run: echo "url_preview=$(vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }})" >> $GITHUB_OUTPUT
       
-      - name: Find pull request for the branch
-        id: find-pr
-        env:
-          GH_TOKEN: ${{ github.token }}
-        run: |
-          echo "Listing open pull requests for branch: ${{ github.actor }}:${{ github.ref_name }}"
-          pr_response=$(gh pr list --repo ${{ github.repository }} --state open --head ${{ github.ref_name }} --json number --jq '.[].number')
-          
-          if [ -z "$pr_response" ]; then
-            echo "No pull request found for the branch."
-          else
-            echo "Found pull request number: $pr_response"
-            echo "PR_NUMBER=$pr_response" >> $GITHUB_ENV
-          fi
-      
-      - name: Log PR number
-        run: echo "Pull Request number is ${{ env.PR_NUMBER }}"
-      
-      - name: Add URL as comment to pull request
-        if: ${{ env.PR_NUMBER != '' }} && inputs.production == 'false' && inputs.domain_alias == ''
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const prNumber = process.env.PR_NUMBER;
-            if (prNumber) {
-              github.rest.issues.createComment({
-                issue_number: parseInt(prNumber),
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                body: `Vercel Preview URL: ${{ steps.url_deploy_preview.outputs.url_preview }}`
-              });
-            } else {
-              console.log("No pull request found.");
-            }
-
-      - name: Get current SHA from Vercel
-        id: get-vercel-sha
-        run: |
-          # Make the request to the Vercel API and store the response
-          response=$(curl -X GET "https://api.vercel.com/v9/projects/${{ env.VERCEL_PROJECT_ID }}/env?decrypt=true&slug=${{ env.PRODUCTION_DOMAIN }}&teamId=${{env.VERCEL_ORG_ID}}" \
-          -H "Authorization: Bearer ${{ env.VERCEL_TOKEN }}" \
-          -H "Content-Type: application/json")
-      
-          # Print the response for debugging purposes
-          echo "Response from Vercel: $response"
-      
-          # Use jq to parse the GITHUB_SHA from the response
-          CURRENT_SHA=$(echo "$response" | jq -r '.envs[] | select(.key == "GITHUB_SHA") | .value')
-      
-          # Print the extracted SHA for debugging purposes
-          echo "Extracted SHA: $CURRENT_SHA"
-      
-          # Set the CURRENT_SHA environment variable for future steps
-          echo "CURRENT_SHA=$CURRENT_SHA" >> $GITHUB_ENV
-          echo "SHA extracted successfully: $CURRENT_SHA"
-            
-                 
-# # # Production environments # # # 
-      - name: Pull Vercel Environment Information Production
-        if: inputs.production == 'true' && inputs.domain_alias == env.PRODUCTION_DOMAIN
-        run: vercel pull --yes --environment=production --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
-
-      - name: Build Project Artifacts Production
-        if: inputs.production == 'true' && inputs.domain_alias == env.PRODUCTION_DOMAIN
-        run: vercel build --prod --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
-
-      - name: Update Vercel alias Production
-        if: inputs.production == 'true' && inputs.domain_alias == env.PRODUCTION_DOMAIN
-        run: vercel deploy --prebuilt --prod --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
-
-      - name: Store SHA in vercel env
-        if: inputs.production == 'true' && inputs.domain_alias == env.PRODUCTION_DOMAIN
-        run: |
-          curl -X POST 'https://api.vercel.com/v10/projects/${{ env.VERCEL_PROJECT_ID }}/env?slug=${{ env.PRODUCTION_DOMAIN }}&teamId=${{ env.VERCEL_ORG_ID }}&upsert=true' \
-            -H 'Authorization: Bearer ${{ env.VERCEL_TOKEN }}' \
-            -H 'Content-Type: application/json' \
-            -d '{
-              "key": "GITHUB_SHA",
-              "value": "${{ inputs.gsha }}",
-              "type": "plain",
-              "target": ["production"],
-              "comment": "Updating SHA for production deployment"
-            }'
-
-
-# # # Slack alert for static env deploy # # #
-      - name: Hit Retool webhook for slack alert
-        if: inputs.domain_alias != ''
-        run: |
-          payload=$(cat <<EOF
-          {
-            "inputs": {
-              "domain_alias": "${{ inputs.domain_alias }}",
-              "env_filepath": "${{ inputs.env_filepath }}",
-              "ghenv": "${{ inputs.ghenv }}",
-              "gsha": "${{ inputs.gsha }}",
-              "production": "${{ inputs.production }}"
-            },
-            "actor": "${{ github.actor }}",
-            "previous_sha": "${{ env.CURRENT_SHA }}"
-          }
-          EOF
-          )
-      
-          curl -X POST 'https://api.retool.com/v1/workflows/2c4311e1-7823-4791-b22e-435e39cc0209/startTrigger' \
-          -H 'Content-Type: application/json' \
-          -H 'X-Workflow-Api-Key: retool_wk_2c85b4ba7d3f436fbccb0694dfe62f01' \
-          -d "$payload"
