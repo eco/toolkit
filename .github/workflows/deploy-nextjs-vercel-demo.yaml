@@ -84,7 +84,7 @@ jobs:
         uses: aws-actions/configure-aws-credentials@v2
         with:
           role-to-assume: ${{ inputs.assumed_role }}
-          role-session-name: ${{ inputs.app_name }}-${{ inputs.ghenv }}-oidc
+          role-session-name: ${{ inputs.app_name }}-production-oidc # fix this if we goto prod remove procdcution and make it the gh_env input
           aws-region: ${{ inputs.aws_region }}
 
       - name: Fetch secret from AWS Secrets Manager
