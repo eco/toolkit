@@ -1,0 +1,25 @@
+name: Deploy preview environment to vercel
+
+on:
+  push:
+    branches: 
+    - "**"
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  issues: write
+
+jobs:
+  deploy:
+    uses: ./.github/workflows/deploy-nextjs-vercel-demo.yaml
+    with:
+      ghenv: "staging"
+      env_filepath: './apps/sdk-demo/.env.example'
+      production: "false"
+      aws_region: "us-east-2"
+      aws_secret_name: "eco-sdk-demo"
+      app_name: sdk-demo
+      assumed_role: arn:aws:iam::165381489880:role/sdk-demo-static-actions-incorp-production
+
