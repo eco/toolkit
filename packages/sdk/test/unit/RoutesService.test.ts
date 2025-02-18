@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
+import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
@@ -71,6 +71,51 @@ describe("RoutesService", () => {
         spendingToken: "0x68f180fcCe6836688e9084f035309E29Bf0A2095",
         spendingTokenLimit: BigInt(10000000),
         receivingToken: "0x0555E30da8f98308EdB960aa94C0Db47230d2B9c",
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+      }
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBeGreaterThan(0);
+      for (const token of validIntent.reward.tokens) {
+        expect(token.token).toBeDefined();
+        expect(isAddress(token.token, { strict: false })).toBe(true);
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0);
+      }
+    })
+
+    test("validCreatorZeroAddress", async () => {
+      const validIntent = routesService.createSimpleIntent({
+        creator: zeroAddress,
+        originChainID: 10,
+        destinationChainID: 8453,
+        spendingToken: RoutesService.getStableAddress(10, "USDC"),
+        spendingTokenLimit: BigInt(10000000),
+        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
       });

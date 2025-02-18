@@ -98,16 +98,18 @@ import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-s
 
 const openQuotingClient = new OpenQuotingClient({ dAppID: 'my-dapp' });
 
-const quotes = await openQuotingClient.requestQuotesForIntent(intent);
-if (!quotes.length) {
-  throw new Error('No quotes available');
+try {
+  const quotes = await openQuotingClient.requestQuotesForIntent(intent);
+
+  // select quote
+  const selectedQuote = selectCheapestQuote(quotes);
+
+  // apply quote to intent
+  const intentWithQuote = routesService.applyQuoteToIntent({ intent, quote: selectedQuote });
 }
-
-// select quote
-const selectedQuote = selectCheapestQuote(quotes);
-
-// apply quote to intent
-const intentWithQuote = routesService.applyQuoteToIntent({ intent, quote: selectedQuote });
+catch (error) {
+  console.error('Quotes not available', error);
+}
 ```
 
 #### Custom selectors (optional)
@@ -163,7 +165,7 @@ try {
     })
 
     await originPublicClient.waitForTransactionReceipt({ hash: approveTxHash })
-  })
+  }))
 
   const publishTxHash = await originWalletClient.writeContract({
     abi: IntentSourceAbi,

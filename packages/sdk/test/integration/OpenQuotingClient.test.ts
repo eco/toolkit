@@ -1,5 +1,5 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
-import { Hex, zeroHash } from "viem";
+import { Hex, zeroAddress, zeroHash } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 import { IntentType } from "@eco-foundation/routes-ts";
 
@@ -36,6 +36,30 @@ describe("OpenQuotingClient", () => {
 
   describe("requestQuotesForIntent", () => {
     test("valid", async () => {
+      const quotes = await openQuotingClient.requestQuotesForIntent(validIntent);
+
+      expect(quotes).toBeDefined();
+      expect(quotes.length).toBeGreaterThan(0);
+
+      for (const quote of quotes) {
+        expect(quote.receiveSignedIntentUrl).toBeDefined();
+        expect(quote.intentSourceContract).toBeDefined();
+        expect(quote.quoteData).toBeDefined();
+        expect(quote.quoteData.expiryTime).toBeDefined();
+        expect(quote.quoteData.tokens).toBeDefined();
+        expect(quote.quoteData.tokens.length).toBeGreaterThan(0);
+        for (const token of quote.quoteData.tokens) {
+          expect(token).toBeDefined();
+          expect(token.amount).toBeDefined();
+          expect(BigInt(token.amount)).toBeGreaterThan(0);
+          expect(token.token).toBeDefined();
+        }
+      }
+    });
+
+    test("valid:creator==zeroAddress", async () => {
+      validIntent.reward.creator = zeroAddress;
+
       const quotes = await openQuotingClient.requestQuotesForIntent(validIntent);
 
       expect(quotes).toBeDefined();
