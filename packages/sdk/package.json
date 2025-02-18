@@ -2,8 +2,8 @@
   "name": "@eco-foundation/routes-sdk",
   "version": "0.6.4",
   "description": "Eco Routes SDK",
-  "main": "./dist/index.js",
-  "module": "./dist/index.mjs",
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
   "types": "./dist/index.d.ts",
   "type": "module",
   "exports": {
