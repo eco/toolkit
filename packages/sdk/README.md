@@ -163,7 +163,7 @@ try {
     })
 
     await originPublicClient.waitForTransactionReceipt({ hash: approveTxHash })
-  })
+  }))
 
   const publishTxHash = await originWalletClient.writeContract({
     abi: IntentSourceAbi,
