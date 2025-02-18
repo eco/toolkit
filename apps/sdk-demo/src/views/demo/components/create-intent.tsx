@@ -182,7 +182,7 @@ export default function CreateIntent({
         </div>
         <div className="h-full relative">
           <pre className="h-full">
-            {`const intent = new RoutesService().createSimpleIntent(${JSON.stringify({
+            {`const intent = routesService.createSimpleIntent(${JSON.stringify({
               creator: address,
               originChainID: originChain,
               spendingToken: originToken,

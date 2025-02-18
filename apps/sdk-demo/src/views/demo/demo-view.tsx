@@ -38,7 +38,7 @@ export default function DemoView() {
       <EditConfig />
       <CreateIntent routesService={routesService} onNewIntent={setIntent} />
       <SelectQuote intent={intent} quotes={quotes} onQuoteSelected={setSelectedQuote} />
-      <PublishIntent routesService={routesService} intent={intent} quote={selectedQuote} />
+      <PublishIntent routesService={routesService} intent={intent} quotes={quotes} quote={selectedQuote} />
     </div>
   );
 }

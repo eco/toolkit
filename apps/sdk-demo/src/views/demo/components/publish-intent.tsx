@@ -10,10 +10,11 @@ import { chains } from "../../../config"
 type Props = {
   routesService: RoutesService,
   intent: IntentType | undefined,
+  quotes: SolverQuote[] | undefined,
   quote: SolverQuote | undefined
 }
 
-export default function PublishIntent({ routesService, intent, quote }: Props) {
+export default function PublishIntent({ routesService, intent, quotes, quote }: Props) {
   const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
@@ -29,6 +30,8 @@ export default function PublishIntent({ routesService, intent, quote }: Props) {
     if (!intent || !quote) return
     try {
       const quotedIntent = routesService.applyQuoteToIntent({ intent, quote })
+
+      console.log("Quoted Intent:", quotedIntent)
 
       setIsPublishing(true)
 
@@ -107,49 +110,61 @@ export default function PublishIntent({ routesService, intent, quote }: Props) {
   if (!intent || !quote) return null
 
   return (
-    <div className="m-4 flex flex-col gap-4">
-      {isPublishing || isPublished ? (
-        <>
-          {isPublishing && <span>Publishing intent...</span>}
-          {approvalTxHashes.length > 0 ? (
-            <div className="flex flex-col gap-1">
-              <span>Approval transactions:</span>
-              <ul>
-                {approvalTxHashes.map((txHash) => (
-                  <li className="ml-4" key={txHash}>{txHash}</li>
-                ))}
-              </ul>
-            </div>
-          ) : <span>Approving..</span>}
+    <div className="m-4 flex flex-col">
+      <span className="text-2xl">Publish Intent with Selected Quote:</span>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="border-1 p-2 flex flex-col">
+          {isPublishing || isPublished ? (
+            <div className="flex flex-col gap-2">
+              {isPublishing && <span>Publishing intent...</span>}
+              {approvalTxHashes.length > 0 ? (
+                <div className="flex flex-col gap-1">
+                  <span>Approval transactions:</span>
+                  <ul className="list-disc">
+                    {approvalTxHashes.map((txHash) => (
+                      <li className="ml-6" key={txHash}>{txHash}</li>
+                    ))}
+                  </ul>
+                </div>
+              ) : <span>Approving..</span>}
 
-          {publishTxHash ? (
-            <div>
-              <span>Intent Published:</span>
-              <span>{publishTxHash}</span>
-            </div>
-          ) : <span>Publishing..</span>}
-          {fulfillmentTxHash ? (
-            <div>
-              <span>Intent fulfilled:</span>
-              <span>{fulfillmentTxHash}</span>
-            </div>
-          ) : <span>Waiting for fulfillment..</span>}
+              {publishTxHash ? (
+                <div>
+                  <span>Intent Published:</span>
+                  <span>{publishTxHash}</span>
+                </div>
+              ) : <span>Publishing..</span>}
+              {fulfillmentTxHash ? (
+                <div>
+                  <span>Intent fulfilled:</span>
+                  <span>{fulfillmentTxHash}</span>
+                </div>
+              ) : <span>Waiting for fulfillment..</span>}
 
-          {isPublished && (
-            <div className="flex gap-4 align-center">
-              <span>Intent published and fulfilled!</span>
-              <button onClick={() => window.location.reload()}>Restart</button>
+              {isPublished && (
+                <div className="flex gap-4 align-center">
+                  <span>Intent published and fulfilled!</span>
+                  <button onClick={() => window.location.reload()}>Restart</button>
+                </div>
+              )}
             </div>
-          )}
-        </>
-      ) : (<>
-        {chainId !== Number(intent.route.source) ?
-          <button onClick={() => switchChain({ chainId: Number(intent.route.source) })}>
-            Switch to {chains[Number(intent.route.source) as RoutesSupportedChainId].label}
-          </button> : (
-            <button onClick={publishIntent}>Publish Quoted Intent</button>
-          )}
-      </>)}
+          ) : (<>
+            {chainId !== Number(intent.route.source) ?
+              <button onClick={() => switchChain({ chainId: Number(intent.route.source) })}>
+                Switch to {chains[Number(intent.route.source) as RoutesSupportedChainId].label}
+              </button> : (
+                <button onClick={publishIntent}>Approve and Publish Quoted Intent</button>
+              )}
+          </>)}
+        </div>
+        <div>
+          <pre>
+            {`${quotes && quote ? `const selectedQuote = quotes[${quotes.indexOf(quote)}];
+const quotedIntent = routesService.applyQuoteToIntent({ intent, quote: selectedQuote });
+              ` : undefined}`}
+          </pre>
+        </div>
+      </div>
     </div>
   )
 }
