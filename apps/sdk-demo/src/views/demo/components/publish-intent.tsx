@@ -1,10 +1,11 @@
 import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
 import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
-import { useWriteContract } from "wagmi"
+import { useAccount, useSwitchChain, useWriteContract } from "wagmi"
 import { waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
 import { config } from "../../../wagmi"
+import { chains } from "../../../config"
 
 type Props = {
   routesService: RoutesService,
@@ -13,6 +14,9 @@ type Props = {
 }
 
 export default function PublishIntent({ routesService, intent, quote }: Props) {
+  const { chainId } = useAccount();
+  const { switchChain } = useSwitchChain();
+
   const { writeContractAsync } = useWriteContract()
   const [isPublishing, setIsPublishing] = useState<boolean>(false)
   const [isPublished, setIsPublished] = useState<boolean>(false)
@@ -138,7 +142,14 @@ export default function PublishIntent({ routesService, intent, quote }: Props) {
             </div>
           )}
         </>
-      ) : <button onClick={publishIntent}>Publish Quoted Intent</button>}
+      ) : (<>
+        {chainId !== Number(intent.route.source) ?
+          <button onClick={() => switchChain({ chainId: Number(intent.route.source) })}>
+            Switch to {chains[Number(intent.route.source) as RoutesSupportedChainId].label}
+          </button> : (
+            <button onClick={publishIntent}>Publish Quoted Intent</button>
+          )}
+      </>)}
     </div>
   )
 }
