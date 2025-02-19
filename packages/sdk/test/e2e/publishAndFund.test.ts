@@ -8,7 +8,7 @@ import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
-describe("publishIntent", () => {
+describe("publishAndFund", () => {
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
