@@ -8,7 +8,7 @@ import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
-describe("publishIntent", () => {
+describe("publishAndFund", () => {
   let baseWalletClient: WalletClient
   let routesService: RoutesService
   let openQuotingClient: OpenQuotingClient
@@ -77,8 +77,8 @@ describe("publishIntent", () => {
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: intentSourceContract,
-      functionName: 'publishIntent',
-      args: [quotedIntent, true],
+      functionName: 'publishAndFund',
+      args: [quotedIntent],
       chain: originChain,
       account
     })
@@ -117,8 +117,8 @@ describe("publishIntent", () => {
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: intentSourceContract,
-      functionName: 'publishIntent',
-      args: [intent, true],
+      functionName: 'publishAndFund',
+      args: [intent],
       chain: originChain,
       account
     })

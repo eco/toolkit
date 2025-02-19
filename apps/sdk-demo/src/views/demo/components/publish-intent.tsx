@@ -53,9 +53,9 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
       const publishTxHash = await writeContractAsync({
         chainId: Number(quotedIntent.route.source),
         abi: IntentSourceAbi,
-        functionName: 'publishIntent',
+        functionName: 'publishAndFund',
         address: intentSourceContract,
-        args: [quotedIntent, true]
+        args: [quotedIntent]
       })
 
       const receipt = await waitForTransactionReceipt(config, { hash: publishTxHash })
