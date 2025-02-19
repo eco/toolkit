@@ -3,6 +3,8 @@ This is a [RainbowKit](https://rainbowkit.com) + [wagmi](https://wagmi.sh) + [Ne
 
 Reference this project if you are integrating the Eco Routes SDK into your project. This project demonstrates how to use the Eco Routes SDK to generate, publish and track an intent to fulfillment.
 
+View our hosted deployment at https://toolkit-sdk-demo-eco-pay.vercel.app/
+
 This project uses [viem](https://viem.sh).
 
 ## Getting Started

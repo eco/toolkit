@@ -11,8 +11,16 @@
         ".env*"
       ],
       "outputs": [
-        "dist/**",
-        ".next/**"
+        "dist/**"
+      ]
+    },
+    "sdk-demo#build": {
+      "dependsOn": [
+        "^build"
+      ],
+      "outputs": [
+        ".next/**",
+        "!.next/cache/**"
       ]
     },
     "lint": {

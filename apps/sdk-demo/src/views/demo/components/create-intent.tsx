@@ -36,6 +36,14 @@ export default function CreateIntent({
     query: { enabled: Boolean(originChain && originToken && address) }
   })
 
+  const { data: decimals } = useReadContract({
+    chainId: originChain,
+    abi: erc20Abi,
+    address: originToken as Hex | undefined,
+    functionName: 'decimals',
+    query: { enabled: Boolean(originChain && originToken) }
+  })
+
   useEffect(() => {
     if (balance && address && originChain && originToken && destinationChain && destinationToken && amount && recipient && prover &&
       isAddress(originToken, { strict: false }) &&
@@ -108,7 +116,7 @@ export default function CreateIntent({
                 <span>Token:</span>
                 <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
               </div>
-              {balance ? <span className="text-sm italic">Balance: {formatUnits(balance, 6)}</span> : null}
+              {decimals && balance !== undefined ? <span className="text-sm italic">Balance: {formatUnits(balance, decimals)} (decimals: {decimals})</span> : null}
             </div>
             <div className="flex gap-2">
               Stables available: {originTokensAvailable.map((tokenConfig) => (
@@ -155,7 +163,7 @@ export default function CreateIntent({
           <div className="flex flex-col gap-1 p-1 border-1">
             <span className="text-xl">Desired Amount</span>
             <input type="number" className="border-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
-            {amount && <span>({formatUnits(BigInt(amount), 6)} USD)</span>}
+            {amount && decimals && <span className="text-sm italic">({formatUnits(BigInt(amount), decimals)})</span>}
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">
@@ -174,7 +182,7 @@ export default function CreateIntent({
         </div>
         <div className="h-full relative">
           <pre className="h-full">
-            {`const intent = new RoutesService().createSimpleIntent(${JSON.stringify({
+            {`const intent = routesService.createSimpleIntent(${JSON.stringify({
               creator: address,
               originChainID: originChain,
               spendingToken: originToken,
