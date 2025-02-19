@@ -170,8 +170,8 @@ try {
   const publishTxHash = await originWalletClient.writeContract({
     abi: IntentSourceAbi,
     address: selectedQuote.intentSourceContract,
-    functionName: 'publishIntent',
-    args: [intentWithQuote, true],
+    functionName: 'publishAndFund',
+    args: [intentWithQuote],
     chain: originChain,
     account
   })

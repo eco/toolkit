@@ -77,8 +77,8 @@ describe("publishIntent", () => {
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: intentSourceContract,
-      functionName: 'publishIntent',
-      args: [quotedIntent, true],
+      functionName: 'publishAndFund',
+      args: [quotedIntent],
       chain: originChain,
       account
     })
@@ -117,8 +117,8 @@ describe("publishIntent", () => {
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: intentSourceContract,
-      functionName: 'publishIntent',
-      args: [intent, true],
+      functionName: 'publishAndFund',
+      args: [intent],
       chain: originChain,
       account
     })
