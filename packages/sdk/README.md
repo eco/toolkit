@@ -194,7 +194,7 @@ const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(or
 
 # Full Demo
 
-For a full example of creating an intent and tracking it until it's fulfilled, see the [Eco Routes SDK Demo](../../apps/sdk-demo/).
+For a full example of creating an intent and tracking it until it's fulfilled, see the [Eco Routes SDK Demo](https://github.com/eco/toolkit/tree/main/apps/sdk-demo).
 
 # Testing
 
