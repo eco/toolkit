@@ -1,0 +1,126 @@
+name: NextJS Vercel Deployment
+on:
+  workflow_call:
+    inputs:
+      gsha:
+        type: string
+        required: false
+        default: ""
+      ghenv:
+        type: string
+        required: true
+      env_filepath:
+        type: string
+        required: true
+      production:
+        type: string
+        required: false
+        default: 'false'
+      domain_alias:
+        type: string
+        required: false
+        default: ""
+      aws_secret_name:
+        type: string
+        description: 'name of aws secret vault'
+        required: false
+        default: ''
+      aws_region:
+        type: string
+        required: false
+        default: us-east-2
+      assumed_role:
+        type: string
+        description: 'role to assume'
+        required: false
+        default: ''
+      app_name:
+        type: string
+        description: 'name of app'
+        required: false
+        default: 'portal'
+      
+
+      
+
+permissions:
+  id-token: write
+  contents: write
+  pull-requests: write
+  issues: write
+
+env:
+  NODE_OPTIONS: "--max_old_space_size=4096"
+  PRODUCTION_DOMAIN: "portal.eco.com"
+  AWS_REGION: "us-east-2"
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.ghenv }}
+    strategy:
+      matrix:
+        node: [20.x]
+
+
+    steps:
+      - name: Checkout Commit SHA Based
+        if: inputs.gsha != ''
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.gsha }}
+          
+      - name: Checkout Commit SHA Based
+        if: inputs.gsha == ''
+        uses: actions/checkout@v3
+
+      - name: Setup node env
+        uses: actions/setup-node@v3
+        with:
+          node-version: ${{ matrix.node }}
+
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          role-to-assume: ${{ inputs.assumed_role }}
+          role-session-name: ${{ inputs.app_name }}-${{ inputs.ghenv }}-oidc # fix this if we goto prod remove procdcution and make it the gh_env input
+          aws-region: ${{ inputs.aws_region }}
+
+      - name: Fetch secret from AWS Secrets Manager
+        if: inputs.aws_secret_name != ''
+        id: fetch_secret
+        run: |
+          SECRET_NAME="${{ inputs.aws_secret_name }}"
+          SECRET_JSON=$(aws secretsmanager get-secret-value --secret-id $SECRET_NAME --query SecretString --output text)
+          
+          KEYS=$(echo $SECRET_JSON | jq -r 'keys[]')
+
+          for KEY in $KEYS; do
+            VALUE=$(echo $SECRET_JSON | jq -r ".${KEY}")
+            echo "::add-mask::$VALUE"
+            echo "${KEY}=${VALUE}" >> $GITHUB_ENV
+          done
+
+      - name: Import environment variables
+        run: |  
+          echo "Importing environment variables from ${{ inputs.env_filepath }}"
+          while IFS='=' read -r key value || [[ -n "$key" ]]; do
+            echo "$key=$value" >> $GITHUB_ENV
+            echo "Setting $key"
+          done < ${{ inputs.env_filepath }}
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@canary
+
+# # # Preview environments # # #
+      - name: Pull Vercel Environment Information Preview Environment
+        run: vercel pull --yes --environment=preview --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
+
+      - name: Build Project Artifacts Preview Environment
+        run: vercel build --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }}
+
+      - name: Update Vercel Preview Environment
+        id: url_deploy_preview
+        run: echo "url_preview=$(vercel deploy --prebuilt --token=${{ env.VERCEL_TOKEN }} --scope=${{ env.VERCEL_ORG_ID }})" >> $GITHUB_OUTPUT
+      
