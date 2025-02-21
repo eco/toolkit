@@ -2,7 +2,7 @@ import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundat
 import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi"
-import { waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
+import { getBlockNumber, waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
 import { config } from "../../../wagmi"
 import { chains } from "../../../config"
@@ -71,9 +71,11 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
 
       setPublishTxHash(publishTxHash)
 
+      const blockNumber = await getBlockNumber(config, { chainId: Number(quotedIntent.route.destination) as RoutesSupportedChainId })
+
       const fulfillmentTxHash = await new Promise<Hex>((resolve, reject) => {
         const unwatch = watchContractEvent(config, {
-          fromBlock: receipt.blockNumber - BigInt(5),
+          fromBlock: blockNumber - BigInt(10),
           chainId: Number(quotedIntent.route.destination) as RoutesSupportedChainId,
           abi: InboxAbi,
           eventName: 'Fulfillment',
