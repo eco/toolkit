@@ -1,7 +1,7 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, SolverQuote } from "../../src";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
@@ -652,7 +652,6 @@ describe("RoutesService", () => {
 
     beforeEach(() => {
       validQuote = {
-        receiveSignedIntentUrl: "https://example.com/endpoint",
         quoteData: {
           tokens: [{
             token: RoutesService.getStableAddress(10, "USDC"),

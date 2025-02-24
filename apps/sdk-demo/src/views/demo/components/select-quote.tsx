@@ -17,9 +17,8 @@ export default function SelectQuote({ intent, quotes, onQuoteSelected }: Props) 
       <span className="text-2xl">Quotes Available:</span>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          {quotes.map((quote) => (
-            <div key={quote.receiveSignedIntentUrl} className="p-2 border-1 flex flex-col">
-              <span>Quote from {quote.receiveSignedIntentUrl}</span>
+          {quotes.map((quote, index) => (
+            <div key={`quote-${index}`} className="p-2 border-1 flex flex-col">
               <span>Amounts requested by solver on the origin chain:</span>
               <ul className="list-disc">
                 {quote.quoteData.tokens.map((token) => (

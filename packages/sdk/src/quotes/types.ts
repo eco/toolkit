@@ -41,7 +41,6 @@ export namespace OpenQuotingAPI {
 }
 
 export type SolverQuote = {
-  receiveSignedIntentUrl: string,
   quoteData: QuoteData
 }
 
