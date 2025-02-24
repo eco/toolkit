@@ -653,7 +653,6 @@ describe("RoutesService", () => {
     beforeEach(() => {
       validQuote = {
         receiveSignedIntentUrl: "https://example.com/endpoint",
-        intentSourceContract: EcoProtocolAddresses[10].IntentSource,
         quoteData: {
           tokens: [{
             token: RoutesService.getStableAddress(10, "USDC"),

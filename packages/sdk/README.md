@@ -137,7 +137,7 @@ The SDK gives you what you need so that you can publish the intent to the origin
 ``` ts
 import { createWalletClient, privateKeyToAccount, webSocket, http, erc20Abi } from 'viem';
 import { optimism } from 'viem/chains';
-import { IntentSourceAbi } from '@eco-foundation/routes-ts';
+import { IntentSourceAbi, EcoProtocolAddresses } from '@eco-foundation/routes-ts';
 
 const account = privateKeyToAccount('YOUR PRIVATE KEY HERE')
 const originChain = optimism;
@@ -152,6 +152,8 @@ const originPublicClient = createPublicClient({
   transport: webSocket(rpcUrl) // OR http(rpcUrl)
 })
 
+const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource;
+
 try {
   // approve the quoted amount to account for fees
   await Promise.all(intentWithQuote.reward.tokens.map(async ({ token, amount }) => {
@@ -159,7 +161,7 @@ try {
       abi: erc20Abi,
       address: token,
       functionName: 'approve',
-      args: [selectedQuote.intentSourceContract, amount],
+      args: [intentSourceContract, amount],
       chain: originChain,
       account
     })
@@ -169,7 +171,7 @@ try {
 
   const publishTxHash = await originWalletClient.writeContract({
     abi: IntentSourceAbi,
-    address: selectedQuote.intentSourceContract,
+    address: intentSourceContract,
     functionName: 'publishAndFund',
     args: [intentWithQuote],
     chain: originChain,
@@ -184,13 +186,6 @@ catch (error) {
 ```
 
 [See more from viem's docs](https://viem.sh/)
-
-> **Note:** A quote will provide the address of an IntentSource contract for you, but if you aren't using a quote you can get the default IntentSource contract like so:
-``` ts
-import { EcoProtocolAddresses } from '@eco-foundation/routes-ts';
-
-const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChainID)].IntentSource;
-```
 
 # Full Demo
 

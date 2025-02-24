@@ -20,7 +20,6 @@ export default function SelectQuote({ intent, quotes, onQuoteSelected }: Props) 
           {quotes.map((quote) => (
             <div key={quote.receiveSignedIntentUrl} className="p-2 border-1 flex flex-col">
               <span>Quote from {quote.receiveSignedIntentUrl}</span>
-              <span>IntentSource Contract: {quote.intentSourceContract}</span>
               <span>Amounts requested by solver on the origin chain:</span>
               <ul className="list-disc">
                 {quote.quoteData.tokens.map((token) => (

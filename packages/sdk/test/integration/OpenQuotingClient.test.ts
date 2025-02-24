@@ -43,7 +43,6 @@ describe("OpenQuotingClient", () => {
 
       for (const quote of quotes) {
         expect(quote.receiveSignedIntentUrl).toBeDefined();
-        expect(quote.intentSourceContract).toBeDefined();
         expect(quote.quoteData).toBeDefined();
         expect(quote.quoteData.expiryTime).toBeDefined();
         expect(quote.quoteData.tokens).toBeDefined();
@@ -67,7 +66,6 @@ describe("OpenQuotingClient", () => {
 
       for (const quote of quotes) {
         expect(quote.receiveSignedIntentUrl).toBeDefined();
-        expect(quote.intentSourceContract).toBeDefined();
         expect(quote.quoteData).toBeDefined();
         expect(quote.quoteData.expiryTime).toBeDefined();
         expect(quote.quoteData.tokens).toBeDefined();
