@@ -78,7 +78,7 @@ describe("publishAndFund", () => {
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [quotedIntent],
+      args: [quotedIntent, false],
       chain: originChain,
       account
     })
@@ -118,7 +118,7 @@ describe("publishAndFund", () => {
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [intent],
+      args: [intent, false],
       chain: originChain,
       account
     })
