@@ -173,7 +173,7 @@ try {
     abi: IntentSourceAbi,
     address: intentSourceContract,
     functionName: 'publishAndFund',
-    args: [intentWithQuote],
+    args: [intentWithQuote, false],
     chain: originChain,
     account
   })
