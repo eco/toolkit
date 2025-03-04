@@ -5,7 +5,7 @@ export const chainIds = [
   10,     // Optimism
   137,    // Polygon
   // 2741,// Abstract
-  5000,   // Mantle
+  // 5000,   // Mantle
   8453,   // Base
   42161   // Arbitrum
 ] as const;
@@ -32,10 +32,10 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
   //   USDT: "0x0709f39376deee2a2dfc94a58edeb2eb9df012bd",
   //   USDCe: "0x84a71ccd554cc1b02749b35d22f684cc8ec987e1",
   // },
-  5000: {
-    USDC: "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
-    USDT: "0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE",
-  },
+  // 5000: {
+  //   USDC: "0x09bc4e0d864854c6afb6eb9a9cdf58ac190d0df9",
+  //   USDT: "0x201EBa5CC46D216Ce6DC03F6a759e8E766e956aE",
+  // },
   8453: {
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     USDbC: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
