@@ -29,10 +29,10 @@ export const chains: Record<RoutesSupportedChainId, MyChainConfig> = {
   //   label: "Abstract",
   //   stables: getAvailableStables(2741)
   // },
-  5000: {
-    label: "Mantle",
-    stables: getAvailableStables(5000)
-  },
+  // 5000: {
+  //   label: "Mantle",
+  //   stables: getAvailableStables(5000)
+  // },
   8453: {
     label: "Base",
     stables: getAvailableStables(8453)
