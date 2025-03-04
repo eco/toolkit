@@ -12,7 +12,7 @@ import { useConfig } from "../../providers/config-provider";
 export default function DemoView() {
   const config = useConfig();
   const openQuotingClient = useMemo(() => new OpenQuotingClient({ dAppID: "sdk-demo", customBaseUrl: config.openQuotingClientUrl }), [config.openQuotingClientUrl])
-  const routesService = useMemo(() => new RoutesService({ isPreprod: config.preprodContracts }), [config.preprodContracts])
+  const routesService = useMemo(() => new RoutesService(config.preprodContracts ? { isPreprod: config.preprodContracts } : undefined), [config.preprodContracts])
 
   const [intent, setIntent] = useState<IntentType>();
   const [quotes, setQuotes] = useState<SolverQuote[]>();

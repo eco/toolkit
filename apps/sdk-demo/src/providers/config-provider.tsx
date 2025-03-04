@@ -8,8 +8,8 @@ type Config = {
 
 export const defaultConfig: Config = {
   updateConfig: () => { },
-  openQuotingClientUrl: "https://quotes-preprod.eco.com",
-  preprodContracts: true
+  openQuotingClientUrl: "https://quotes.eco.com",
+  preprodContracts: false
 }
 
 const ConfigContext = createContext(defaultConfig)
