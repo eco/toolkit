@@ -20,7 +20,7 @@ export default function DemoView() {
 
   useEffect(() => {
     if (intent) {
-      openQuotingClient.requestQuotesForIntent(intent).then((quotes) => {
+      openQuotingClient.requestQuotesForIntent({ intent }).then((quotes) => {
         setQuotes(quotes)
       }).catch((error) => {
         alert('Could not fetch quotes: ' + error.message)

@@ -50,7 +50,7 @@ describe("publishAndFund", () => {
     })
 
     // request quotes
-    const quotes = await openQuotingClient.requestQuotesForIntent(intent)
+    const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
     const selectedQuote = selectCheapestQuote(quotes)
 
     // setup the intent for publishing

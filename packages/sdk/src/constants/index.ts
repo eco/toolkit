@@ -1,5 +1,11 @@
 import { Hex } from "viem";
 
+export const INTENT_EXECUTION_TYPES = [
+  "GASLESS",
+  "SELF_PUBLISH"
+] as const;
+export type IntentExecutionType = typeof INTENT_EXECUTION_TYPES[number]
+
 export const chainIds = [
   1,      // ETH Mainnet
   10,     // Optimism
@@ -47,3 +53,4 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDT: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
   },
 }
+

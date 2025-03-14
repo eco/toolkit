@@ -1,9 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
-import { OpenQuotingAPI, SolverQuote } from "./types";
+import { OpenQuotingAPI, RequestQuotesForIntentParams, SolverQuote } from "./types";
 import { ECO_SDK_CONFIG } from "../config";
-import { IntentType } from "@eco-foundation/routes-ts";
-
 
 export class OpenQuotingClient {
   private readonly MAX_RETRIES = 5;
@@ -28,9 +26,13 @@ export class OpenQuotingClient {
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intent information.
    */
-  async requestQuotesForIntent(intent: IntentType): Promise<SolverQuote[]> {
+  async requestQuotesForIntent({ intent, intentExecutionTypes = ['SELF_PUBLISH', 'GASLESS'] }: RequestQuotesForIntentParams): Promise<SolverQuote[]> {
+    if (intentExecutionTypes.length === 0) {
+      throw new Error("intentExecutionTypes must not be empty");
+    }
     const payload: OpenQuotingAPI.Quotes.Request = {
       dAppID: this.dAppID,
+      intentExecutionTypes,
       intentData: {
         routeData: {
           originChainID: intent.route.source.toString(),
