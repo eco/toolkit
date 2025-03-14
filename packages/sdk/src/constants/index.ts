@@ -7,7 +7,8 @@ export const chainIds = [
   // 2741,// Abstract
   // 5000,   // Mantle
   8453,   // Base
-  42161   // Arbitrum
+  42161,   // Arbitrum
+  42220   // Celo
 ] as const;
 export type RoutesSupportedChainId = typeof chainIds[number];
 
@@ -45,5 +46,9 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
     USDCe: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
     USDT: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+  },
+  42220: {
+    USDC: "0xceba9300f2b948710d2653dd7b07f33a8b32118c",
+    USDT: "0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e",
   },
 }
