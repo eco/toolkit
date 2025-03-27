@@ -62,6 +62,28 @@ export class OpenQuotingClient {
     }
 
     const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
-    return response.data.data;
+
+    return this.parseQuotesResponse(response.data);
+  }
+
+  private parseQuotesResponse(response: OpenQuotingAPI.Quotes.Response): SolverQuote[] {
+    return response.data.map((quote) => ({
+      solverID: quote.solverID,
+      quoteData: {
+        quoteEntries: quote.quoteData.quoteEntries.map((entry) => ({
+          intentExecutionType: entry.intentExecutionType,
+          tokens: entry.tokens.map((token) => ({
+            token: token.token,
+            amount: BigInt(token.amount)
+          })),
+          expiryTime: BigInt(entry.expiryTime)
+        }))
+      }
+    }));
+  }
+
+  // TODO: add method for submitting quoted intent gaslessly
+  async submitGaslessIntent({ }: { intent: any, quote: any }): Promise<any> {
+    throw new Error("Method not implemented");
   }
 }

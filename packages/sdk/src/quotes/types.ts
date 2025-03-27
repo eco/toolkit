@@ -3,42 +3,74 @@ import { Hex } from "viem";
 import { IntentExecutionType } from "../constants";
 export namespace OpenQuotingAPI {
   export enum Endpoints {
-    Quotes = '/api/v1/quotes'
+    Quotes = '/api/v1/quotes',
+    InitiateGaslessIntent = '/api/v1/quotes/initiateGaslessIntent',
   }
 
   export namespace Quotes {
+    export type IntentData = {
+      routeData: {
+        originChainID: string
+        destinationChainID: string
+        inboxContract: Hex
+        tokens: {
+          token: Hex
+          amount: string
+        }[]
+        calls: {
+          target: Hex
+          data: Hex
+          value: string
+        }[]
+      },
+      rewardData: {
+        creator: Hex
+        proverContract: Hex
+        deadline: string
+        nativeValue: string
+        tokens: {
+          token: Hex
+          amount: string
+        }[]
+      }
+    }
     export interface Request {
       dAppID: string;
-      intentExecutionTypes: string[];
-      intentData: {
-        routeData: {
-          originChainID: string
-          destinationChainID: string
-          inboxContract: Hex
-          tokens: {
-            token: Hex
-            amount: string
+      intentExecutionTypes: IntentExecutionType[];
+      intentData: IntentData
+    }
+    export interface Response {
+      data: {
+        solverID: string
+        quoteData: {
+          quoteEntries: {
+            intentExecutionType: IntentExecutionType
+            tokens: {
+              token: Hex
+              amount: string
+            }[]
+            expiryTime: string
           }[]
-          calls: {
-            target: Hex
-            data: Hex
-            value: string
-          }[]
-        },
-        rewardData: {
-          creator: Hex
-          proverContract: Hex
-          deadline: string
-          nativeValue: string
-          tokens: {
-            token: Hex
-            amount: string
-          }[]
+        }
+      }[]
+    }
+  }
+
+  export namespace InitiateGaslessIntent {
+    export interface Request {
+      dAppID: string;
+      solverID: string;
+      intentData: Quotes.IntentData & {
+        gaslessIntentData: {
+          funder: Hex
+          permitContract: Hex
+          allowPartial?: boolean
+          // TODO: add in optional permit2 signature data
         }
       }
     }
     export interface Response {
-      data: SolverQuote[]
+      data: {} // TODO: get response format
     }
   }
 }
@@ -49,13 +81,17 @@ export type RequestQuotesForIntentParams = {
 }
 
 export type SolverQuote = {
-  quoteData: QuoteData
+  solverID: string
+  quoteData: {
+    quoteEntries: QuoteData[]
+  }
 }
 
 export type QuoteData = {
+  intentExecutionType: IntentExecutionType
   tokens: {
     token: Hex,
-    amount: string
+    amount: bigint
   }[]
-  expiryTime: string // seconds since epoch
+  expiryTime: bigint // seconds since epoch
 }
