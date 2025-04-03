@@ -1,7 +1,7 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
+import { CreateIntentParams, CreateSimpleIntentParams } from "./types";
 
 import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config";
@@ -152,29 +152,6 @@ export class RoutesService {
         tokens
       }
     }
-  }
-
-  /**
-   * Applies a quote to an intent, modifying the reward tokens.
-   *
-   * @param {ApplyQuoteToIntentParams} params - The parameters for applying the quote to the intent.
-   *
-   * @returns {IntentType} The intent with the quote applied.
-   * 
-   * @throws {Error} If the quote is invalid.
-   */
-  applyQuoteToIntent({ intent, quote }: ApplyQuoteToIntentParams): IntentType {
-    if (!quote.quoteData.tokens.length) {
-      throw new Error("Invalid quoteData: tokens array must have length greater than 0")
-    }
-
-    // only thing affected by the quote is the reward tokens
-    intent.reward.tokens = quote.quoteData.tokens.map(({ token, amount }) => ({
-      token: token,
-      amount: BigInt(amount)
-    }))
-
-    return intent;
   }
 
   /**

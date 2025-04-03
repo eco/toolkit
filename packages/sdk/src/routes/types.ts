@@ -1,7 +1,5 @@
 import { Hex } from "viem"
 import { RoutesSupportedChainId } from "../constants"
-import { SolverQuote } from "../quotes/types"
-import { IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
   creator: Hex
@@ -25,11 +23,6 @@ export type CreateIntentParams = {
   tokens: IntentToken[]
   prover: "HyperProver" | "StorageProver" | Hex
   expiryTime?: Date
-}
-
-export type ApplyQuoteToIntentParams = {
-  intent: IntentType
-  quote: SolverQuote
 }
 
 type IntentCall = {
