@@ -3,9 +3,10 @@ import { Hex } from "viem";
 export const chainIds = [
   1,      // ETH Mainnet
   10,     // Optimism
+  130,    // Unichain
   137,    // Polygon
   // 2741,// Abstract
-  // 5000,   // Mantle
+  // 5000,// Mantle
   8453,   // Base
   42161,   // Arbitrum
   42220   // Celo
@@ -24,6 +25,10 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     USDCe: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
     USDT: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+  },
+  130: {
+    USDC: "0x078D782b760474a361dDA0AF3839290b0EF57AD6",
+    USDT: "0x588CE4F028D8e7B53B687865d6A67b3A54C75518"
   },
   137: {
     USDC: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
