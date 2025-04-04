@@ -2,6 +2,7 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import {
   mainnet,
   optimism,
+  unichain,
   polygon,
   // abstract,
   // mantle,
@@ -20,6 +21,7 @@ export const config = getDefaultConfig({
   chains: [
     mainnet,
     optimism,
+    unichain,
     polygon,
     // abstract,
     // mantle,
@@ -29,6 +31,7 @@ export const config = getDefaultConfig({
   transports: {
     [mainnet.id]: http(process.env.NEXT_PUBLIC_MAINNET_RPC_URL),
     [optimism.id]: http(process.env.NEXT_PUBLIC_OPTIMISM_RPC_URL),
+    [unichain.id]: http(process.env.NEXT_PUBLIC_UNICHAIN_RPC_URL),
     [polygon.id]: http(process.env.NEXT_PUBLIC_POLYGON_RPC_URL),
     // [abstract.id]: http(process.env.NEXT_PUBLIC_ABSTRACT_RPC_URL),
     // [mantle.id]: http(process.env.NEXT_PUBLIC_MANTLE_RPC_URL),
