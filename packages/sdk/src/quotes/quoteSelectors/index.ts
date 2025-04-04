@@ -1,4 +1,4 @@
-import { INTENT_EXECUTION_TYPES, IntentExecutionType } from "../../constants";
+import { IntentExecutionType } from "../../constants";
 import { sum } from "../../utils";
 import { QuoteData, SolverQuote } from "../types";
 
@@ -7,47 +7,79 @@ type QuoteSelectorResult = {
   quoteData: QuoteData;
 }
 
-export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = [...INTENT_EXECUTION_TYPES]): QuoteSelectorResult {
+export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = ["SELF_PUBLISH"]): QuoteSelectorResult {
   return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteData: cheapestQuoteData }, solverQuoteResponse) => {
     const quotes = solverQuoteResponse.quoteData.quoteEntries;
+    let localCheapestQuoteData = cheapestQuoteData;
+    let localCheapestSolverID = cheapestSolverID;
+    const defaultSum = BigInt(isReverse ? 0 : Infinity);
+
     for (const quoteData of quotes) {
       if (allowedIntentExecutionTypes.includes(quoteData.intentExecutionType)) {
-        let cheapestTokens = cheapestQuoteData.intentData.reward.tokens;
+        let localCheapestTokens = localCheapestQuoteData?.intentData?.reward.tokens;
         let quoteTokens = quoteData.intentData.reward.tokens;
-        const defaultSum = BigInt(isReverse ? 0 : Infinity);
+
         if (isReverse) {
-          cheapestTokens = cheapestQuoteData.intentData.route.tokens;
+          localCheapestTokens = localCheapestQuoteData?.intentData?.route.tokens;
           quoteTokens = quoteData.intentData.route.tokens;
         }
 
-        const cheapestSum = cheapestQuoteData ? sum(cheapestTokens.map(({ amount }) => amount)) : defaultSum;
+        const localCheapestSum = localCheapestQuoteData ? sum(localCheapestTokens.map(({ amount }) => amount)) : defaultSum;
         const quoteSum = sum(quoteTokens.map(({ amount }) => amount));
 
         if (isReverse) {
           // want to set the quote with the highest route tokens sum (most received on destination chain)
-          return quoteSum > cheapestSum ? {
-            solverID: solverQuoteResponse.solverID,
-            quoteData
-          } : {
-            solverID: cheapestSolverID,
-            quoteData: cheapestQuoteData
-          };
+          if (quoteSum > localCheapestSum) {
+            localCheapestSolverID = solverQuoteResponse.solverID;
+            localCheapestQuoteData = quoteData;
+          }
         }
         else {
           // want to set the quote with the lowest reward tokens sum (least spent on origin chain)
-          return quoteSum < cheapestSum ? {
-            solverID: solverQuoteResponse.solverID,
-            quoteData
-          } : {
-            solverID: cheapestSolverID,
-            quoteData: cheapestQuoteData
-          } as QuoteSelectorResult;
+          if (quoteSum < localCheapestSum) {
+            localCheapestSolverID = solverQuoteResponse.solverID;
+            localCheapestQuoteData = quoteData;
+          }
         }
       }
     }
-    return {
-      solverID: cheapestSolverID,
-      quoteData: cheapestQuoteData
+
+    // After iterating through all quotes for this solver, compare the local cheapest with the global cheapest
+    if (!cheapestQuoteData) {
+      return {
+        solverID: localCheapestSolverID,
+        quoteData: localCheapestQuoteData
+      };
+    }
+
+    if (isReverse) {
+      const globalTokens = cheapestQuoteData.intentData.route.tokens;
+      const localTokens = localCheapestQuoteData?.intentData?.route.tokens;
+
+      const globalSum = sum(globalTokens.map(({ amount }) => amount));
+      const localSum = localCheapestQuoteData ? sum(localTokens.map(({ amount }) => amount)) : defaultSum;
+
+      return localSum > globalSum ? {
+        solverID: localCheapestSolverID,
+        quoteData: localCheapestQuoteData
+      } : {
+        solverID: cheapestSolverID,
+        quoteData: cheapestQuoteData
+      };
+    } else {
+      const globalTokens = cheapestQuoteData.intentData.reward.tokens;
+      const localTokens = localCheapestQuoteData?.intentData?.reward.tokens;
+
+      const globalSum = sum(globalTokens.map(({ amount }) => amount));
+      const localSum = localCheapestQuoteData ? sum(localTokens.map(({ amount }) => amount)) : defaultSum;
+
+      return localSum < globalSum ? {
+        solverID: localCheapestSolverID,
+        quoteData: localCheapestQuoteData
+      } : {
+        solverID: cheapestSolverID,
+        quoteData: cheapestQuoteData
+      };
     }
   }, {} as QuoteSelectorResult);
 }
