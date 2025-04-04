@@ -45,4 +45,8 @@ export const chains: Record<RoutesSupportedChainId, MyChainConfig> = {
     label: "Arbitrum",
     stables: getAvailableStables(42161)
   },
+  42220: {
+    label: "Celo",
+    stables: getAvailableStables(42220)
+  },
 }

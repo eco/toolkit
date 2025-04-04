@@ -8,6 +8,7 @@ import {
   // mantle,
   base,
   arbitrum,
+  celo
 } from 'wagmi/chains';
 import { http } from 'wagmi';
 
@@ -27,6 +28,7 @@ export const config = getDefaultConfig({
     // mantle,
     base,
     arbitrum,
+    celo,
   ],
   transports: {
     [mainnet.id]: http(process.env.NEXT_PUBLIC_MAINNET_RPC_URL),
@@ -37,6 +39,7 @@ export const config = getDefaultConfig({
     // [mantle.id]: http(process.env.NEXT_PUBLIC_MANTLE_RPC_URL),
     [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC_URL),
     [arbitrum.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL),
+    [celo.id]: http(process.env.NEXT_PUBLIC_CELO_RPC_URL),
   },
   ssr: true,
 });
