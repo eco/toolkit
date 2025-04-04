@@ -4,6 +4,7 @@ import { InitiateGaslessIntentResponse, OpenQuotingAPI, PermitData, RequestQuote
 import { ECO_SDK_CONFIG } from "../config";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { decodeFunctionData, erc20Abi } from "viem";
+import { generateRandomHex } from "../utils";
 
 export class OpenQuotingClient {
   private readonly MAX_RETRIES = 5;
@@ -86,7 +87,6 @@ export class OpenQuotingClient {
   private formatIntentData(intent: IntentType): OpenQuotingAPI.Quotes.IntentData {
     return {
       routeData: {
-        salt: intent.route.salt,
         originChainID: intent.route.source.toString(),
         destinationChainID: intent.route.destination.toString(),
         inboxContract: intent.route.inbox,
@@ -121,7 +121,7 @@ export class OpenQuotingClient {
           intentExecutionType: entry.intentExecutionType,
           intentData: {
             route: {
-              salt: entry.intentData.routeData.salt,
+              salt: generateRandomHex(),
               source: BigInt(entry.intentData.routeData.originChainID),
               destination: BigInt(entry.intentData.routeData.destinationChainID),
               inbox: entry.intentData.routeData.inboxContract,

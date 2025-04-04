@@ -51,17 +51,10 @@ describe("publishAndFund", () => {
 
     // request quotes
     const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
-    const selectedQuote = selectCheapestQuote(quotes)
-
-    // setup the intent for publishing
-    const quotedIntent = routesService.applyQuoteToIntent({
-      intent,
-      quote: selectedQuote
-    })
-    expect(quotedIntent).toBeDefined()
+    const { quoteData } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
 
     // approve
-    await Promise.all(quotedIntent.reward.tokens.map(async ({ token, amount }) => {
+    await Promise.all(quoteData.intentData.reward.tokens.map(async ({ token, amount }) => {
       const hash = await baseWalletClient.writeContract({
         abi: erc20Abi,
         address: token,
@@ -78,7 +71,7 @@ describe("publishAndFund", () => {
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [quotedIntent, false],
+      args: [quoteData.intentData, false],
       chain: originChain,
       account
     })

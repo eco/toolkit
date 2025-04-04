@@ -10,7 +10,6 @@ export namespace OpenQuotingAPI {
   export namespace Quotes {
     export type IntentData = {
       routeData: {
-        salt: Hex
         originChainID: string
         destinationChainID: string
         inboxContract: Hex
