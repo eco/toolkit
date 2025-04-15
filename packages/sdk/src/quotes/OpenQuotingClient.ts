@@ -4,7 +4,6 @@ import { InitiateGaslessIntentResponse, OpenQuotingAPI, PermitData, RequestQuote
 import { ECO_SDK_CONFIG } from "../config";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { decodeFunctionData, erc20Abi } from "viem";
-import { generateRandomHex } from "../utils";
 
 export class OpenQuotingClient {
   private readonly MAX_RETRIES = 5;
@@ -43,7 +42,7 @@ export class OpenQuotingClient {
 
     const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
 
-    return this.parseQuotesResponse(response.data);
+    return this.parseQuotesResponse(intent, response.data);
   }
 
   /**
@@ -79,14 +78,15 @@ export class OpenQuotingClient {
       intentData: this.formatIntentData(intent)
     }
 
-    const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
+    const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.ReverseQuotes, payload);
 
-    return this.parseQuotesResponse(response.data);
+    return this.parseQuotesResponse(intent, response.data);
   }
 
   private formatIntentData(intent: IntentType): OpenQuotingAPI.Quotes.IntentData {
     return {
       routeData: {
+        salt: "0x0",
         originChainID: intent.route.source.toString(),
         destinationChainID: intent.route.destination.toString(),
         inboxContract: intent.route.inbox,
@@ -113,34 +113,35 @@ export class OpenQuotingClient {
     }
   }
 
-  private parseQuotesResponse(response: OpenQuotingAPI.Quotes.Response): SolverQuote[] {
+  private parseQuotesResponse(intent: IntentType, response: OpenQuotingAPI.Quotes.Response): SolverQuote[] {
     return response.data.map((quote) => ({
+      quoteID: quote.quoteID,
       solverID: quote.solverID,
       quoteData: {
         quoteEntries: quote.quoteData.quoteEntries.map((entry) => ({
           intentExecutionType: entry.intentExecutionType,
           intentData: {
             route: {
-              salt: generateRandomHex(),
-              source: BigInt(entry.intentData.routeData.originChainID),
-              destination: BigInt(entry.intentData.routeData.destinationChainID),
-              inbox: entry.intentData.routeData.inboxContract,
-              tokens: entry.intentData.routeData.tokens.map((token) => ({
+              salt: intent.route.salt,
+              source: intent.route.source,
+              destination: intent.route.destination,
+              inbox: intent.route.inbox,
+              tokens: entry.routeTokens.map((token) => ({
                 token: token.token,
                 amount: BigInt(token.amount)
               })),
-              calls: entry.intentData.routeData.calls.map((call) => ({
+              calls: entry.routeCalls.map((call) => ({
                 target: call.target,
                 data: call.data,
                 value: BigInt(call.value)
               }))
             },
             reward: {
-              creator: entry.intentData.rewardData.creator,
-              prover: entry.intentData.rewardData.proverContract,
-              deadline: BigInt(entry.intentData.rewardData.deadline),
-              nativeValue: BigInt(entry.intentData.rewardData.nativeValue),
-              tokens: entry.intentData.rewardData.tokens.map((token) => ({
+              creator: intent.reward.creator,
+              prover: intent.reward.prover,
+              deadline: intent.reward.deadline,
+              nativeValue: intent.reward.nativeValue,
+              tokens: entry.rewardTokens.map((token) => ({
                 token: token.token,
                 amount: BigInt(token.amount)
               }))

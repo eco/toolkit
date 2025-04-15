@@ -99,7 +99,7 @@ export class RoutesService {
   /**
    * Creates an intent.
    *
-   * @param {CreateRouteParams} params - The parameters for creating the intent.
+   * @param {CreateIntentParams} params - The parameters for creating the intent.
    * 
    * @returns {IntentType} The created intent.
    * 

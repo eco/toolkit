@@ -12,7 +12,7 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
     const quotes = solverQuoteResponse.quoteData.quoteEntries;
     let localCheapestQuoteData = cheapestQuoteData;
     let localCheapestSolverID = cheapestSolverID;
-    const defaultSum = BigInt(isReverse ? 0 : Infinity);
+    const defaultSum = BigInt(isReverse ? 0 : Number.MAX_SAFE_INTEGER);
 
     for (const quoteData of quotes) {
       if (allowedIntentExecutionTypes.includes(quoteData.intentExecutionType)) {

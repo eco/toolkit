@@ -4,12 +4,14 @@ import { IntentExecutionType } from "../constants";
 export namespace OpenQuotingAPI {
   export enum Endpoints {
     Quotes = '/api/v1/quotes',
+    ReverseQuotes = '/api/v1/quotes/reverse',
     InitiateGaslessIntent = '/api/v1/quotes/initiateGaslessIntent',
   }
 
   export namespace Quotes {
     export type IntentData = {
       routeData: {
+        salt: Hex
         originChainID: string
         destinationChainID: string
         inboxContract: Hex
@@ -41,11 +43,24 @@ export namespace OpenQuotingAPI {
     }
     export interface Response {
       data: {
+        quoteID: string
         solverID: string
         quoteData: {
           quoteEntries: {
             intentExecutionType: IntentExecutionType
-            intentData: IntentData
+            routeTokens: {
+              token: Hex
+              amount: string
+            }[]
+            routeCalls: {
+              target: Hex
+              data: Hex
+              value: string
+            }[]
+            rewardTokens: {
+              token: Hex
+              amount: string
+            }[]
             expiryTime: string
           }[]
         }
@@ -131,6 +146,7 @@ export type SubmitGaslessIntentParams = {
 }
 
 export type SolverQuote = {
+  quoteID: string
   solverID: string
   quoteData: {
     quoteEntries: QuoteData[]

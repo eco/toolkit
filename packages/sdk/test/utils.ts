@@ -83,19 +83,26 @@ export function validateSolverQuoteResponse(quoteResponse: SolverQuote, original
       );
     } else {
       // For standard quotes:
-      // 1. Verify quote is applied to reward tokens (fee is added to reward)
+      // 1. Verify quote reduces asked reward tokens or keeps it the same
       const quoteRewardTokensSum = sum(quote.intentData.reward.tokens.map(token => token.amount));
       const intentRewardTokensSum = sum(originalIntent.reward.tokens.map(token => token.amount));
-      expect(quoteRewardTokensSum, "Standard quote should increase reward.tokens sum").toBeGreaterThanOrEqual(
+      expect(quoteRewardTokensSum, "Standard quote should reducs reward.tokens sum").toBeLessThanOrEqual(
         intentRewardTokensSum,
       );
 
       // 2. Route token amounts should remain unchanged
-      const quoteTokensSum = sum(quote.intentData.route.tokens.map(token => token.amount));
-      const intentTokensSum = sum(originalIntent.route.tokens.map(token => token.amount));
-      expect(quoteTokensSum, "Standard quote should not change route.tokens sum").toBe(
-        intentTokensSum,
+      const quoteRouteTokensSum = sum(quote.intentData.route.tokens.map(token => token.amount));
+      const intentRouteTokensSum = sum(originalIntent.route.tokens.map(token => token.amount));
+      expect(quoteRouteTokensSum, "Standard quote should not change route.tokens sum").toBe(
+        intentRouteTokensSum,
       );
     }
+
+    // Verify that the quote reward tokens sum is equal to or greater than the route tokens sum
+    const quoteRewardTokensSum = sum(quote.intentData.reward.tokens.map(token => token.amount));
+    const quoteRouteTokensSum = sum(quote.intentData.route.tokens.map(token => token.amount));
+    expect(quoteRewardTokensSum, "Quote reward tokens sum should be greater than or equal to route tokens sum").toBeGreaterThanOrEqual(
+      quoteRouteTokensSum,
+    );
   }
 }

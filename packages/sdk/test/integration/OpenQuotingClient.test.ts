@@ -178,7 +178,7 @@ describe("OpenQuotingClient", () => {
       expect(quotes.length).toBeGreaterThan(0);
 
       for (const solverQuoteResponse of quotes) {
-        validateSolverQuoteResponse(solverQuoteResponse, validIntent, false);
+        validateSolverQuoteResponse(solverQuoteResponse, validIntent, true);
       }
     });
 
@@ -231,13 +231,20 @@ describe("OpenQuotingClient", () => {
 
     test("invalid:intent.route.calls", async () => {
       const invalidIntent = validIntent;
+      // invalid function
       invalidIntent.route.calls = [{ target: RoutesService.getStableAddress(10, "USDC"), data: encodeFunctionData({ abi: erc20Abi, functionName: "approve", args: [zeroAddress, BigInt(10000)] }), value: BigInt(0) }];
       await expect(openQuotingClient.requestReverseQuotesForIntent({ intent: invalidIntent })).rejects.toThrow("Reverse quote calls must be ERC20 transfer calls");
 
-      invalidIntent.route.calls = [{ target: "0x0", data: zeroHash, value: BigInt(0) }];
+      // no data valid length
+      invalidIntent.route.calls = [{ target: RoutesService.getStableAddress(10, "USDC"), data: zeroHash, value: BigInt(0) }];
+      await expect(openQuotingClient.requestReverseQuotesForIntent({ intent: invalidIntent })).rejects.toThrow("Reverse quote calls must be ERC20 transfer calls");
+
+      // invalid target
+      invalidIntent.route.calls = [{ target: "0x0", data: encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [zeroAddress, BigInt(10000)] }), value: BigInt(0) }];
       await expect(openQuotingClient.requestReverseQuotesForIntent({ intent: invalidIntent })).rejects.toThrow("Request failed with status code 400");
 
-      invalidIntent.route.calls = [{ target: RoutesService.getStableAddress(10, "USDC"), data: zeroHash, value: BigInt(-1) }];
+      // invalid value
+      invalidIntent.route.calls = [{ target: RoutesService.getStableAddress(10, "USDC"), data: encodeFunctionData({ abi: erc20Abi, functionName: "transfer", args: [zeroAddress, BigInt(10000)] }), value: BigInt(-1) }];
       await expect(openQuotingClient.requestReverseQuotesForIntent({ intent: invalidIntent })).rejects.toThrow("Request failed with status code 400");
     });
 
