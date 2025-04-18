@@ -1,5 +1,5 @@
 import { IntentType } from "@eco-foundation/routes-ts";
-import { Hex } from "viem";
+import { Hex, TransactionReceipt } from "viem";
 import { IntentExecutionType } from "../constants";
 export namespace OpenQuotingAPI {
   export enum Endpoints {
@@ -70,12 +70,15 @@ export namespace OpenQuotingAPI {
 
   export namespace InitiateGaslessIntent {
     export interface Request {
+      quoteID: string;
       dAppID: string;
       solverID: string;
       intentData: Quotes.IntentData & {
         gaslessIntentData: {
           funder: Hex
-          permitData: {
+          vaultAddress: Hex
+          allowPartial?: boolean
+          permitData?: {
             permit: {
               token: Hex
               data: {
@@ -90,12 +93,10 @@ export namespace OpenQuotingAPI {
                 singlePermitData: {
                   typedData: {
                     details: {
-                      name: string
-                      version: string
-                      chainId: number
-                      verifyingContract: Hex
+                      token: Hex
+                      amount: string
+                      expiration: string
                       nonce: string
-                      deadline: string
                     }
                     spender: Hex
                     sigDeadline: string
@@ -105,12 +106,10 @@ export namespace OpenQuotingAPI {
                 batchPermitData: {
                   typedData: {
                     details: {
-                      name: string
-                      version: string
-                      chainId: number
-                      verifyingContract: Hex
+                      token: Hex
+                      amount: string
+                      expiration: string
                       nonce: string
-                      deadline: string
                     }[]
                     spender: Hex
                     sigDeadline: string
@@ -120,15 +119,11 @@ export namespace OpenQuotingAPI {
               signature: Hex
             }
           }
-          allowPartial?: boolean
         }
       }
     }
     export interface Response {
-      data: {
-        // TODO: return acutal structure when it is decided
-        transactionHash: Hex
-      }
+      data: TransactionReceipt
     }
   }
 }
@@ -141,8 +136,10 @@ export type RequestQuotesForIntentParams = {
 export type SubmitGaslessIntentParams = {
   funder: Hex
   intent: IntentType
+  vaultAddress: Hex
+  quoteID: string
   solverID: string
-  permitData: PermitData
+  permitData?: PermitData
 }
 
 export type SolverQuote = {
@@ -159,7 +156,7 @@ export type QuoteData = {
   expiryTime: bigint // seconds since epoch
 }
 
-export type PermitData = Permit1 & Permit2
+export type PermitData = Permit1 | Permit2
 
 export type Permit1 = {
   permit: {
@@ -174,7 +171,7 @@ export type Permit1 = {
 export type Permit2 = {
   permit2: {
     permitContract: Hex
-    permitData: SinglePermit2Data & BatchPermit2Data
+    permitData: SinglePermit2Data | BatchPermit2Data
     signature: Hex
   }
 }
@@ -200,15 +197,12 @@ export type BatchPermit2Data = {
 }
 
 export type Permit2DataDetails = {
-  name: string
-  version: string
-  chainId: number
-  verifyingContract: Hex
+  token: Hex
+  amount: bigint
+  expiration: bigint
   nonce: bigint
-  deadline: bigint
 }
 
-// TODO: return acutal structure when it is decided
 export type InitiateGaslessIntentResponse = {
   transactionHash: Hex
 }

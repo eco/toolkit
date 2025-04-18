@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
-import { InitiateGaslessIntentResponse, OpenQuotingAPI, PermitData, RequestQuotesForIntentParams, SolverQuote, SubmitGaslessIntentParams } from "./types";
+import { BatchPermit2Data, InitiateGaslessIntentResponse, OpenQuotingAPI, Permit1, Permit2, PermitData, RequestQuotesForIntentParams, SinglePermit2Data, SolverQuote, SubmitGaslessIntentParams } from "./types";
 import { ECO_SDK_CONFIG } from "../config";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { decodeFunctionData, erc20Abi } from "viem";
@@ -39,6 +39,7 @@ export class OpenQuotingClient {
       intentExecutionTypes,
       intentData: this.formatIntentData(intent)
     }
+    payload.intentData.routeData.salt = "0x0";
 
     const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.Quotes, payload);
 
@@ -77,6 +78,7 @@ export class OpenQuotingClient {
       intentExecutionTypes,
       intentData: this.formatIntentData(intent)
     }
+    payload.intentData.routeData.salt = "0x0";
 
     const response = await this.axiosInstance.post<OpenQuotingAPI.Quotes.Response>(OpenQuotingAPI.Endpoints.ReverseQuotes, payload);
 
@@ -86,7 +88,7 @@ export class OpenQuotingClient {
   private formatIntentData(intent: IntentType): OpenQuotingAPI.Quotes.IntentData {
     return {
       routeData: {
-        salt: "0x0",
+        salt: intent.route.salt,
         originChainID: intent.route.source.toString(),
         destinationChainID: intent.route.destination.toString(),
         inboxContract: intent.route.inbox,
@@ -163,15 +165,17 @@ export class OpenQuotingClient {
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes/initiateGaslessIntent` endpoint with the provided intent information.
    */
-  async submitGaslessIntent({ funder, intent, solverID, permitData }: SubmitGaslessIntentParams): Promise<InitiateGaslessIntentResponse> {
+  async submitGaslessIntent({ funder, intent, quoteID, solverID, vaultAddress, permitData }: SubmitGaslessIntentParams): Promise<InitiateGaslessIntentResponse> {
     const payload: OpenQuotingAPI.InitiateGaslessIntent.Request = {
       dAppID: this.dAppID,
+      quoteID,
       solverID,
       intentData: {
         ...this.formatIntentData(intent),
         gaslessIntentData: {
           funder,
-          permitData: this.formatPermitData(permitData),
+          vaultAddress,
+          permitData: permitData ? this.formatPermitData(permitData) : undefined,
         }
       }
     }
@@ -186,57 +190,68 @@ export class OpenQuotingClient {
   }
 
   private formatPermitData(permit: PermitData): OpenQuotingAPI.InitiateGaslessIntent.Request["intentData"]["gaslessIntentData"]["permitData"] {
-    if (permit.permit) {
-      const permitData: Pick<PermitData, 'permit'> = permit;
+    if ((permit as Permit1).permit) {
+      // regular permit
+      const permit1 = permit as Permit1;
       return {
-        permit: permitData.permit.map((permit1) => ({
-          token: permit1.token,
+        permit: permit1.permit.map((p) => ({
+          token: p.token,
           data: {
-            signature: permit1.data.signature,
-            deadline: permit1.data.deadline.toString(),
+            signature: p.data.signature,
+            deadline: p.data.deadline.toString(),
           }
         }))
       }
     }
     else {
-      const permitData: Pick<PermitData, 'permit2'> = permit;
-      return {
-        permit2: {
-          permitContract: permitData.permit2.permitContract,
-          permitData: permitData.permit2.permitData.singlePermitData ? {
-            singlePermitData: {
-              typedData: {
-                details: {
-                  name: permitData.permit2.permitData.singlePermitData.typedData.details.name,
-                  version: permitData.permit2.permitData.singlePermitData.typedData.details.version,
-                  chainId: permitData.permit2.permitData.singlePermitData.typedData.details.chainId,
-                  verifyingContract: permitData.permit2.permitData.singlePermitData.typedData.details.verifyingContract,
-                  nonce: permitData.permit2.permitData.singlePermitData.typedData.details.nonce.toString(),
-                  deadline: permitData.permit2.permitData.singlePermitData.typedData.details.deadline.toString(),
-                },
-                spender: permitData.permit2.permitData.singlePermitData.typedData.spender,
-                sigDeadline: permitData.permit2.permitData.singlePermitData.typedData.sigDeadline.toString(),
+      const permit2 = permit as Permit2;
+      if ((permit2.permit2.permitData as SinglePermit2Data).singlePermitData) {
+        const permitData = permit2.permit2.permitData as SinglePermit2Data;
+        return {
+          permit2: {
+            permitContract: permit2.permit2.permitContract,
+            permitData: {
+              singlePermitData: {
+                typedData: {
+                  details: {
+                    token: permitData.singlePermitData.typedData.details.token,
+                    amount: permitData.singlePermitData.typedData.details.amount.toString(),
+                    expiration: permitData.singlePermitData.typedData.details.expiration.toString(),
+                    nonce: permitData.singlePermitData.typedData.details.nonce.toString(),
+                  },
+                  spender: permitData.singlePermitData.typedData.spender,
+                  sigDeadline: permitData.singlePermitData.typedData.sigDeadline.toString(),
+                }
               }
-            }
-          } : {
-            batchPermitData: {
-              typedData: {
-                details: permitData.permit2.permitData.batchPermitData.typedData.details.map((detail) => ({
-                  name: detail.name,
-                  version: detail.version,
-                  chainId: detail.chainId,
-                  verifyingContract: detail.verifyingContract,
-                  nonce: detail.nonce.toString(),
-                  deadline: detail.deadline.toString(),
-                })),
-                spender: permitData.permit2.permitData.batchPermitData.typedData.spender,
-                sigDeadline: permitData.permit2.permitData.batchPermitData.typedData.sigDeadline.toString(),
-              }
-            }
-          },
-          signature: permitData.permit2.signature,
+            },
+            signature: permit2.permit2.signature,
+          }
         }
       }
+      else {
+        const permitData = permit2.permit2.permitData as BatchPermit2Data;
+        return {
+          permit2: {
+            permitContract: permit2.permit2.permitContract,
+            permitData: {
+              batchPermitData: {
+                typedData: {
+                  details: permitData.batchPermitData.typedData.details.map((detail) => ({
+                    token: detail.token,
+                    amount: detail.amount.toString(),
+                    expiration: detail.expiration.toString(),
+                    nonce: detail.nonce.toString(),
+                  })),
+                  spender: permitData.batchPermitData.typedData.spender,
+                  sigDeadline: permitData.batchPermitData.typedData.sigDeadline.toString(),
+                }
+              }
+            },
+            signature: permit2.permit2.signature,
+          }
+        }
+      }
+
     }
   }
 }

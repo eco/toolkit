@@ -79,6 +79,10 @@ describe("publishAndFund", () => {
     await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
   }, 20_000)
 
+  test.skip("onchain with reverse quote", async () => {
+    // TODO: implement this
+  });
+
   test("onchain without quote", async () => {
     const intent = routesService.createSimpleIntent({
       creator: account.address,

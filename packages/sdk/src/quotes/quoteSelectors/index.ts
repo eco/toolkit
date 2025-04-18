@@ -3,15 +3,17 @@ import { sum } from "../../utils";
 import { QuoteData, SolverQuote } from "../types";
 
 type QuoteSelectorResult = {
+  quoteID: string;
   solverID: string;
   quoteData: QuoteData;
 }
 
 export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = ["SELF_PUBLISH"]): QuoteSelectorResult {
-  return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteData: cheapestQuoteData }, solverQuoteResponse) => {
+  return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteID: cheapestQuoteID, quoteData: cheapestQuoteData }, solverQuoteResponse) => {
     const quotes = solverQuoteResponse.quoteData.quoteEntries;
     let localCheapestQuoteData = cheapestQuoteData;
     let localCheapestSolverID = cheapestSolverID;
+    let localCheapestQuoteID = cheapestQuoteID;
     const defaultSum = BigInt(isReverse ? 0 : Number.MAX_SAFE_INTEGER);
 
     for (const quoteData of quotes) {
@@ -31,6 +33,7 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
           // want to set the quote with the highest route tokens sum (most received on destination chain)
           if (quoteSum > localCheapestSum) {
             localCheapestSolverID = solverQuoteResponse.solverID;
+            localCheapestQuoteID = solverQuoteResponse.quoteID;
             localCheapestQuoteData = quoteData;
           }
         }
@@ -38,6 +41,7 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
           // want to set the quote with the lowest reward tokens sum (least spent on origin chain)
           if (quoteSum < localCheapestSum) {
             localCheapestSolverID = solverQuoteResponse.solverID;
+            localCheapestQuoteID = solverQuoteResponse.quoteID;
             localCheapestQuoteData = quoteData;
           }
         }
@@ -48,6 +52,7 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
     if (!cheapestQuoteData) {
       return {
         solverID: localCheapestSolverID,
+        quoteID: localCheapestQuoteID,
         quoteData: localCheapestQuoteData
       };
     }
@@ -61,9 +66,11 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
 
       return localSum > globalSum ? {
         solverID: localCheapestSolverID,
+        quoteID: localCheapestQuoteID,
         quoteData: localCheapestQuoteData
       } : {
         solverID: cheapestSolverID,
+        quoteID: cheapestQuoteID,
         quoteData: cheapestQuoteData
       };
     } else {
@@ -75,9 +82,11 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
 
       return localSum < globalSum ? {
         solverID: localCheapestSolverID,
+        quoteID: localCheapestQuoteID,
         quoteData: localCheapestQuoteData
       } : {
         solverID: cheapestSolverID,
+        quoteID: cheapestQuoteID,
         quoteData: cheapestQuoteData
       };
     }
