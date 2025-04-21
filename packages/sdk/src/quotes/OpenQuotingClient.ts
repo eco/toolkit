@@ -21,14 +21,15 @@ export class OpenQuotingClient {
   /**
    * Requests quotes for a given intent.
    *
-   * @param intent - The intent for which quotes are being requested.
-   * @param intentExecutionTypes - The types of intent execution for which quotes are being requested.
-   * @returns A promise that resolves to an `OpenQuotingClient_ApiResponse_Quotes` object containing the quotes.
-   * @throws An error if multiple requests fail.
+   * @param {RequestQuotesForIntentParams} params - The parameters for requesting quotes.
+   * @param {IntentType} params.intent - The intent for which quotes are being requested.
+   * @param {string[]} params.intentExecutionTypes - The types of intent execution for which quotes are being requested.
+   * @returns {Promise<SolverQuote[]>} A promise that resolves to an array of SolverQuote objects containing the quotes.
+   * @throws {Error} If intentExecutionTypes is empty or if the request fails after multiple retries.
    *
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intent information.
-   * This will return quotes with the fee added to the reward tokens.
+   * The intentData returned in each quote will have the fee added to the reward tokens.
    */
   async requestQuotesForIntent({ intent, intentExecutionTypes = ['SELF_PUBLISH', 'GASLESS'] }: RequestQuotesForIntentParams): Promise<SolverQuote[]> {
     if (intentExecutionTypes.length === 0) {
@@ -49,14 +50,15 @@ export class OpenQuotingClient {
   /**
    * Requests reverse quotes for a given intent.
    * 
-   * @param intent - The intent for which quotes are being requested.
-   * @param intentExecutionTypes - The types of intent execution for which quotes are being requested.
-   * @returns A promise that resolves to an array of `SolverQuote` objects containing the quotes.
-   * @throws An error if multiple requests fail.
+   * @param {RequestQuotesForIntentParams} params - The parameters for requesting reverse quotes.
+   * @param {IntentType} params.intent - The intent for which quotes are being requested.
+   * @param {string[]} params.intentExecutionTypes - The types of intent execution for which quotes are being requested.
+   * @returns {Promise<SolverQuote[]>} A promise that resolves to an array of SolverQuote objects containing the quotes.
+   * @throws {Error} If intentExecutionTypes is empty, if the calls aren't ERC20.transfer calls, or if the request fails after multiple retries.
    * 
    * @remarks
-   * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intent information.
-   * This will return quotes with the fee subtracted from the route tokens and calls
+   * This method sends a POST request to the `/api/v1/quotes/reverse` endpoint with the provided intent information.
+   * This intentData returned in each quote will have the fee subtracted from the route tokens and calls.
    */
   async requestReverseQuotesForIntent({ intent, intentExecutionTypes = ['SELF_PUBLISH', 'GASLESS'] }: RequestQuotesForIntentParams): Promise<SolverQuote[]> {
     if (intentExecutionTypes.length === 0) {
@@ -158,9 +160,15 @@ export class OpenQuotingClient {
   /**
    * Initiates a gasless intent via the Open Quoting service.
    *  
-   * @param intent - The intent for which quotes are being requested.
-   * @param solverID - The ID of the solver that is submitting the intent.
-   * @returns A promise that resolves to the response from the Open Quoting service.
+   * @param {InitiateGaslessIntentParams} params - The parameters for initiating a gasless intent.
+   * @param {string} params.funder - The address of the entity funding the intent execution.
+   * @param {IntentType} params.intent - The intent to be executed gaslessly.
+   * @param {string} params.quoteID - The ID of the quote selected for execution.
+   * @param {string} params.solverID - The ID of the solver that is executing the intent.
+   * @param {string} params.vaultAddress - The address of the vault to use for the gasless intent.
+   * @param {PermitData} [params.permitData] - Optional permit data for token approvals.
+   * @returns {Promise<InitiateGaslessIntentResponse>} A promise that resolves to the response from the Open Quoting service.
+   * @throws {Error} If the request fails (no retries are attempted for this endpoint).
    * 
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes/initiateGaslessIntent` endpoint with the provided intent information.
