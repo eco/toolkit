@@ -79,7 +79,7 @@ describe("initiateGaslessIntent", () => {
     }));
 
     // initiate gasless intent
-    const response = await openQuotingClient.submitGaslessIntent({
+    const response = await openQuotingClient.initiateGaslessIntent({
       funder: account.address,
       intent: quoteData.intentData,
       solverID,
@@ -130,7 +130,7 @@ describe("initiateGaslessIntent", () => {
     }));
 
     // initiate gasless intent
-    const response = await openQuotingClient.submitGaslessIntent({
+    const response = await openQuotingClient.initiateGaslessIntent({
       funder: account.address,
       intent: quoteData.intentData,
       solverID,
@@ -224,7 +224,7 @@ describe("initiateGaslessIntent", () => {
     }
 
     // now initiate gaslessly with all the data
-    const response = await openQuotingClient.submitGaslessIntent({
+    const response = await openQuotingClient.initiateGaslessIntent({
       funder: account.address,
       intent: quoteData.intentData,
       solverID,
@@ -333,7 +333,7 @@ describe("initiateGaslessIntent", () => {
     }
 
     // now initate gaslessly
-    const response = await openQuotingClient.submitGaslessIntent({
+    const response = await openQuotingClient.initiateGaslessIntent({
       funder: account.address,
       intent: quoteData.intentData,
       solverID,

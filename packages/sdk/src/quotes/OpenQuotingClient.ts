@@ -1,6 +1,6 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
-import { BatchPermit2Data, InitiateGaslessIntentResponse, OpenQuotingAPI, Permit1, Permit2, PermitData, RequestQuotesForIntentParams, SinglePermit2Data, SolverQuote, SubmitGaslessIntentParams } from "./types";
+import { BatchPermit2Data, InitiateGaslessIntentResponse, OpenQuotingAPI, Permit1, Permit2, PermitData, RequestQuotesForIntentParams, SinglePermit2Data, SolverQuote, InitiateGaslessIntentParams } from "./types";
 import { ECO_SDK_CONFIG } from "../config";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { decodeFunctionData, erc20Abi } from "viem";
@@ -156,7 +156,7 @@ export class OpenQuotingClient {
   }
 
   /**
-   * Submits a gasless intent to the Open Quoting service.
+   * Initiates a gasless intent via the Open Quoting service.
    *  
    * @param intent - The intent for which quotes are being requested.
    * @param solverID - The ID of the solver that is submitting the intent.
@@ -165,7 +165,7 @@ export class OpenQuotingClient {
    * @remarks
    * This method sends a POST request to the `/api/v1/quotes/initiateGaslessIntent` endpoint with the provided intent information.
    */
-  async submitGaslessIntent({ funder, intent, quoteID, solverID, vaultAddress, permitData }: SubmitGaslessIntentParams): Promise<InitiateGaslessIntentResponse> {
+  async initiateGaslessIntent({ funder, intent, quoteID, solverID, vaultAddress, permitData }: InitiateGaslessIntentParams): Promise<InitiateGaslessIntentResponse> {
     const payload: OpenQuotingAPI.InitiateGaslessIntent.Request = {
       dAppID: this.dAppID,
       quoteID,

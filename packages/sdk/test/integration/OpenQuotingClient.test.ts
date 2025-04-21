@@ -285,6 +285,4 @@ describe("OpenQuotingClient", () => {
       await expect(openQuotingClient.requestReverseQuotesForIntent({ intent: invalidIntent })).rejects.toThrow("Request failed with status code 400");
     });
   });
-
-  // TODO: add validity tests for initiateGaslessIntent
 }, 60_000);

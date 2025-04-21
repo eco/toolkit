@@ -133,7 +133,7 @@ export type RequestQuotesForIntentParams = {
   intentExecutionTypes?: IntentExecutionType[]
 }
 
-export type SubmitGaslessIntentParams = {
+export type InitiateGaslessIntentParams = {
   funder: Hex
   intent: IntentType
   vaultAddress: Hex

@@ -1,8 +1,8 @@
 
 import { expect } from "vitest";
 import { INTENT_EXECUTION_TYPES, SolverQuote } from "../src";
-import { hashIntent, hashRoute, IntentType } from "@eco-foundation/routes-ts";
-import { decodeFunctionData, erc20Abi, Hex, encodePacked } from "viem";
+import { IntentType } from "@eco-foundation/routes-ts";
+import { decodeFunctionData, erc20Abi } from "viem";
 import { sum } from "../src/utils";
 
 export function validateSolverQuoteResponse(quoteResponse: SolverQuote, originalIntent: IntentType, isReverseQuote: boolean) {

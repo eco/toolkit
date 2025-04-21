@@ -79,9 +79,49 @@ describe("publishAndFund", () => {
     await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
   }, 20_000)
 
-  test.skip("onchain with reverse quote", async () => {
-    // TODO: implement this
-  });
+  test("onchain with reverse quote", async () => {
+    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+
+    const intent = routesService.createSimpleIntent({
+      creator: account.address,
+      originChainID: originChain.id,
+      destinationChainID: destinationChain.id,
+      receivingToken,
+      spendingToken,
+      spendingTokenLimit: balance,
+      amount,
+      recipient: account.address
+    })
+
+    // request quotes
+    const quotes = await openQuotingClient.requestReverseQuotesForIntent({ intent })
+    const { quoteData } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
+
+    // approve
+    await Promise.all(quoteData.intentData.reward.tokens.map(async ({ token, amount }) => {
+      const hash = await baseWalletClient.writeContract({
+        abi: erc20Abi,
+        address: token,
+        functionName: 'approve',
+        args: [intentSourceContract, amount],
+        chain: originChain,
+        account
+      })
+      await publicClient.waitForTransactionReceipt({ hash })
+    }))
+
+    // publish intent onchain
+    const publishTxHash = await baseWalletClient.writeContract({
+      abi: IntentSourceAbi,
+      address: intentSourceContract,
+      functionName: 'publishAndFund',
+      args: [quoteData.intentData, false],
+      chain: originChain,
+      account
+    })
+
+    await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  }, 20_000);
 
   test("onchain without quote", async () => {
     const intent = routesService.createSimpleIntent({
