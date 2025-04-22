@@ -1,7 +1,7 @@
 import axios, { AxiosInstance } from "axios";
 import axiosRetry from "axios-retry";
-import { OpenQuotingAPI, SolverQuote } from "./types";
-import { ECO_SDK_CONFIG } from "../config";
+import { OpenQuotingAPI, SolverQuote } from "./types.js";
+import { ECO_SDK_CONFIG } from "../config.js";
 import { IntentType } from "@eco-foundation/routes-ts";
 
 

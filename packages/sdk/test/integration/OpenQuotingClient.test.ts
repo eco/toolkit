@@ -4,7 +4,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient } from "../../src";
-import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
+import { dateToTimestamp, getSecondsFromNow } from "../../src/utils.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
