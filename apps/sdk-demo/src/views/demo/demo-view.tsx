@@ -17,28 +17,40 @@ export default function DemoView() {
   const [intent, setIntent] = useState<IntentType>();
   const [quotes, setQuotes] = useState<SolverQuote[]>();
   const [selectedQuote, setSelectedQuote] = useState<SolverQuote | undefined>();
+  const [quoteType, setQuoteType] = useState<"receive" | "spend">("receive");
 
   useEffect(() => {
     if (intent) {
-      openQuotingClient.requestQuotesForIntent({ intent }).then((quotes) => {
-        setQuotes(quotes)
-      }).catch((error) => {
-        alert('Could not fetch quotes: ' + error.message)
-        console.error(error)
-      })
+      const fetchQuotes = async () => {
+        try {
+          let quotesResult: SolverQuote[];
+          if (quoteType === "receive") {
+            quotesResult = await openQuotingClient.requestQuotesForIntent({ intent });
+          } else {
+            quotesResult = await openQuotingClient.requestReverseQuotesForIntent({ intent });
+          }
+          setQuotes(quotesResult);
+        } catch (error) {
+          alert('Could not fetch quotes: ' + (error as Error).message);
+          console.error(error);
+        }
+      };
+
+      fetchQuotes();
     }
+
     return () => {
-      setSelectedQuote(undefined)
-      setQuotes(undefined)
+      setSelectedQuote(undefined);
+      setQuotes(undefined);
     }
-  }, [intent, openQuotingClient]);
+  }, [intent, quoteType, openQuotingClient]);
 
   return (
     <div>
       <EditConfig />
-      <CreateIntent routesService={routesService} onNewIntent={setIntent} />
-      <SelectQuote intent={intent} quotes={quotes} onQuoteSelected={setSelectedQuote} />
-      <PublishIntent routesService={routesService} intent={intent} quotes={quotes} quote={selectedQuote} />
+      <CreateIntent routesService={routesService} onNewIntent={setIntent} quoteType={quoteType} setQuoteType={setQuoteType} />
+      <SelectQuote intent={intent} quotes={quotes} onQuoteSelected={setSelectedQuote} quoteType={quoteType} />
+      <PublishIntent routesService={routesService} quotes={quotes} quote={selectedQuote} openQuotingClient={openQuotingClient} />
     </div>
   );
 }
