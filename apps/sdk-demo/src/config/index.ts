@@ -21,6 +21,10 @@ export const chains: Record<RoutesSupportedChainId, MyChainConfig> = {
     label: "Optimism",
     stables: getAvailableStables(10)
   },
+  130: {
+    label: "Unichain",
+    stables: getAvailableStables(130)
+  },
   137: {
     label: "Polygon",
     stables: getAvailableStables(137)
@@ -40,5 +44,13 @@ export const chains: Record<RoutesSupportedChainId, MyChainConfig> = {
   42161: {
     label: "Arbitrum",
     stables: getAvailableStables(42161)
+  },
+  42220: {
+    label: "Celo",
+    stables: getAvailableStables(42220)
+  },
+  57073: {
+    label: "Ink",
+    stables: getAvailableStables(57073)
   }
 }

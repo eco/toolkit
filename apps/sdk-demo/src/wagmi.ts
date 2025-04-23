@@ -2,11 +2,14 @@ import { getDefaultConfig } from '@rainbow-me/rainbowkit';
 import {
   mainnet,
   optimism,
+  unichain,
   polygon,
   // abstract,
   // mantle,
   base,
   arbitrum,
+  celo,
+  ink,
 } from 'wagmi/chains';
 import { http } from 'wagmi';
 
@@ -20,20 +23,26 @@ export const config = getDefaultConfig({
   chains: [
     mainnet,
     optimism,
+    unichain,
     polygon,
     // abstract,
     // mantle,
     base,
     arbitrum,
+    celo,
+    ink,
   ],
   transports: {
     [mainnet.id]: http(process.env.NEXT_PUBLIC_MAINNET_RPC_URL),
     [optimism.id]: http(process.env.NEXT_PUBLIC_OPTIMISM_RPC_URL),
+    [unichain.id]: http(process.env.NEXT_PUBLIC_UNICHAIN_RPC_URL),
     [polygon.id]: http(process.env.NEXT_PUBLIC_POLYGON_RPC_URL),
     // [abstract.id]: http(process.env.NEXT_PUBLIC_ABSTRACT_RPC_URL),
     // [mantle.id]: http(process.env.NEXT_PUBLIC_MANTLE_RPC_URL),
     [base.id]: http(process.env.NEXT_PUBLIC_BASE_RPC_URL),
     [arbitrum.id]: http(process.env.NEXT_PUBLIC_ARBITRUM_RPC_URL),
+    [celo.id]: http(process.env.NEXT_PUBLIC_CELO_RPC_URL),
+    [ink.id]: http(process.env.NEXT_PUBLIC_INK_RPC_URL),
   },
   ssr: true,
 });

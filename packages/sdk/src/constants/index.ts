@@ -9,11 +9,14 @@ export type IntentExecutionType = typeof INTENT_EXECUTION_TYPES[number]
 export const chainIds = [
   1,      // ETH Mainnet
   10,     // Optimism
+  130,    // Unichain
   137,    // Polygon
   // 2741,// Abstract
-  // 5000,   // Mantle
+  // 5000,// Mantle
   8453,   // Base
-  42161   // Arbitrum
+  42161,  // Arbitrum
+  42220,  // Celo
+  57073,  // Ink
 ] as const;
 export type RoutesSupportedChainId = typeof chainIds[number];
 
@@ -29,6 +32,10 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
     USDCe: "0x7F5c764cBc14f9669B88837ca1490cCa17c31607",
     USDT: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
+  },
+  130: {
+    USDC: "0x078D782b760474a361dDA0AF3839290b0EF57AD6",
+    USDT: "0x588CE4F028D8e7B53B687865d6A67b3A54C75518"
   },
   137: {
     USDC: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
@@ -52,5 +59,13 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDCe: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
     USDT: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
   },
+  42220: {
+    USDC: "0xceba9300f2b948710d2653dd7b07f33a8b32118c",
+    USDT: "0x48065fbbe25f71c9282ddf5e1cd6d6a887483d5e",
+  },
+  57073: {
+    USDC: "0xF1815bd50389c46847f0Bda824eC8da914045D14",
+    USDT: "0x0200C29006150606B650577BBE7B6248F58470c1",
+  }
 }
 
