@@ -1,15 +1,9 @@
 import { IntentExecutionType } from "../../constants";
 import { sum } from "../../utils";
-import { QuoteData, SolverQuote } from "../types";
-
-type QuoteSelectorResult = {
-  quoteID: string;
-  solverID: string;
-  quoteData: QuoteData;
-}
+import { QuoteSelectorResult, SolverQuote } from "../types";
 
 export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = ["SELF_PUBLISH"]): QuoteSelectorResult {
-  return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteID: cheapestQuoteID, quoteData: cheapestQuoteData }, solverQuoteResponse) => {
+  return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteID: cheapestQuoteID, quote: cheapestQuoteData }, solverQuoteResponse) => {
     const quotes = solverQuoteResponse.quoteData.quoteEntries;
     let localCheapestQuoteData = cheapestQuoteData;
     let localCheapestSolverID = cheapestSolverID;
@@ -53,7 +47,7 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
       return {
         solverID: localCheapestSolverID,
         quoteID: localCheapestQuoteID,
-        quoteData: localCheapestQuoteData
+        quote: localCheapestQuoteData
       };
     }
 
@@ -67,11 +61,11 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
       return localSum > globalSum ? {
         solverID: localCheapestSolverID,
         quoteID: localCheapestQuoteID,
-        quoteData: localCheapestQuoteData
+        quote: localCheapestQuoteData
       } : {
         solverID: cheapestSolverID,
         quoteID: cheapestQuoteID,
-        quoteData: cheapestQuoteData
+        quote: cheapestQuoteData
       };
     } else {
       const globalTokens = cheapestQuoteData.intentData.reward.tokens;
@@ -83,11 +77,11 @@ export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: bool
       return localSum < globalSum ? {
         solverID: localCheapestSolverID,
         quoteID: localCheapestQuoteID,
-        quoteData: localCheapestQuoteData
+        quote: localCheapestQuoteData
       } : {
         solverID: cheapestSolverID,
         quoteID: cheapestQuoteID,
-        quoteData: cheapestQuoteData
+        quote: cheapestQuoteData
       };
     }
   }, {} as QuoteSelectorResult);

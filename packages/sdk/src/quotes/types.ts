@@ -156,6 +156,12 @@ export type QuoteData = {
   expiryTime: bigint // seconds since epoch
 }
 
+export type QuoteSelectorResult = {
+  quoteID: string;
+  solverID: string;
+  quote: QuoteData;
+}
+
 export type PermitData = Permit1 | Permit2
 
 export type Permit1 = {

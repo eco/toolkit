@@ -51,10 +51,10 @@ describe("publishAndFund", () => {
 
     // request quotes
     const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
-    const { quoteData } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
+    const { quote } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
 
     // approve
-    await Promise.all(quoteData.intentData.reward.tokens.map(async ({ token, amount }) => {
+    await Promise.all(quote.intentData.reward.tokens.map(async ({ token, amount }) => {
       const hash = await baseWalletClient.writeContract({
         abi: erc20Abi,
         address: token,
@@ -71,7 +71,7 @@ describe("publishAndFund", () => {
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [quoteData.intentData, false],
+      args: [quote.intentData, false],
       chain: originChain,
       account
     })
@@ -95,10 +95,10 @@ describe("publishAndFund", () => {
 
     // request quotes
     const quotes = await openQuotingClient.requestReverseQuotesForIntent({ intent })
-    const { quoteData } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
+    const { quote } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
 
     // approve
-    await Promise.all(quoteData.intentData.reward.tokens.map(async ({ token, amount }) => {
+    await Promise.all(quote.intentData.reward.tokens.map(async ({ token, amount }) => {
       const hash = await baseWalletClient.writeContract({
         abi: erc20Abi,
         address: token,
@@ -115,7 +115,7 @@ describe("publishAndFund", () => {
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [quoteData.intentData, false],
+      args: [quote.intentData, false],
       chain: originChain,
       account
     })

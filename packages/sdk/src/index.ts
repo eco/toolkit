@@ -5,5 +5,5 @@ export { RoutesService } from "./routes/RoutesService";
 export type { CreateSimpleIntentParams, CreateIntentParams } from "./routes/types";
 
 export { OpenQuotingClient } from "./quotes/OpenQuotingClient";
-export type { RequestQuotesForIntentParams, InitiateGaslessIntentParams, PermitData, Permit1, Permit2, SinglePermit2Data, BatchPermit2Data, Permit2DataDetails, SolverQuote, QuoteData, InitiateGaslessIntentResponse } from "./quotes/types";
+export type { RequestQuotesForIntentParams, InitiateGaslessIntentParams, SolverQuote, QuoteData, QuoteSelectorResult, PermitData, Permit1, Permit2, SinglePermit2Data, BatchPermit2Data, Permit2DataDetails, InitiateGaslessIntentResponse } from "./quotes/types";
 export { selectCheapestQuote } from "./quotes/quoteSelectors";
