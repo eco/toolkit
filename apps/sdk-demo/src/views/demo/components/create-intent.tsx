@@ -8,12 +8,16 @@ import { chains } from "../../../config";
 
 type Props = {
   routesService: RoutesService,
-  onNewIntent: (intent: IntentType) => void
+  onNewIntent: (intent: IntentType) => void,
+  quoteType: "receive" | "spend",
+  setQuoteType: (type: "receive" | "spend") => void
 }
 
 export default function CreateIntent({
   routesService,
-  onNewIntent
+  onNewIntent,
+  quoteType,
+  setQuoteType
 }: Props) {
   const { address } = useAccount();
 
@@ -50,14 +54,15 @@ export default function CreateIntent({
       isAddress(destinationToken, { strict: false }) &&
       isAddress(recipient, { strict: false }) &&
       !isNaN(Number(amount)) &&
-      Number(amount) > 0
+      Number(amount) > 0 &&
+      Number(balance) >= 0
     ) {
       try {
         const intent = routesService.createSimpleIntent({
           creator: address,
           originChainID: originChain,
           spendingToken: originToken,
-          spendingTokenLimit: balance,
+          spendingTokenLimit: quoteType === "receive" ? balance : BigInt(amount),
           destinationChainID: destinationChain,
           receivingToken: destinationToken,
           amount: BigInt(amount),
@@ -76,7 +81,7 @@ export default function CreateIntent({
     return () => {
       setIsIntentValid(false)
     }
-  }, [balance, address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover, onNewIntent, routesService]);
+  }, [balance, address, originChain, originToken, destinationChain, destinationToken, amount, recipient, prover, onNewIntent, routesService, quoteType]);
 
   const originTokensAvailable = useMemo(() => originChain ? getAvailableStables(originChain) : [], [originChain]);
   const destinationTokensAvailable = useMemo(() => destinationChain ? getAvailableStables(destinationChain) : [], [destinationChain]);
@@ -159,11 +164,33 @@ export default function CreateIntent({
               ))}
             </div>
           </div>
-
           <div className="flex flex-col gap-1 p-1 border-1">
-            <span className="text-xl">Desired Amount</span>
+            <span className="text-xl">Amount</span>
             <input type="number" className="border-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
             {amount && decimals && <span className="text-sm italic">({formatUnits(BigInt(amount), decimals)})</span>}
+            <div className="flex gap-2 mb-2">
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="quoteType"
+                  value="receive"
+                  checked={quoteType === "receive"}
+                  onChange={() => setQuoteType("receive")}
+                />
+                <span>Receive this amount</span>
+              </label>
+              |
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="quoteType"
+                  value="spend"
+                  checked={quoteType === "spend"}
+                  onChange={() => setQuoteType("spend")}
+                />
+                <span>Spend this amount</span>
+              </label>
+            </div>
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">
