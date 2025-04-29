@@ -28,7 +28,7 @@ export class OpenQuotingClient {
    * @throws {Error} If intentExecutionTypes is empty or if the request fails after multiple retries.
    *
    * @remarks
-   * This method sends a POST request to the `/api/v1/quotes` endpoint with the provided intent information.
+   * This method sends a POST request to the `/api/v2/quotes` endpoint with the provided intent information.
    * The intentData returned in each quote will have the fee added to the reward tokens.
    */
   async requestQuotesForIntent({ intent, intentExecutionTypes = ['SELF_PUBLISH'] }: RequestQuotesForIntentParams): Promise<SolverQuote[]> {
@@ -57,7 +57,7 @@ export class OpenQuotingClient {
    * @throws {Error} If intentExecutionTypes is empty, if the calls aren't ERC20.transfer calls, or if the request fails after multiple retries.
    * 
    * @remarks
-   * This method sends a POST request to the `/api/v1/quotes/reverse` endpoint with the provided intent information.
+   * This method sends a POST request to the `/api/v2/quotes/reverse` endpoint with the provided intent information.
    * This intentData returned in each quote will have the fee subtracted from the route tokens and calls.
    */
   async requestReverseQuotesForIntent({ intent, intentExecutionTypes = ['SELF_PUBLISH', 'GASLESS'] }: RequestQuotesForIntentParams): Promise<SolverQuote[]> {
@@ -171,7 +171,7 @@ export class OpenQuotingClient {
    * @throws {Error} If the request fails (no retries are attempted for this endpoint).
    * 
    * @remarks
-   * This method sends a POST request to the `/api/v1/quotes/initiateGaslessIntent` endpoint with the provided intent information.
+   * This method sends a POST request to the `/api/v2/quotes/initiateGaslessIntent` endpoint with the provided intent information.
    */
   async initiateGaslessIntent({ funder, intent, quoteID, solverID, vaultAddress, permitData }: InitiateGaslessIntentParams): Promise<InitiateGaslessIntentResponse> {
     const payload: OpenQuotingAPI.InitiateGaslessIntent.Request = {

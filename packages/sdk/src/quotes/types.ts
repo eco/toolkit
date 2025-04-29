@@ -3,9 +3,9 @@ import { Hex, TransactionReceipt } from "viem";
 import { IntentExecutionType } from "../constants";
 export namespace OpenQuotingAPI {
   export enum Endpoints {
-    Quotes = '/api/v1/quotes',
-    ReverseQuotes = '/api/v1/quotes/reverse',
-    InitiateGaslessIntent = '/api/v1/quotes/initiateGaslessIntent',
+    Quotes = '/api/v2/quotes',
+    ReverseQuotes = '/api/v2/quotes/reverse',
+    InitiateGaslessIntent = '/api/v2/quotes/initiateGaslessIntent',
   }
 
   export namespace Quotes {
