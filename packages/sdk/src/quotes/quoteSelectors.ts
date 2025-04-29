@@ -1,6 +1,6 @@
-import { IntentExecutionType } from "../../constants";
-import { sum } from "../../utils";
-import { QuoteSelectorResult, SolverQuote } from "../types";
+import { IntentExecutionType } from "../constants";
+import { sum } from "../utils";
+import { QuoteSelectorResult, SolverQuote } from "./types";
 
 export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = ["SELF_PUBLISH"]): QuoteSelectorResult {
   return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteID: cheapestQuoteID, quote: cheapestQuoteData }, solverQuoteResponse) => {
