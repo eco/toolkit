@@ -1,9 +1,9 @@
-import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
+import { encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
 import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
 
-import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config";
 
 export class RoutesService {
@@ -112,7 +112,7 @@ export class RoutesService {
     calls,
     callTokens,
     tokens,
-    prover = "HyperProver",
+    prover,
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
   }: CreateIntentParams): IntentType {
     // validate
@@ -183,24 +183,39 @@ export class RoutesService {
    * @param chainId - The chain ID to be converted to an EcoChainId.
    * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
    */
-  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
+  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
-  private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: RoutesSupportedChainId): Hex {
+  private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainID: RoutesSupportedChainId): Hex {
     let proverContract: Hex;
-    const ecoChainID: EcoChainIds = this.getEcoChainId(chainID);
+    const ecoChainID: EcoChainIdsEnv = this.getEcoChainId(chainID);
     switch (prover) {
       case "HyperProver": {
         proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
+        // if HyperProver is not found, throw
+        if (isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No HyperProver exists on '${chainID}'`);
+        }
         break;
       }
-      case "StorageProver": {
-        const defaultProver = EcoProtocolAddresses[ecoChainID].Prover;
-        if (!defaultProver) {
-          throw new Error("No default prover found for this chain");
+      case "MetaProver": {
+        // if MetaProver is not found, throw
+        proverContract = EcoProtocolAddresses[ecoChainID].MetaProver;
+        if (isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No HyperProver exists on '${chainID}'`);
         }
-        proverContract = defaultProver;
+        break;
+      }
+      case undefined: {
+        // default to HyperProver, fall back to MetaProver, if not found throw
+        proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
+        if (isAddressEqual(proverContract, zeroAddress)) {
+          proverContract = EcoProtocolAddresses[ecoChainID].MetaProver;
+        }
+        if (isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No Prover found for '${chainID}'`);
+        }
         break;
       }
       default: {

@@ -11,7 +11,7 @@ export type CreateSimpleIntentParams = {
   spendingToken: Hex
   spendingTokenLimit: bigint
   amount: bigint
-  prover?: "HyperProver" | "StorageProver"
+  prover?: "HyperProver" | "MetaProver" | Hex
   recipient?: Hex
   expiryTime?: Date
 }
@@ -23,7 +23,7 @@ export type CreateIntentParams = {
   calls: IntentCall[]
   callTokens: IntentToken[]
   tokens: IntentToken[]
-  prover: "HyperProver" | "StorageProver" | Hex
+  prover?: "HyperProver" | "MetaProver" | Hex
   expiryTime?: Date
 }
 

@@ -242,7 +242,7 @@ describe("RoutesService", () => {
         spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
-        prover: "StorageProver",
+        prover: "MetaProver",
       })).toThrow("No default prover found for this chain");
     })
   })
@@ -627,7 +627,7 @@ describe("RoutesService", () => {
           token: RoutesService.getStableAddress(42161, "USDC"),
           amount: BigInt(1000000),
         }],
-        prover: "StorageProver",
+        prover: "MetaProver",
       })).toThrow("No default prover found for this chain");
     })
   })
