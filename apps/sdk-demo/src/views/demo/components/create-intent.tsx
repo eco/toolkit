@@ -23,7 +23,7 @@ export default function CreateIntent({
   const [destinationToken, setDestinationToken] = useState<string | undefined>();
   const [amount, setAmount] = useState<number | string | undefined>();
   const [recipient, setRecipient] = useState<string | undefined>();
-  const [prover, setProver] = useState<"HyperProver" | "StorageProver">("HyperProver");
+  const [prover, setProver] = useState<"HyperProver" | "MetaProver">("HyperProver");
 
   const [isIntentValid, setIsIntentValid] = useState<boolean>(false);
 
@@ -174,9 +174,9 @@ export default function CreateIntent({
 
           <div className="flex flex-col gap-1 p-1 border-1">
             <span className="text-xl">Prover</span>
-            <select onChange={(e) => setProver(e.target.value as "HyperProver" | "StorageProver")}>
+            <select onChange={(e) => setProver(e.target.value as "HyperProver" | "MetaProver")}>
               <option value={"HyperProver"}>Hyper Prover</option>
-              <option value={"StorageProver"}>Storage Prover</option>
+              <option value={"MetaProver"}>Meta Prover</option>
             </select>
           </div>
         </div>
