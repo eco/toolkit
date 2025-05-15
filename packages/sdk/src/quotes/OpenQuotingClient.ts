@@ -2,9 +2,9 @@ import axios, { AxiosInstance } from "axios";
 import { OpenQuotingAPI, SolverQuote } from "./types.js";
 import { ECO_SDK_CONFIG } from "../config.js";
 import { IntentType } from "@eco-foundation/routes-ts";
-import importedAxiosRetry from 'axios-retry';
+import importedAxiosRetry from "axios-retry";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const axiosRetry: typeof importedAxiosRetry = require('axios-retry');
+const axiosRetry: typeof importedAxiosRetry = require("axios-retry").default;
 
 export class OpenQuotingClient {
   private readonly MAX_RETRIES = 5;
