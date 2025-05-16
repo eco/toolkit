@@ -4,7 +4,7 @@ import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
 import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src/index.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 

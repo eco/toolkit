@@ -1,5 +1,5 @@
-import { sum } from "../../utils";
-import { SolverQuote } from "../types";
+import { sum } from "../utils.js";
+import { SolverQuote } from "./types.js";
 
 export function selectCheapestQuote(quotes: SolverQuote[]): SolverQuote {
   return quotes.reduce((cheapest, quote) => {

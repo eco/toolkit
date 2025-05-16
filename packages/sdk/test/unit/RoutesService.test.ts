@@ -3,8 +3,8 @@ import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem"
 import { privateKeyToAccount } from "viem/accounts";
 import { IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, SolverQuote } from "../../src";
-import { dateToTimestamp, getSecondsFromNow } from "../../src/utils";
+import { RoutesService, SolverQuote } from "../../src/index.js";
+import { dateToTimestamp, getSecondsFromNow } from "../../src/utils.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 

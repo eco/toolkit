@@ -1,6 +1,6 @@
 import { Hex } from "viem"
-import { RoutesSupportedChainId } from "../constants"
-import { SolverQuote } from "../quotes/types"
+import { RoutesSupportedChainId } from "../constants.js"
+import { SolverQuote } from "../quotes/types.js"
 import { IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
