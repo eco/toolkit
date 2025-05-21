@@ -1,11 +1,11 @@
-import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
-import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
+import { RoutesService, SolverQuote } from "@eco-foundation/routes-sdk"
+import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses, EcoChainIds } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi"
 import { getBlockNumber, waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
 import { config } from "../../../wagmi"
-import { chains } from "../../../config"
+import { chains } from "../../../wagmi"
 
 type Props = {
   routesService: RoutesService,
@@ -35,7 +35,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
 
       setIsPublishing(true)
 
-      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(quotedIntent.route.source) as RoutesSupportedChainId)].IntentSource
+      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(quotedIntent.route.source) as EcoChainIds)].IntentSource
 
       // approve the amount for the intent source contract, then publish the intent
 
@@ -71,12 +71,12 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
 
       setPublishTxHash(publishTxHash)
 
-      const blockNumber = await getBlockNumber(config, { chainId: Number(quotedIntent.route.destination) as RoutesSupportedChainId })
+      const blockNumber = await getBlockNumber(config, { chainId: Number(quotedIntent.route.destination) as EcoChainIds })
 
       const fulfillmentTxHash = await new Promise<Hex>((resolve, reject) => {
         const unwatch = watchContractEvent(config, {
           fromBlock: blockNumber - BigInt(10),
-          chainId: Number(quotedIntent.route.destination) as RoutesSupportedChainId,
+          chainId: Number(quotedIntent.route.destination) as EcoChainIds,
           abi: InboxAbi,
           eventName: 'Fulfillment',
           address: quotedIntent.route.inbox,
@@ -153,7 +153,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
           ) : (<>
             {chainId !== Number(intent.route.source) ?
               <button onClick={() => switchChain({ chainId: Number(intent.route.source) })}>
-                Switch to {chains[Number(intent.route.source) as RoutesSupportedChainId].label}
+                Switch to {chains[Number(intent.route.source) as EcoChainIds]?.name}
               </button> : (
                 <button onClick={publishIntent}>Approve and Publish Quoted Intent</button>
               )}

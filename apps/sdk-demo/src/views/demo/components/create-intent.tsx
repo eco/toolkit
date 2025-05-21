@@ -1,10 +1,11 @@
 import { useEffect, useMemo, useState } from "react";
-import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams } from "@eco-foundation/routes-sdk"
+import { RoutesService, CreateSimpleIntentParams } from "@eco-foundation/routes-sdk"
+import { EcoChainIds } from "@eco-foundation/routes-ts";
 import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
-import { chains } from "../../../config";
+import { chains } from "../../../wagmi";
 
 type Props = {
   routesService: RoutesService,
@@ -17,9 +18,9 @@ export default function CreateIntent({
 }: Props) {
   const { address } = useAccount();
 
-  const [originChain, setOriginChain] = useState<RoutesSupportedChainId | undefined>();
+  const [originChain, setOriginChain] = useState<EcoChainIds | undefined>();
   const [originToken, setOriginToken] = useState<string | undefined>();
-  const [destinationChain, setDestinationChain] = useState<RoutesSupportedChainId | undefined>();
+  const [destinationChain, setDestinationChain] = useState<EcoChainIds | undefined>();
   const [destinationToken, setDestinationToken] = useState<string | undefined>();
   const [amount, setAmount] = useState<number | string | undefined>();
   const [recipient, setRecipient] = useState<string | undefined>();
@@ -62,7 +63,8 @@ export default function CreateIntent({
           receivingToken: destinationToken,
           amount: BigInt(amount),
           recipient,
-          prover
+          prover,
+          expiryTime: new Date(Date.now() + 180 * 60 * 1000) // 180 minutes from now
         })
 
         setIsIntentValid(true)
@@ -71,6 +73,7 @@ export default function CreateIntent({
       }
       catch (error) {
         console.error(error)
+        alert("Error creating intent: " + error)
       }
     }
     return () => {
@@ -91,7 +94,7 @@ export default function CreateIntent({
             <div className="flex gap-1">
               <span>Chain:</span>
               <select onChange={(e) => {
-                const chainId = parseInt(e.target.value) as RoutesSupportedChainId
+                const chainId = parseInt(e.target.value) as EcoChainIds
                 if (originToken && originChain) {
                   const originTokenConfig = getAvailableStables(originChain).find((token) => token.address === originToken)
 
@@ -106,8 +109,8 @@ export default function CreateIntent({
                 setOriginChain(chainId)
               }}>
                 <option selected disabled>Select chain:</option>
-                {Object.entries(chains).map(([chainId, chainConfig]) => (
-                  <option key={chainId} value={chainId} disabled={destinationChain && destinationChain === Number(chainId) as RoutesSupportedChainId}>{chainConfig.label}</option>
+                {chains.map((chain) => (
+                  <option key={chain.id} value={chain.id} disabled={destinationChain && destinationChain === Number(chain.id) as EcoChainIds}>{chain.name}</option>
                 ))}
               </select>
             </div>
@@ -130,7 +133,7 @@ export default function CreateIntent({
             <div className="flex gap-1">
               <span>Chain:</span>
               <select onChange={(e) => {
-                const chainId = parseInt(e.target.value) as RoutesSupportedChainId
+                const chainId = parseInt(e.target.value) as EcoChainIds
                 if (destinationToken && destinationChain) {
                   const destinationTokenConfig = getAvailableStables(destinationChain).find((token) => token.address === destinationToken)
                   const existingToken = getAvailableStables(chainId).find((token) => token.id === destinationTokenConfig?.id)
@@ -144,8 +147,8 @@ export default function CreateIntent({
                 setDestinationChain(chainId)
               }}>
                 <option selected disabled>Select chain:</option>
-                {Object.entries(chains).map(([chainId, chainConfig]) => (
-                  <option key={chainId} value={chainId} disabled={originChain && originChain === Number(chainId) as RoutesSupportedChainId}>{chainConfig.label}</option>
+                {chains.map((chain) => (
+                  <option key={chain.id} value={chain.id} disabled={originChain && originChain === Number(chain.id) as EcoChainIds}>{chain.name}</option>
                 ))}
               </select>
             </div>

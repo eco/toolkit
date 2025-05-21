@@ -1,9 +1,8 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
-import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
 import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
 
-import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { EcoChainIds, EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config";
 
 export class RoutesService {
@@ -183,11 +182,11 @@ export class RoutesService {
    * @param chainId - The chain ID to be converted to an EcoChainId.
    * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
    */
-  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
+  getEcoChainId(chainId: EcoChainIds): EcoChainIdsEnv {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
-  private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainID: RoutesSupportedChainId): Hex {
+  private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainID: EcoChainIds): Hex {
     let proverContract: Hex;
     const ecoChainID: EcoChainIdsEnv = this.getEcoChainId(chainID);
     switch (prover) {
@@ -223,22 +222,5 @@ export class RoutesService {
       }
     }
     return proverContract;
-  }
-
-  static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {
-    const stableAddress = stableAddresses[chainID][stable];
-    if (!stableAddress) {
-      throw new Error(`Stable ${stable} not found on chain ${chainID}`);
-    }
-    return stableAddress;
-  }
-
-  static getStableFromAddress(chainID: RoutesSupportedChainId, address: Hex): RoutesSupportedStable | undefined {
-    for (const stable in stableAddresses[chainID]) {
-      if (stableAddresses[chainID][stable as RoutesSupportedStable]?.toLowerCase() === address.toLowerCase()) {
-        return stable as RoutesSupportedStable;
-      }
-    }
-    throw new Error(`Stable not found for address ${address} on chain ${chainID}`);
   }
 }

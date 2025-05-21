@@ -1,12 +1,11 @@
 import { Hex } from "viem"
-import { RoutesSupportedChainId } from "../constants"
 import { SolverQuote } from "../quotes/types"
-import { IntentType } from "@eco-foundation/routes-ts"
+import { EcoChainIds, IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
   creator: Hex
-  originChainID: RoutesSupportedChainId
-  destinationChainID: RoutesSupportedChainId
+  originChainID: EcoChainIds
+  destinationChainID: EcoChainIds
   receivingToken: Hex
   spendingToken: Hex
   spendingTokenLimit: bigint
@@ -18,8 +17,8 @@ export type CreateSimpleIntentParams = {
 
 export type CreateIntentParams = {
   creator: Hex
-  originChainID: RoutesSupportedChainId
-  destinationChainID: RoutesSupportedChainId
+  originChainID: EcoChainIds
+  destinationChainID: EcoChainIds
   calls: IntentCall[]
   callTokens: IntentToken[]
   tokens: IntentToken[]

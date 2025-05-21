@@ -1,5 +1,5 @@
-import { RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
-import { IntentType } from "@eco-foundation/routes-ts"
+import { SolverQuote } from "@eco-foundation/routes-sdk"
+import { EcoChainIds, IntentType } from "@eco-foundation/routes-ts"
 import { formatUnits } from "viem"
 import { findTokenByAddress } from "../../../utils"
 
@@ -22,7 +22,7 @@ export default function SelectQuote({ intent, quotes, onQuoteSelected }: Props) 
               <span>Amounts requested by solver on the origin chain:</span>
               <ul className="list-disc">
                 {quote.quoteData.tokens.map((token) => (
-                  <li key={token.token} className="ml-4">{formatUnits(BigInt(token.amount), 6)} {findTokenByAddress(Number(intent.route.source) as RoutesSupportedChainId, token.token)?.id}</li>
+                  <li key={token.token} className="ml-4">{formatUnits(BigInt(token.amount), 6)} {findTokenByAddress(Number(intent.route.source) as EcoChainIds, token.token)?.id}</li>
                 ))}
               </ul>
               <span>Quote expires at: {new Date(Number(quote.quoteData.expiryTime) * 1000).toISOString()}</span>
