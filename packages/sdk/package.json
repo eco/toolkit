@@ -1,6 +1,6 @@
 {
   "name": "@eco-foundation/routes-sdk",
-  "version": "0.14.0-beta.1",
+  "version": "0.14.0-beta.2",
   "description": "Eco Routes SDK",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",

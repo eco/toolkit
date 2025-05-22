@@ -50,6 +50,9 @@ export class RoutesService {
     if (spendingTokenLimit < BigInt(amount)) {
       throw new Error("Insufficient spendingTokenLimit");
     }
+
+    // set expiry time
+
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
     }
@@ -113,7 +116,7 @@ export class RoutesService {
     callTokens,
     tokens,
     prover,
-    expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
+    expiryTime,
   }: CreateIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
@@ -131,9 +134,11 @@ export class RoutesService {
     if (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
       throw new Error("Invalid tokens");
     }
-    if (expiryTime < getSecondsFromNow(60)) {
+    if (expiryTime && expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
     }
+
+    const deadline = expiryTime || this.getDefaultDeadline(prover);
 
     return {
       route: {
@@ -147,7 +152,7 @@ export class RoutesService {
       reward: {
         creator,
         prover: this.getProverContract(prover, originChainID),
-        deadline: dateToTimestamp(expiryTime),
+        deadline: dateToTimestamp(deadline),
         nativeValue: BigInt(0),
         tokens
       }
@@ -223,6 +228,16 @@ export class RoutesService {
       }
     }
     return proverContract;
+  }
+
+  private getDefaultDeadline(prover: "HyperProver" | "MetaProver" | Hex | undefined): Date {
+    switch (prover) {
+      case "MetaProver":
+        return getSecondsFromNow(150 * 60) // 150 minutes from now
+      case "HyperProver":
+      default:
+        return getSecondsFromNow(90 * 60) // 90 minutes from now
+    }
   }
 
   static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {
