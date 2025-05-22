@@ -4,7 +4,7 @@ import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
-import { chains } from "../../../config";
+import { chains } from "../../../wagmi";
 
 type Props = {
   routesService: RoutesService,
@@ -23,7 +23,7 @@ export default function CreateIntent({
   const [destinationToken, setDestinationToken] = useState<string | undefined>();
   const [amount, setAmount] = useState<number | string | undefined>();
   const [recipient, setRecipient] = useState<string | undefined>();
-  const [prover, setProver] = useState<"HyperProver" | "StorageProver">("HyperProver");
+  const [prover, setProver] = useState<"HyperProver" | "MetaProver">("HyperProver");
 
   const [isIntentValid, setIsIntentValid] = useState<boolean>(false);
 
@@ -106,8 +106,8 @@ export default function CreateIntent({
                 setOriginChain(chainId)
               }}>
                 <option selected disabled>Select chain:</option>
-                {Object.entries(chains).map(([chainId, chainConfig]) => (
-                  <option key={chainId} value={chainId} disabled={destinationChain && destinationChain === Number(chainId) as RoutesSupportedChainId}>{chainConfig.label}</option>
+                {chains.map((chain) => (
+                  <option key={chain.id} value={chain.id} disabled={destinationChain && destinationChain === Number(chain.id) as RoutesSupportedChainId}>{chain.name}</option>
                 ))}
               </select>
             </div>
@@ -144,8 +144,8 @@ export default function CreateIntent({
                 setDestinationChain(chainId)
               }}>
                 <option selected disabled>Select chain:</option>
-                {Object.entries(chains).map(([chainId, chainConfig]) => (
-                  <option key={chainId} value={chainId} disabled={originChain && originChain === Number(chainId) as RoutesSupportedChainId}>{chainConfig.label}</option>
+                {chains.map((chain) => (
+                  <option key={chain.id} value={chain.id} disabled={originChain && originChain === Number(chain.id) as RoutesSupportedChainId}>{chain.name}</option>
                 ))}
               </select>
             </div>
@@ -174,9 +174,9 @@ export default function CreateIntent({
 
           <div className="flex flex-col gap-1 p-1 border-1">
             <span className="text-xl">Prover</span>
-            <select onChange={(e) => setProver(e.target.value as "HyperProver" | "StorageProver")}>
+            <select onChange={(e) => setProver(e.target.value as "HyperProver" | "MetaProver")}>
               <option value={"HyperProver"}>Hyper Prover</option>
-              <option value={"StorageProver"}>Storage Prover</option>
+              <option value={"MetaProver"}>Meta Prover</option>
             </select>
           </div>
         </div>
