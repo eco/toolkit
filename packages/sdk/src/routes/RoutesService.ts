@@ -1,10 +1,10 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
-import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils";
-import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types";
+import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
+import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
+import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types.js";
 
 import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
-import { ECO_SDK_CONFIG } from "../config";
+import { ECO_SDK_CONFIG } from "../config.js";
 
 export class RoutesService {
   private isPreprod: boolean;
