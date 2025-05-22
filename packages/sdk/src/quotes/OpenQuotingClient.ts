@@ -18,9 +18,12 @@ export class OpenQuotingClient {
     import('axios-retry').then(({ default: axiosRetry }) => {
       axiosRetry(this.axiosInstance, { retries: this.MAX_RETRIES, retryDelay: axiosRetry.linearDelay(1000) });
     }).catch(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
       const axiosRetry = require('axios-retry');
       axiosRetry(this.axiosInstance, { retries: this.MAX_RETRIES, retryDelay: axiosRetry.linearDelay(1000) });
-    })
+    }).catch(() => {
+      console.warn("Failed to import axios-retry, OpenQuotingClient requests will only be attempted once");
+    });
   }
 
   /**
