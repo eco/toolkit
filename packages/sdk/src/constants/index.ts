@@ -9,6 +9,7 @@ export const chainIds = [
   360,        // Molten
   466,        // Appchain
   478,        // Form
+  // 480,        // Worldchain
   1996,       // Sanko
   2525,       // inEVM
   // 2741,       // Abstract
@@ -21,6 +22,7 @@ export const chainIds = [
   42161,      // Arbitrum
   42220,      // Celo
   57073,      // Ink
+  // 543210,     // ZERO
   // 10241024,   // AlienX
   1380012617, // RARI
 ] as const;
