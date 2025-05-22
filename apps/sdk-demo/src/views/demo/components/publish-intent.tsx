@@ -4,8 +4,7 @@ import { useCallback, useState } from "react"
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi"
 import { getBlockNumber, waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
-import { config } from "../../../wagmi"
-import { chains } from "../../../config"
+import { config, ecoChains } from "../../../wagmi"
 
 type Props = {
   routesService: RoutesService,
@@ -153,7 +152,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
           ) : (<>
             {chainId !== Number(intent.route.source) ?
               <button onClick={() => switchChain({ chainId: Number(intent.route.source) })}>
-                Switch to {chains[Number(intent.route.source) as RoutesSupportedChainId].label}
+                Switch to {ecoChains.getChain(Number(intent.route.source)).name}
               </button> : (
                 <button onClick={publishIntent}>Approve and Publish Quoted Intent</button>
               )}

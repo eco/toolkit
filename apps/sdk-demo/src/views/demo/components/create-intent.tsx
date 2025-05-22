@@ -4,7 +4,7 @@ import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
 import { useAccount, useReadContract } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
-import { chains } from "../../../config";
+import { chains } from "../../../wagmi";
 
 type Props = {
   routesService: RoutesService,
@@ -106,8 +106,8 @@ export default function CreateIntent({
                 setOriginChain(chainId)
               }}>
                 <option selected disabled>Select chain:</option>
-                {Object.entries(chains).map(([chainId, chainConfig]) => (
-                  <option key={chainId} value={chainId} disabled={destinationChain && destinationChain === Number(chainId) as RoutesSupportedChainId}>{chainConfig.label}</option>
+                {chains.map((chain) => (
+                  <option key={chain.id} value={chain.id} disabled={destinationChain && destinationChain === Number(chain.id) as RoutesSupportedChainId}>{chain.name}</option>
                 ))}
               </select>
             </div>
@@ -144,8 +144,8 @@ export default function CreateIntent({
                 setDestinationChain(chainId)
               }}>
                 <option selected disabled>Select chain:</option>
-                {Object.entries(chains).map(([chainId, chainConfig]) => (
-                  <option key={chainId} value={chainId} disabled={originChain && originChain === Number(chainId) as RoutesSupportedChainId}>{chainConfig.label}</option>
+                {chains.map((chain) => (
+                  <option key={chain.id} value={chain.id} disabled={originChain && originChain === Number(chain.id) as RoutesSupportedChainId}>{chain.name}</option>
                 ))}
               </select>
             </div>
