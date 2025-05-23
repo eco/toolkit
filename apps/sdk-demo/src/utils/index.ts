@@ -63,6 +63,14 @@ export const stableAddresses: Partial<Record<EcoChainIds, Partial<Record<Stables
   33111: { // curtis testnet
     USDC: '0xE0356B8aD7811dC3e4d61cFD6ac7653e0D31b096',
     USDT: '0xb56415964d3F47fd3390484676e4f394d198374a'
+  },
+  1992: { // sanko testnet
+    USDC: '0xC38944D590A3B6E796dE242680259CB1dEcba077',
+    USDT: '0xa7ace557347F8b7fc72250e6bc0Abc47dc7902E5'
+  },
+  6524490: { // towns testnet
+    USDC: '0x9030B1b203D7F7aE07aa32a2eFbF5DEE7112FE30',
+    USDT: '0x8b4E19Adb6F4E92d92Dd19e8990d7d076404F3A8'
   }
 }
 
