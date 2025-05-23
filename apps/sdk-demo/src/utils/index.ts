@@ -51,10 +51,10 @@ export const stableAddresses: Partial<Record<EcoChainIds, Partial<Record<Stables
     USDCe: '0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174',
     USDT: '0xc2132d05d31c914a87c6611c10748aeb04b58e8f',
   },
-  130: { // unichain
-    USDC: '0x078D782b760474a361dDA0AF3839290b0EF57AD6',
-    USDT0: '0x9151434b16b9763660705744891fA906F660EcC5',
-  },
+  // 130: { // unichain
+  //   USDC: '0x078D782b760474a361dDA0AF3839290b0EF57AD6',
+  //   USDT0: '0x9151434b16b9763660705744891fA906F660EcC5',
+  // },
 
   3441006: { // manta pacific sepolia
     USDC: '0x0652aEc2DeE0Fee9D05E614c95Ce8A01a7336cD8',
