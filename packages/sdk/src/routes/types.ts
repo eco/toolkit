@@ -25,6 +25,17 @@ export type CreateIntentParams = {
   tokens: IntentToken[]
   prover: "HyperProver" | "StorageProver" | Hex
   expiryTime?: Date
+  nativeValue?: bigint
+}
+
+export type CreateNativeSendIntentParams = {
+  creator: Hex
+  originChainID: RoutesSupportedChainId
+  destinationChainID: RoutesSupportedChainId
+  amount: bigint
+  recipient?: Hex
+  prover?: "HyperProver" | "StorageProver"
+  expiryTime?: Date
 }
 
 export type ApplyQuoteToIntentParams = {

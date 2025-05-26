@@ -632,6 +632,141 @@ describe("RoutesService", () => {
     })
   })
 
+  describe("createNativeSendIntent", () => {
+    test("valid", async () => {
+      const validIntent = routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+        expect(call.value).toBe(BigInt(1000000));
+      }
+      expect(validIntent.route.tokens).toBeDefined();
+      expect(validIntent.route.tokens.length).toBe(0);
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBe(BigInt(1000000));
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBe(0);
+    })
+
+    test("validWithCustomRecipient", async () => {
+      const recipient = "0x1234567890123456789012345678901234567890";
+      const validIntent = routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(1000000),
+        recipient,
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.calls.length).toBe(1);
+      expect(validIntent.route.calls[0]!.target).toBe(recipient);
+      expect(validIntent.route.calls[0]!.value).toBe(BigInt(1000000));
+      expect(validIntent.reward.nativeValue).toBe(BigInt(1000000));
+    })
+
+    test("validCreatorZeroAddress", async () => {
+      const validIntent = routesService.createNativeSendIntent({
+        creator: zeroAddress,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent.reward.creator).toBe(zeroAddress);
+    })
+
+    test("invalidCreator", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator: "0x",
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+      })).toThrow("Invalid creator address");
+    })
+
+    test("invalidRecipient", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        recipient: "0x"
+      })).toThrow("Invalid recipient address");
+    })
+
+    test("invalidChainIDs", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 10,
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+      })).toThrow("originChainID and destinationChainID cannot be the same");
+    })
+
+    test("invalidAmount", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(-1),
+        prover: 'HyperProver',
+      })).toThrow("Invalid amount");
+    })
+
+    test("invalidExpiryTime", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(1000000),
+        prover: 'HyperProver',
+        expiryTime: getSecondsFromNow(50),
+      })).toThrow("Expiry time must be 60 seconds or more in the future");
+    })
+
+    test("invalidProverForChain", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 42161,
+        destinationChainID: 10,
+        amount: BigInt(1000000),
+        prover: "StorageProver",
+      })).toThrow("No default prover found for this chain");
+    })
+  })
+
   describe("applyQuoteToIntent", () => {
     let validIntent: IntentType;
     let validQuote: SolverQuote;
@@ -657,6 +792,7 @@ describe("RoutesService", () => {
             token: RoutesService.getStableAddress(10, "USDC"),
             amount: "1000000",
           }],
+          nativeValue: "0",
           expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString()
         }
       };
