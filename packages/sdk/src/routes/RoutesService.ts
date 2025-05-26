@@ -1,7 +1,7 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types.js";
+import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, CreateNativeSendIntentParams } from "./types.js";
 
 import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
@@ -113,7 +113,8 @@ export class RoutesService {
     callTokens,
     tokens,
     prover = "HyperProver",
-    expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
+    expiryTime = getSecondsFromNow(90 * 60), // 90 minutes from now
+    nativeValue = BigInt(0)
   }: CreateIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
@@ -128,7 +129,7 @@ export class RoutesService {
     if (!callTokens.length || callTokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
       throw new Error("Invalid callTokens");
     }
-    if (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount))) {
+    if (calls.every((call) => call.value === BigInt(0)) && (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount)))) {
       throw new Error("Invalid tokens");
     }
     if (expiryTime < getSecondsFromNow(60)) {
@@ -148,8 +149,64 @@ export class RoutesService {
         creator,
         prover: this.getProverContract(prover, originChainID),
         deadline: dateToTimestamp(expiryTime),
-        nativeValue: BigInt(0),
+        nativeValue,
         tokens
+      }
+    }
+  }
+
+  /**
+   * Creates a native send intent.
+   * 
+   * @param {CreateNativeSendIntentParams} params - The parameters for creating the native send intent.
+   * @returns {IntentType} The created intent.
+   * @throws {Error} If the creator address is invalid, the origin and destination chain are the same, the amount is invalid, or the expiry time is in the past.
+   */
+  createNativeSendIntent({
+    creator,
+    originChainID,
+    destinationChainID,
+    amount,
+    recipient = creator,
+    prover = "HyperProver",
+    expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
+  }: CreateNativeSendIntentParams): IntentType {
+    // validate
+    if (!isAddress(creator, { strict: false })) {
+      throw new Error("Invalid creator address");
+    }
+    if (!isAddress(recipient, { strict: false })) {
+      throw new Error("Invalid recipient address");
+    }
+    if (originChainID === destinationChainID) {
+      throw new Error("originChainID and destinationChainID cannot be the same");
+    }
+    if (isAmountInvalid(amount)) {
+      throw new Error("Invalid amount");
+    }
+    if (expiryTime < getSecondsFromNow(60)) {
+      throw new Error("Expiry time must be 60 seconds or more in the future");
+    }
+
+    return {
+      route: {
+        salt: generateRandomHex(),
+        source: BigInt(originChainID),
+        destination: BigInt(destinationChainID),
+        inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        tokens: [],
+        calls: [{
+          target: recipient,
+          data: '0x',
+          value: amount
+        }]
+      },
+      reward: {
+        creator,
+        prover: this.getProverContract(prover, originChainID),
+        deadline: dateToTimestamp(expiryTime),
+        nativeValue: amount,
+        tokens: []
       }
     }
   }
@@ -173,6 +230,8 @@ export class RoutesService {
       token: token,
       amount: BigInt(amount)
     }))
+
+    intent.reward.nativeValue = BigInt(quote.quoteData.nativeValue || 0)
 
     return intent;
   }

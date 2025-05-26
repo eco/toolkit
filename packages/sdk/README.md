@@ -76,7 +76,7 @@ const amount = BigInt(1000000); // 1 USDC
 
 const routesService = new RoutesService();
 
-// create a simple stable transfer from my wallet on the origin chain to my wallet on the destination chain (bridge)
+// create a simple stable transfer from my wallet on the origin chain to my wallet on the destination chain
 const intent = routesService.createSimpleIntent({
   creator: address,
   originChainID,
@@ -84,6 +84,28 @@ const intent = routesService.createSimpleIntent({
   spendingTokenLimit,
   destinationChainID,
   receivingToken,
+  amount,
+  recipient: address, // optional, defaults to the creator if not passed
+})
+```
+
+### Create a native send intent
+To create a native token (ETH, MATIC, etc.) send intent, use the `createNativeSendIntent` method:
+``` ts
+import { RoutesService } from '@eco-foundation/routes-sdk';
+
+const address = '0x1234567890123456789012345678901234567890';
+const originChainID = 10; // Optimism
+const destinationChainID = 8453; // Base
+const amount = BigInt(1000000000000000000); // 1 ETH (in wei)
+
+const routesService = new RoutesService();
+
+// create a native token send from my wallet on the origin chain to my wallet on the destination chain
+const intent = routesService.createNativeSendIntent({
+  creator: address,
+  originChainID,
+  destinationChainID,
   amount,
   recipient: address, // optional, defaults to the creator if not passed
 })
@@ -183,6 +205,21 @@ try {
 catch (error) {
   console.error('Intent creation failed', error)
 }
+```
+
+#### Publishing a native send intent
+For native token (ETH, MATIC, etc.) send intents, you need to provide the native value when publishing:
+
+```ts
+const publishTxHash = await originWalletClient.writeContract({
+  abi: IntentSourceAbi,
+  address: intentSourceContract,
+  functionName: 'publishAndFund',
+  args: [intentWithQuote, false],
+  chain: originChain,
+  account,
+  value: intentWithQuote.reward.nativeValue // Send the required native value
+})
 ```
 
 [See more from viem's docs](https://viem.sh/)
