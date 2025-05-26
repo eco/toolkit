@@ -1,6 +1,6 @@
 import { IntentType } from "@eco-foundation/routes-ts";
 import { Hex, TransactionReceipt } from "viem";
-import { IntentExecutionType } from "../constants";
+import { IntentExecutionType } from "../constants.js";
 export namespace OpenQuotingAPI {
   export enum Endpoints {
     Quotes = '/api/v2/quotes',

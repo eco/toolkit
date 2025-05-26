@@ -1,9 +1,8 @@
 import axios, { AxiosInstance } from "axios";
-import axiosRetry from "axios-retry";
-import { BatchPermit2Data, InitiateGaslessIntentResponse, OpenQuotingAPI, Permit1, Permit2, PermitData, RequestQuotesForIntentParams, SinglePermit2Data, SolverQuote, InitiateGaslessIntentParams } from "./types";
-import { ECO_SDK_CONFIG } from "../config";
-import { IntentType } from "@eco-foundation/routes-ts";
+import { BatchPermit2Data, InitiateGaslessIntentResponse, OpenQuotingAPI, Permit1, Permit2, PermitData, RequestQuotesForIntentParams, SinglePermit2Data, SolverQuote, InitiateGaslessIntentParams } from "./types.js";
 import { decodeFunctionData, erc20Abi } from "viem";
+import { ECO_SDK_CONFIG } from "../config.js";
+import { IntentType } from "@eco-foundation/routes-ts";
 
 export class OpenQuotingClient {
   private readonly MAX_RETRIES = 5;
@@ -15,7 +14,17 @@ export class OpenQuotingClient {
     this.axiosInstance = axios.create({
       baseURL: customBaseUrl || ECO_SDK_CONFIG.openQuotingBaseUrl
     });
-    axiosRetry(this.axiosInstance, { retries: this.MAX_RETRIES, retryDelay: axiosRetry.linearDelay(1000) });
+
+    // import axios-retry in a way that supports esm and commonjs
+    import('axios-retry').then(({ default: axiosRetry }) => {
+      axiosRetry(this.axiosInstance, { retries: this.MAX_RETRIES, retryDelay: axiosRetry.linearDelay(1000) });
+    }).catch(() => {
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const axiosRetry = require('axios-retry');
+      axiosRetry(this.axiosInstance, { retries: this.MAX_RETRIES, retryDelay: axiosRetry.linearDelay(1000) });
+    }).catch(() => {
+      console.warn("Failed to import axios-retry, OpenQuotingClient requests will only be attempted once");
+    });
   }
 
   /**

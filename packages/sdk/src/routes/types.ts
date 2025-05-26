@@ -1,5 +1,5 @@
 import { Hex } from "viem"
-import { RoutesSupportedChainId } from "../constants"
+import { RoutesSupportedChainId } from "../constants.js"
 
 export type CreateSimpleIntentParams = {
   creator: Hex

@@ -2,8 +2,8 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
 
-import { RoutesService } from "../../src";
-import { getSecondsFromNow } from "../../src/utils";
+import { RoutesService } from "../../src/index.js";
+import { getSecondsFromNow } from "../../src/utils.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 

@@ -5,11 +5,11 @@ import { privateKeyToAccount } from "viem/accounts";
 
 import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote, Permit1, Permit2, Permit2DataDetails } from "../../src";
-import { PERMIT2_ADDRESS, signPermit, signPermit2 } from "../permit";
-import { getSecondsFromNow } from "../../src/utils";
-import { PermitAbi } from "../PermitAbi";
-import { Permit2Abi } from "../Permit2Abi";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote, Permit1, Permit2, Permit2DataDetails } from "../../src/index.js";
+import { PERMIT2_ADDRESS, signPermit, signPermit2 } from "../permit.js";
+import { getSecondsFromNow } from "../../src/utils.js";
+import { PermitAbi } from "../PermitAbi.js";
+import { Permit2Abi } from "../Permit2Abi.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 

@@ -1,9 +1,9 @@
 
 import { expect } from "vitest";
-import { INTENT_EXECUTION_TYPES, SolverQuote } from "../src";
+import { INTENT_EXECUTION_TYPES, SolverQuote } from "../src/index.js";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { decodeFunctionData, erc20Abi } from "viem";
-import { sum } from "../src/utils";
+import { sum } from "../src/utils.js";
 
 export function validateSolverQuoteResponse(quoteResponse: SolverQuote, originalIntent: IntentType, isReverseQuote: boolean) {
   expect(quoteResponse.solverID).toBeDefined();
