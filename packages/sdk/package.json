@@ -28,7 +28,7 @@
     "url": "git+https://github.com/eco/toolkit.git"
   },
   "peerDependencies": {
-    "@eco-foundation/routes-ts": "^2.1.17"
+    "@eco-foundation/routes-ts": "^2.1.19"
   },
   "dependencies": {
     "axios": "^1.7.9",
