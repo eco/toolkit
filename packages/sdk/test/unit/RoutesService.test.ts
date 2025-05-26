@@ -657,7 +657,8 @@ describe("RoutesService", () => {
             token: RoutesService.getStableAddress(10, "USDC"),
             amount: "1000000",
           }],
-          expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString()
+          expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString(),
+          estimatedFulfillTimeSec: 2,
         }
       };
     });
