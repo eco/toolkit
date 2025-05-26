@@ -1,7 +1,7 @@
 import { Hex } from "viem"
 import { RoutesSupportedChainId } from "../constants.js"
 import { SolverQuote } from "../quotes/types.js"
-import { IntentType } from "@eco-foundation/routes-ts"
+import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
   creator: Hex
@@ -31,6 +31,8 @@ export type ApplyQuoteToIntentParams = {
   intent: IntentType
   quote: SolverQuote
 }
+
+export type EcoProtocolContract = keyof typeof EcoProtocolAddresses[EcoChainIdsEnv];
 
 type IntentCall = {
   target: Hex

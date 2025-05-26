@@ -1,7 +1,7 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams } from "./types.js";
+import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, EcoProtocolContract } from "./types.js";
 
 import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
@@ -69,7 +69,7 @@ export class RoutesService {
         salt: generateRandomHex(),
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
-        inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        inbox: this.getProtocolContractAddress(destinationChainID, "Inbox"),
         tokens: [
           {
             token: receivingToken,
@@ -145,7 +145,7 @@ export class RoutesService {
         salt: generateRandomHex(),
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
-        inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        inbox: this.getProtocolContractAddress(destinationChainID, "Inbox"),
         tokens: callTokens,
         calls,
       },
@@ -190,6 +190,37 @@ export class RoutesService {
    */
   getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
+  }
+
+  /**
+   * Checks if a protocol contract exists for a given chain ID and protocol contract.
+   *
+   * @param {RoutesSupportedChainId} chainID - The chain ID to check for the protocol contract.
+   * @param {EcoProtocolContract} protocolContract - The protocol contract to check for existence.
+   * @returns {boolean} True if the protocol contract exists, false otherwise.
+   */
+  protocolContractExists(chainID: RoutesSupportedChainId, protocolContract: EcoProtocolContract): boolean {
+    const ecoChainID = this.getEcoChainId(chainID);
+    const address = EcoProtocolAddresses[ecoChainID][protocolContract];
+    return Boolean(address) && isAddress(address) && !isAddressEqual(address, zeroAddress);
+  }
+
+  /**
+   * Returns the address of a protocol contract for a given chain ID.
+   *
+   * @param {RoutesSupportedChainId} chainID - The chain ID to get the protocol address for.
+   * @param {EcoProtocolContract} protocolContract - The protocol contract to get the address for.
+   * @returns {Hex} The address of the protocol contract.
+   * 
+   * @throws {Error} If no protocol contract exists on the specified chain ID.
+   */
+  getProtocolContractAddress(chainID: RoutesSupportedChainId, protocolContract: EcoProtocolContract): Hex {
+    const ecoChainID = this.getEcoChainId(chainID);
+    const address = EcoProtocolAddresses[ecoChainID][protocolContract];
+    if (!address || isAddressEqual(address, zeroAddress)) {
+      throw new Error(`No ${protocolContract} exists on '${chainID}'`);
+    }
+    return address;
   }
 
   private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainID: RoutesSupportedChainId): Hex {

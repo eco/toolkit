@@ -137,7 +137,7 @@ The SDK gives you what you need so that you can publish the intent to the origin
 ``` ts
 import { createWalletClient, privateKeyToAccount, webSocket, http, erc20Abi } from 'viem';
 import { optimism } from 'viem/chains';
-import { IntentSourceAbi, EcoProtocolAddresses } from '@eco-foundation/routes-ts';
+import { IntentSourceAbi } from '@eco-foundation/routes-ts';
 
 const account = privateKeyToAccount('YOUR PRIVATE KEY HERE')
 const originChain = optimism;
@@ -152,7 +152,7 @@ const originPublicClient = createPublicClient({
   transport: webSocket(rpcUrl) // OR http(rpcUrl)
 })
 
-const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource;
+const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, 'IntentSource');
 
 try {
   // approve the quoted amount to account for fees
