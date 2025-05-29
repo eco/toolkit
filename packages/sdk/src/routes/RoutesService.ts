@@ -1,16 +1,47 @@
 import { encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, EcoProtocolContract } from "./types.js";
+import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, EcoProtocolContract, ProtocolAddresses } from "./types.js";
 
-import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
 
 export class RoutesService {
   private isPreprod: boolean;
+  public protocolAddresses: ProtocolAddresses;
 
-  constructor({ isPreprod }: { isPreprod?: boolean } = {}) {
+  constructor({ isPreprod, customProtocolAddresses }: { isPreprod?: boolean, customProtocolAddresses?: ProtocolAddresses } = {}) {
     this.isPreprod = isPreprod || ECO_SDK_CONFIG.isPreprod || false;
+    this.protocolAddresses = this.mergeProtocolAddresses(customProtocolAddresses);
+  }
+
+  private mergeProtocolAddresses(customProtocolAddresses?: ProtocolAddresses): ProtocolAddresses {
+    // merge addresses in with custom being higher priority
+    const target = customProtocolAddresses || {};
+    const source = EcoProtocolAddresses;
+
+    function deepMergeProtocolAddresses(
+      target: ProtocolAddresses,
+      source: ProtocolAddresses
+    ): ProtocolAddresses {
+      const result: ProtocolAddresses = { ...target };
+
+      for (const chainIdEnv in source) {
+        if (!Object.prototype.hasOwnProperty.call(source, chainIdEnv)) continue;
+        const sourceChain = source[chainIdEnv];
+        const targetChain = result[chainIdEnv];
+
+        if (targetChain && sourceChain) {
+          result[chainIdEnv] = { ...sourceChain, ...targetChain };
+        } else if (sourceChain) {
+          result[chainIdEnv] = { ...sourceChain };
+        }
+      }
+
+      return result;
+    }
+
+    return deepMergeProtocolAddresses(target as ProtocolAddresses, source as ProtocolAddresses);
   }
 
   /**
@@ -188,7 +219,7 @@ export class RoutesService {
    * @param chainId - The chain ID to be converted to an EcoChainId.
    * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
    */
-  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
+  getChainIdEnv(chainId: number): `${number}` | `${number}-pre` {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
@@ -199,10 +230,13 @@ export class RoutesService {
    * @param {EcoProtocolContract} protocolContract - The protocol contract to check for existence.
    * @returns {boolean} True if the protocol contract exists, false otherwise.
    */
-  protocolContractExists(chainID: RoutesSupportedChainId, protocolContract: EcoProtocolContract): boolean {
-    const ecoChainID = this.getEcoChainId(chainID);
-    const address = EcoProtocolAddresses[ecoChainID][protocolContract];
-    return Boolean(address) && isAddress(address) && !isAddressEqual(address, zeroAddress);
+  protocolContractExists(chainId: number, protocolContract: EcoProtocolContract): boolean {
+    const chainIdEnv = this.getChainIdEnv(chainId);
+    if (!this.protocolAddresses[chainIdEnv]) {
+      return false;
+    }
+    const address = this.protocolAddresses[chainIdEnv][protocolContract];
+    return Boolean(address) && isAddress(address!) && !isAddressEqual(address, zeroAddress);
   }
 
   /**
@@ -214,43 +248,47 @@ export class RoutesService {
    * 
    * @throws {Error} If no protocol contract exists on the specified chain ID.
    */
-  getProtocolContractAddress(chainID: RoutesSupportedChainId, protocolContract: EcoProtocolContract): Hex {
-    const ecoChainID = this.getEcoChainId(chainID);
-    const address = EcoProtocolAddresses[ecoChainID][protocolContract];
+  getProtocolContractAddress(chainId: number, protocolContract: EcoProtocolContract): Hex {
+    const chainIdEnv = this.getChainIdEnv(chainId);
+    if (!this.protocolAddresses[chainIdEnv]) {
+      throw new Error(`No protocol addresses found for chain '${chainIdEnv}'`);
+    }
+    const address = this.protocolAddresses[chainIdEnv][protocolContract];
     if (!address || isAddressEqual(address, zeroAddress)) {
-      throw new Error(`No ${protocolContract} exists on '${chainID}'`);
+      throw new Error(`No ${protocolContract} exists on '${chainIdEnv}'`);
     }
     return address;
   }
 
-  private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainID: RoutesSupportedChainId): Hex {
-    let proverContract: Hex;
-    const ecoChainID: EcoChainIdsEnv = this.getEcoChainId(chainID);
+  private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainId: number): Hex {
+    let proverContract: Hex | undefined;
+    const chainIdEnv = this.getChainIdEnv(chainId);
+
     switch (prover) {
       case "HyperProver": {
-        proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
+        proverContract = this.protocolAddresses[chainIdEnv]?.HyperProver;
         // if HyperProver is not found, throw
-        if (isAddressEqual(proverContract, zeroAddress)) {
-          throw new Error(`No HyperProver exists on '${chainID}'`);
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No HyperProver exists on '${chainIdEnv}'`);
         }
         break;
       }
       case "MetaProver": {
         // if MetaProver is not found, throw
-        proverContract = EcoProtocolAddresses[ecoChainID].MetaProver;
-        if (isAddressEqual(proverContract, zeroAddress)) {
-          throw new Error(`No HyperProver exists on '${chainID}'`);
+        proverContract = this.protocolAddresses[chainIdEnv]?.MetaProver;
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No MetaProver exists on '${chainIdEnv}'`);
         }
         break;
       }
       case undefined: {
         // default to HyperProver, fall back to MetaProver, if not found throw
-        proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
-        if (isAddressEqual(proverContract, zeroAddress)) {
-          proverContract = EcoProtocolAddresses[ecoChainID].MetaProver;
+        proverContract = this.protocolAddresses[chainIdEnv]?.HyperProver;
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          proverContract = this.protocolAddresses[chainIdEnv]?.MetaProver;
         }
-        if (isAddressEqual(proverContract, zeroAddress)) {
-          throw new Error(`No Prover found for '${chainID}'`);
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No Prover found for '${chainIdEnv}'`);
         }
         break;
       }
@@ -258,7 +296,7 @@ export class RoutesService {
         proverContract = prover;
       }
     }
-    return proverContract;
+    return proverContract as Hex;
   }
 
   private getDefaultDeadline(prover: "HyperProver" | "MetaProver" | Hex | undefined): Date {

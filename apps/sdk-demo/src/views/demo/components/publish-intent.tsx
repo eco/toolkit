@@ -1,5 +1,5 @@
 import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
-import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
+import { IntentType, IntentSourceAbi, InboxAbi } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi"
 import { getBlockNumber, waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
@@ -34,7 +34,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
 
       setIsPublishing(true)
 
-      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(quotedIntent.route.source) as RoutesSupportedChainId)].IntentSource
+      const intentSourceContract = routesService.getProtocolContractAddress(Number(quotedIntent.route.source), "IntentSource")
 
       // approve the amount for the intent source contract, then publish the intent
 

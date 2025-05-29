@@ -34,6 +34,8 @@ export type ApplyQuoteToIntentParams = {
 
 export type EcoProtocolContract = keyof typeof EcoProtocolAddresses[EcoChainIdsEnv];
 
+export type ProtocolAddresses = Record<string, Partial<Record<EcoProtocolContract, Hex>>>;
+
 type IntentCall = {
   target: Hex
   data: Hex

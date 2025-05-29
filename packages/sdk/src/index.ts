@@ -2,7 +2,7 @@ export { chainIds, stables, stableAddresses } from "./constants.js";
 export type { RoutesSupportedChainId, RoutesSupportedStable } from "./constants.js";
 
 export { RoutesService } from "./routes/RoutesService.js";
-export type { CreateSimpleIntentParams, CreateIntentParams, ApplyQuoteToIntentParams, EcoProtocolContract } from "./routes/types.js";
+export type { CreateSimpleIntentParams, CreateIntentParams, ApplyQuoteToIntentParams, EcoProtocolContract, ProtocolAddresses } from "./routes/types.js";
 
 export { OpenQuotingClient } from "./quotes/OpenQuotingClient.js";
 export type { SolverQuote, QuoteData } from "./quotes/types.js";
