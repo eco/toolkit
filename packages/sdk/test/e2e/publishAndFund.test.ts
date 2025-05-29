@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { createWalletClient, Hex, webSocket, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
+import { IntentSourceAbi } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src/index.js";
 
@@ -36,7 +36,7 @@ describe("publishAndFund", () => {
   })
 
   test("onchain with quote", async () => {
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
 
     const intent = routesService.createSimpleIntent({
       creator: account.address,
@@ -98,7 +98,7 @@ describe("publishAndFund", () => {
       recipient: account.address
     })
 
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
     expect(intentSourceContract).toBeDefined()
 
     // approve
