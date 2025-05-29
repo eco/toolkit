@@ -167,6 +167,7 @@ export class RoutesService {
     originChainID,
     destinationChainID,
     amount,
+    limit,
     recipient = creator,
     prover = "HyperProver",
     expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
@@ -183,6 +184,12 @@ export class RoutesService {
     }
     if (isAmountInvalid(amount)) {
       throw new Error("Invalid amount");
+    }
+    if (isAmountInvalid(limit)) {
+      throw new Error("Invalid limit");
+    }
+    if (limit < amount) {
+      throw new Error("Insufficient limit");
     }
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
@@ -205,7 +212,7 @@ export class RoutesService {
         creator,
         prover: this.getProverContract(prover, originChainID),
         deadline: dateToTimestamp(expiryTime),
-        nativeValue: amount,
+        nativeValue: limit,
         tokens: []
       }
     }

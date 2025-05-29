@@ -638,7 +638,8 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
       });
 
@@ -678,7 +679,8 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         recipient,
         prover: 'HyperProver',
       });
@@ -696,7 +698,8 @@ describe("RoutesService", () => {
         creator: zeroAddress,
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
       });
 
@@ -709,7 +712,8 @@ describe("RoutesService", () => {
         creator: "0x",
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
       })).toThrow("Invalid creator address");
     })
@@ -719,7 +723,8 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
         recipient: "0x"
       })).toThrow("Invalid recipient address");
@@ -730,7 +735,8 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 10,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
       })).toThrow("originChainID and destinationChainID cannot be the same");
     })
@@ -741,8 +747,31 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         amount: BigInt(-1),
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
       })).toThrow("Invalid amount");
+    })
+
+    test("invalidLimit", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt(-1),
+        prover: 'HyperProver',
+      })).toThrow("Invalid limit");
+    })
+
+    test("invalid:insufficientLimit", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("999999"), // 0.000000999999 ETH
+        prover: 'HyperProver',
+      })).toThrow("Insufficient limit");
     })
 
     test("invalidExpiryTime", async () => {
@@ -750,7 +779,8 @@ describe("RoutesService", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: 'HyperProver',
         expiryTime: getSecondsFromNow(50),
       })).toThrow("Expiry time must be 60 seconds or more in the future");
@@ -761,7 +791,8 @@ describe("RoutesService", () => {
         creator,
         originChainID: 42161,
         destinationChainID: 10,
-        amount: BigInt(1000000),
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         prover: "StorageProver",
       })).toThrow("No default prover found for this chain");
     })

@@ -86,7 +86,8 @@ describe("OpenQuotingClient", () => {
         creator,
         originChainID: 10,
         destinationChainID: 8453,
-        amount: BigInt("1000000000000000000"), // 1 ETH
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
         recipient: creator,
         prover: 'HyperProver'
       });

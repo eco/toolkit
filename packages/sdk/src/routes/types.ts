@@ -33,6 +33,7 @@ export type CreateNativeSendIntentParams = {
   originChainID: RoutesSupportedChainId
   destinationChainID: RoutesSupportedChainId
   amount: bigint
+  limit: bigint
   recipient?: Hex
   prover?: "HyperProver" | "StorageProver"
   expiryTime?: Date
