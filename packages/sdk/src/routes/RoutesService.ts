@@ -9,10 +9,12 @@ import { ECO_SDK_CONFIG } from "../config.js";
 export class RoutesService {
   private isPreprod: boolean;
   public protocolAddresses: ProtocolAddresses;
+  public supportedChainIds: number[];
 
   constructor({ isPreprod, customProtocolAddresses }: { isPreprod?: boolean, customProtocolAddresses?: ProtocolAddresses } = {}) {
     this.isPreprod = isPreprod || ECO_SDK_CONFIG.isPreprod || false;
     this.protocolAddresses = this.mergeProtocolAddresses(customProtocolAddresses);
+    this.supportedChainIds = [...new Set(Object.keys(this.protocolAddresses).map(chainIdEnv => parseInt(chainIdEnv.replace("-pre", ""))))];
   }
 
   private mergeProtocolAddresses(customProtocolAddresses?: ProtocolAddresses): ProtocolAddresses {

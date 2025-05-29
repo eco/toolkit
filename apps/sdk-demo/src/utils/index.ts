@@ -7,7 +7,7 @@ type MyTokenConfig = {
 }
 
 export function getAvailableStables(chain: RoutesSupportedChainId): MyTokenConfig[] {
-  return Object.entries(stableAddresses[chain]).map(([stable, address]) => ({
+  return Object.entries(stableAddresses[chain] || {}).map(([stable, address]) => ({
     id: stable as RoutesSupportedStable,
     address
   }))
