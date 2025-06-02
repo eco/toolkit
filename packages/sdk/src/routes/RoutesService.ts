@@ -3,7 +3,7 @@ import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid 
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
 import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, EcoProtocolContract, ProtocolAddresses } from "./types.js";
 
-import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
 
 export class RoutesService {
@@ -213,6 +213,16 @@ export class RoutesService {
     }))
 
     return intent;
+  }
+
+  /**
+   * Returns the EcoChainId for a given chainId, appending "-pre" if the environment is pre-production.
+   *
+   * @param chainId - The chain ID to be converted to an EcoChainId.
+   * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
+   */
+  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
+    return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
   /**
