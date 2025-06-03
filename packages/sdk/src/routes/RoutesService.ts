@@ -1,16 +1,49 @@
-import { encodeFunctionData, erc20Abi, Hex, isAddress } from "viem";
+import { encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, CreateNativeSendIntentParams } from "./types.js";
+import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, CreateNativeSendIntentParams, EcoProtocolContract, ProtocolAddresses } from "./types.js";
 
-import { EcoChainIds, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
 
 export class RoutesService {
   private isPreprod: boolean;
+  public protocolAddresses: ProtocolAddresses;
+  public supportedChainIds: number[];
 
-  constructor({ isPreprod }: { isPreprod?: boolean } = {}) {
+  constructor({ isPreprod, customProtocolAddresses }: { isPreprod?: boolean, customProtocolAddresses?: ProtocolAddresses } = {}) {
     this.isPreprod = isPreprod || ECO_SDK_CONFIG.isPreprod || false;
+    this.protocolAddresses = this.mergeProtocolAddresses(customProtocolAddresses);
+    this.supportedChainIds = [...new Set(Object.keys(this.protocolAddresses).map(chainIdEnv => parseInt(chainIdEnv.replace("-pre", ""))))];
+  }
+
+  private mergeProtocolAddresses(customProtocolAddresses?: ProtocolAddresses): ProtocolAddresses {
+    // merge addresses in with custom being higher priority
+    const target = customProtocolAddresses || {};
+    const source = EcoProtocolAddresses;
+
+    function deepMergeProtocolAddresses(
+      target: ProtocolAddresses,
+      source: ProtocolAddresses
+    ): ProtocolAddresses {
+      const result: ProtocolAddresses = { ...target };
+
+      for (const chainIdEnv in source) {
+        if (!Object.prototype.hasOwnProperty.call(source, chainIdEnv)) continue;
+        const sourceChain = source[chainIdEnv];
+        const targetChain = result[chainIdEnv];
+
+        if (targetChain && sourceChain) {
+          result[chainIdEnv] = { ...sourceChain, ...targetChain };
+        } else if (sourceChain) {
+          result[chainIdEnv] = { ...sourceChain };
+        }
+      }
+
+      return result;
+    }
+
+    return deepMergeProtocolAddresses(target as ProtocolAddresses, source as ProtocolAddresses);
   }
 
   /**
@@ -50,6 +83,9 @@ export class RoutesService {
     if (spendingTokenLimit < BigInt(amount)) {
       throw new Error("Insufficient spendingTokenLimit");
     }
+
+    // set expiry time
+
     if (expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
     }
@@ -66,7 +102,7 @@ export class RoutesService {
         salt: generateRandomHex(),
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
-        inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        inbox: this.getProtocolContractAddress(destinationChainID, "Inbox"),
         tokens: [
           {
             token: receivingToken,
@@ -112,8 +148,8 @@ export class RoutesService {
     calls,
     callTokens,
     tokens,
-    prover = "HyperProver",
-    expiryTime = getSecondsFromNow(90 * 60), // 90 minutes from now
+    prover,
+    expiryTime,
     nativeValue = BigInt(0)
   }: CreateIntentParams): IntentType {
     // validate
@@ -132,23 +168,25 @@ export class RoutesService {
     if (calls.every((call) => call.value === BigInt(0)) && (!tokens.length || tokens.some(token => !isAddress(token.token, { strict: false }) || isAmountInvalid(token.amount)))) {
       throw new Error("Invalid tokens");
     }
-    if (expiryTime < getSecondsFromNow(60)) {
+    if (expiryTime && expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
     }
+
+    const deadline = expiryTime || this.getDefaultDeadline(prover);
 
     return {
       route: {
         salt: generateRandomHex(),
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
-        inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        inbox: this.getProtocolContractAddress(destinationChainID, "Inbox"),
         tokens: callTokens,
         calls,
       },
       reward: {
         creator,
         prover: this.getProverContract(prover, originChainID),
-        deadline: dateToTimestamp(expiryTime),
+        deadline: dateToTimestamp(deadline),
         nativeValue,
         tokens
       }
@@ -200,7 +238,7 @@ export class RoutesService {
         salt: generateRandomHex(),
         source: BigInt(originChainID),
         destination: BigInt(destinationChainID),
-        inbox: EcoProtocolAddresses[this.getEcoChainId(destinationChainID)].Inbox,
+        inbox: this.getProtocolContractAddress(destinationChainID, "Inbox"),
         tokens: [],
         calls: [{
           target: recipient,
@@ -249,31 +287,104 @@ export class RoutesService {
    * @param chainId - The chain ID to be converted to an EcoChainId.
    * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
    */
-  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIds {
+  getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
   }
 
-  private getProverContract(prover: "HyperProver" | "StorageProver" | Hex, chainID: RoutesSupportedChainId): Hex {
-    let proverContract: Hex;
-    const ecoChainID: EcoChainIds = this.getEcoChainId(chainID);
+  /**
+   * Returns the EcoChainId for a given chainId, appending "-pre" if the environment is pre-production.
+   *
+   * @param chainId - The chain ID to be converted to an EcoChainId.
+   * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
+   */
+  getChainIdEnv(chainId: number): `${number}` | `${number}-pre` {
+    return `${chainId}${this.isPreprod ? "-pre" : ""}`
+  }
+
+  /**
+   * Checks if a protocol contract exists for a given chain ID and protocol contract.
+   *
+   * @param {RoutesSupportedChainId} chainID - The chain ID to check for the protocol contract.
+   * @param {EcoProtocolContract} protocolContract - The protocol contract to check for existence.
+   * @returns {boolean} True if the protocol contract exists, false otherwise.
+   */
+  protocolContractExists(chainId: number, protocolContract: EcoProtocolContract): boolean {
+    const chainIdEnv = this.getChainIdEnv(chainId);
+    if (!this.protocolAddresses[chainIdEnv]) {
+      return false;
+    }
+    const address = this.protocolAddresses[chainIdEnv][protocolContract];
+    return Boolean(address) && isAddress(address!) && !isAddressEqual(address, zeroAddress);
+  }
+
+  /**
+   * Returns the address of a protocol contract for a given chain ID.
+   *
+   * @param {RoutesSupportedChainId} chainID - The chain ID to get the protocol address for.
+   * @param {EcoProtocolContract} protocolContract - The protocol contract to get the address for.
+   * @returns {Hex} The address of the protocol contract.
+   * 
+   * @throws {Error} If no protocol contract exists on the specified chain ID.
+   */
+  getProtocolContractAddress(chainId: number, protocolContract: EcoProtocolContract): Hex {
+    const chainIdEnv = this.getChainIdEnv(chainId);
+    if (!this.protocolAddresses[chainIdEnv]) {
+      throw new Error(`No protocol addresses found for chain '${chainIdEnv}'`);
+    }
+    const address = this.protocolAddresses[chainIdEnv][protocolContract];
+    if (!address || isAddressEqual(address, zeroAddress)) {
+      throw new Error(`No ${protocolContract} exists on '${chainIdEnv}'`);
+    }
+    return address;
+  }
+
+  private getProverContract(prover: "HyperProver" | "MetaProver" | Hex | undefined, chainId: number): Hex {
+    let proverContract: Hex | undefined;
+    const chainIdEnv = this.getChainIdEnv(chainId);
+
     switch (prover) {
       case "HyperProver": {
-        proverContract = EcoProtocolAddresses[ecoChainID].HyperProver;
+        proverContract = this.protocolAddresses[chainIdEnv]?.HyperProver;
+        // if HyperProver is not found, throw
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No HyperProver exists on '${chainIdEnv}'`);
+        }
         break;
       }
-      case "StorageProver": {
-        const defaultProver = EcoProtocolAddresses[ecoChainID].Prover;
-        if (!defaultProver) {
-          throw new Error("No default prover found for this chain");
+      case "MetaProver": {
+        // if MetaProver is not found, throw
+        proverContract = this.protocolAddresses[chainIdEnv]?.MetaProver;
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No MetaProver exists on '${chainIdEnv}'`);
         }
-        proverContract = defaultProver;
+        break;
+      }
+      case undefined: {
+        // default to HyperProver, fall back to MetaProver, if not found throw
+        proverContract = this.protocolAddresses[chainIdEnv]?.HyperProver;
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          proverContract = this.protocolAddresses[chainIdEnv]?.MetaProver;
+        }
+        if (!proverContract || isAddressEqual(proverContract, zeroAddress)) {
+          throw new Error(`No Prover found for '${chainIdEnv}'`);
+        }
         break;
       }
       default: {
         proverContract = prover;
       }
     }
-    return proverContract;
+    return proverContract as Hex;
+  }
+
+  private getDefaultDeadline(prover: "HyperProver" | "MetaProver" | Hex | undefined): Date {
+    switch (prover) {
+      case "MetaProver":
+        return getSecondsFromNow(150 * 60) // 150 minutes from now
+      case "HyperProver":
+      default:
+        return getSecondsFromNow(90 * 60) // 90 minutes from now
+    }
   }
 
   static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {

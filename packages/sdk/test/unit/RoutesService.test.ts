@@ -1,10 +1,11 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { IntentType } from "@eco-foundation/routes-ts";
+import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, SolverQuote } from "../../src/index.js";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils.js";
+import { ECO_SDK_CONFIG } from "../../src/config.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
@@ -15,6 +16,49 @@ describe("RoutesService", () => {
 
   beforeAll(() => {
     routesService = new RoutesService();
+  })
+
+  describe("customProtocolAddresses", () => {
+    test("new chain addresses added and default chain addresses kept", () => {
+      const customAddresses = {
+        "3": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+        "3-pre": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        }
+      } as const;
+      const routesService = new RoutesService({
+        customProtocolAddresses: customAddresses
+      })
+
+      expect(routesService.getProtocolContractAddress(3, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
+      expect(routesService.getProtocolContractAddress(3, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
+      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].IntentSource);
+      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].Inbox);
+    })
+
+    test("non-overriden default addresses remain", () => {
+      const customAddresses = {
+        "10": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+        "10-pre": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+      } as const;
+      const routesService = new RoutesService({
+        customProtocolAddresses: customAddresses
+      })
+
+      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
+      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
+      expect(routesService.getProtocolContractAddress(10, "HyperProver")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].HyperProver);
+    })
   })
 
   describe("createSimpleIntent", () => {
@@ -242,8 +286,8 @@ describe("RoutesService", () => {
         spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
-        prover: "StorageProver",
-      })).toThrow("No default prover found for this chain");
+        prover: "MetaProver",
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 
@@ -627,8 +671,8 @@ describe("RoutesService", () => {
           token: RoutesService.getStableAddress(42161, "USDC"),
           amount: BigInt(1000000),
         }],
-        prover: "StorageProver",
-      })).toThrow("No default prover found for this chain");
+        prover: "MetaProver",
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 
@@ -793,8 +837,8 @@ describe("RoutesService", () => {
         destinationChainID: 10,
         amount: BigInt("1000000"), // 0.000000000001 ETH
         limit: BigInt("1000000000000000000"), // 1 ETH
-        prover: "StorageProver",
-      })).toThrow("No default prover found for this chain");
+        prover: "MetaProver",
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 

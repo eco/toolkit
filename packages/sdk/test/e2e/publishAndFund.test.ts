@@ -2,7 +2,7 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { createWalletClient, Hex, webSocket, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
+import { IntentSourceAbi } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src/index.js";
 
@@ -36,7 +36,7 @@ describe("publishAndFund", () => {
   })
 
   test("simple intent onchain with quote", async () => {
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
 
     const intent = routesService.createSimpleIntent({
       creator: account.address,
@@ -98,7 +98,7 @@ describe("publishAndFund", () => {
       recipient: account.address
     })
 
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
     expect(intentSourceContract).toBeDefined()
 
     // approve
@@ -134,10 +134,11 @@ describe("publishAndFund", () => {
       originChainID: originChain.id,
       destinationChainID: destinationChain.id,
       amount: nativeAmount,
+      limit: nativeAmount * BigInt(10),
       recipient: account.address
     })
 
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
     expect(intentSourceContract).toBeDefined()
     expect(intent.reward.nativeValue).toBe(nativeAmount)
 
@@ -156,7 +157,7 @@ describe("publishAndFund", () => {
   }, 15_000)
 
   test("native send intent onchain with quote", async () => {
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
     const nativeAmount = BigInt("10000") // 0.00000000000001 ETH
 
     const intent = routesService.createNativeSendIntent({
@@ -164,6 +165,7 @@ describe("publishAndFund", () => {
       originChainID: originChain.id,
       destinationChainID: destinationChain.id,
       amount: nativeAmount,
+      limit: nativeAmount * BigInt(10),
       recipient: account.address
     })
 

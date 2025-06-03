@@ -1,11 +1,10 @@
 import { RoutesService, RoutesSupportedChainId, SolverQuote } from "@eco-foundation/routes-sdk"
-import { IntentType, IntentSourceAbi, InboxAbi, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
+import { IntentType, IntentSourceAbi, InboxAbi } from "@eco-foundation/routes-ts"
 import { useCallback, useState } from "react"
 import { useAccount, useSwitchChain, useWriteContract } from "wagmi"
 import { getBlockNumber, waitForTransactionReceipt, watchContractEvent } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
-import { config } from "../../../wagmi"
-import { chains } from "../../../config"
+import { config, ecoChains } from "../../../wagmi"
 
 type Props = {
   routesService: RoutesService,
@@ -35,7 +34,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
 
       setIsPublishing(true)
 
-      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(Number(quotedIntent.route.source) as RoutesSupportedChainId)].IntentSource
+      const intentSourceContract = routesService.getProtocolContractAddress(Number(quotedIntent.route.source), "IntentSource")
 
       // approve the amount for the intent source contract, then publish the intent
 
@@ -153,7 +152,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
           ) : (<>
             {chainId !== Number(intent.route.source) ?
               <button onClick={() => switchChain({ chainId: Number(intent.route.source) })}>
-                Switch to {chains[Number(intent.route.source) as RoutesSupportedChainId].label}
+                Switch to {ecoChains.getChain(Number(intent.route.source)).name}
               </button> : (
                 <button onClick={publishIntent}>Approve and Publish Quoted Intent</button>
               )}

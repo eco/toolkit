@@ -1,7 +1,7 @@
 import { Hex } from "viem"
 import { RoutesSupportedChainId } from "../constants.js"
 import { SolverQuote } from "../quotes/types.js"
-import { IntentType } from "@eco-foundation/routes-ts"
+import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
   creator: Hex
@@ -11,7 +11,7 @@ export type CreateSimpleIntentParams = {
   spendingToken: Hex
   spendingTokenLimit: bigint
   amount: bigint
-  prover?: "HyperProver" | "StorageProver"
+  prover?: "HyperProver" | "MetaProver" | Hex
   recipient?: Hex
   expiryTime?: Date
 }
@@ -23,7 +23,7 @@ export type CreateIntentParams = {
   calls: IntentCall[]
   callTokens: IntentToken[]
   tokens: IntentToken[]
-  prover: "HyperProver" | "StorageProver" | Hex
+  prover?: "HyperProver" | "MetaProver" | Hex
   expiryTime?: Date
   nativeValue?: bigint
 }
@@ -35,7 +35,7 @@ export type CreateNativeSendIntentParams = {
   amount: bigint
   limit: bigint
   recipient?: Hex
-  prover?: "HyperProver" | "StorageProver"
+  prover?: "HyperProver" | "MetaProver" | Hex
   expiryTime?: Date
 }
 
@@ -43,6 +43,10 @@ export type ApplyQuoteToIntentParams = {
   intent: IntentType
   quote: SolverQuote
 }
+
+export type EcoProtocolContract = keyof typeof EcoProtocolAddresses[EcoChainIdsEnv];
+
+export type ProtocolAddresses = Record<string, Partial<Record<EcoProtocolContract, Hex>>>;
 
 type IntentCall = {
   target: Hex

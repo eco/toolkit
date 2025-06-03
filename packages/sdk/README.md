@@ -159,7 +159,7 @@ The SDK gives you what you need so that you can publish the intent to the origin
 ``` ts
 import { createWalletClient, privateKeyToAccount, webSocket, http, erc20Abi } from 'viem';
 import { optimism } from 'viem/chains';
-import { IntentSourceAbi, EcoProtocolAddresses } from '@eco-foundation/routes-ts';
+import { IntentSourceAbi } from '@eco-foundation/routes-ts';
 
 const account = privateKeyToAccount('YOUR PRIVATE KEY HERE')
 const originChain = optimism;
@@ -174,7 +174,7 @@ const originPublicClient = createPublicClient({
   transport: webSocket(rpcUrl) // OR http(rpcUrl)
 })
 
-const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource;
+const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, 'IntentSource');
 
 try {
   // approve the quoted amount to account for fees
@@ -223,6 +223,31 @@ const publishTxHash = await originWalletClient.writeContract({
 ```
 
 [See more from viem's docs](https://viem.sh/)
+
+## Custom Chains and Contracts to the SDK (optional)
+The SDK is designed to work with the [@eco-foundation/routes-ts](https://www.npmjs.com/package/@eco-foundation/routes-ts) package, which provides the default chains and contracts. However, you can pass custom chains and contracts to the SDK if needed.
+
+To do this, you can create a custom `RoutesService` instance with your own chains and contracts:
+``` ts
+import { RoutesService, ProtocolAddresses } from '@eco-foundation/routes-sdk';
+
+const customProtocolAddresses: ProtocolAddresses = {
+  123456789: {
+    IntentSource: '0x1234567890123456789012345678901234567890',
+    MetaProver: '0x0987654321098765432109876543210987654321',
+  },
+  "123456789-pre": { // preprod contracts
+    IntentSource: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    MetaProver: '0x1234567890123456789012345678901234567890',
+  }
+}
+
+const routesService = new RoutesService({
+  customProtocolAddresses,
+})
+```
+
+> **Note:** Custom contract addresses passed on already-supported chains will override any default addresses from [@eco-foundation/routes-ts](https://www.npmjs.com/package/@eco-foundation/routes-ts).
 
 # Full Demo
 
