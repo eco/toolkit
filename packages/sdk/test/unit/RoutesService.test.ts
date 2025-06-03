@@ -5,6 +5,7 @@ import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, SolverQuote } from "../../src/index.js";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils.js";
+import { ECO_SDK_CONFIG } from "../../src/config.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
@@ -23,21 +24,8 @@ describe("RoutesService", () => {
         "3": {
           "IntentSource": "0x1234567890123456789012345678901234567890",
           "Inbox": "0x0987654321098765432109876543210987654321",
-        }
-      } as const;
-      const routesService = new RoutesService({
-        customProtocolAddresses: customAddresses
-      })
-
-      expect(routesService.getProtocolContractAddress(3, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
-      expect(routesService.getProtocolContractAddress(3, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
-      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe(EcoProtocolAddresses[10].IntentSource);
-      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe(EcoProtocolAddresses[10].Inbox);
-    })
-
-    test("custom addresses override default addresses only", () => {
-      const customAddresses = {
-        "10": {
+        },
+        "3-pre": {
           "IntentSource": "0x1234567890123456789012345678901234567890",
           "Inbox": "0x0987654321098765432109876543210987654321",
         }
@@ -46,9 +34,30 @@ describe("RoutesService", () => {
         customProtocolAddresses: customAddresses
       })
 
+      expect(routesService.getProtocolContractAddress(3, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
+      expect(routesService.getProtocolContractAddress(3, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
+      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].IntentSource);
+      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].Inbox);
+    })
+
+    test("custom addresses override default addresses only", () => {
+      const customAddresses = {
+        "10": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+        "10-pre": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+      } as const;
+      const routesService = new RoutesService({
+        customProtocolAddresses: customAddresses
+      })
+
       expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
       expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
-      expect(routesService.getProtocolContractAddress(10, "HyperProver")).toBe(EcoProtocolAddresses[10].HyperProver);
+      expect(routesService.getProtocolContractAddress(10, "HyperProver")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].HyperProver);
     })
   })
 
@@ -278,7 +287,7 @@ describe("RoutesService", () => {
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
         prover: "MetaProver",
-      })).toThrow("No default prover found for this chain");
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 
@@ -663,7 +672,7 @@ describe("RoutesService", () => {
           amount: BigInt(1000000),
         }],
         prover: "MetaProver",
-      })).toThrow("No default prover found for this chain");
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 
