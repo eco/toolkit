@@ -97,7 +97,8 @@ import { RoutesService } from '@eco-foundation/routes-sdk';
 const address = '0x1234567890123456789012345678901234567890';
 const originChainID = 10; // Optimism
 const destinationChainID = 8453; // Base
-const amount = BigInt(1000000000000000000); // 1 ETH (in wei)
+const amount = BigInt("10000000000000000"); // 0.01 ETH (in wei)
+const limit = BigInt("1000000000000000000"); // 1 ETH
 
 const routesService = new RoutesService();
 
@@ -107,6 +108,7 @@ const intent = routesService.createNativeSendIntent({
   originChainID,
   destinationChainID,
   amount,
+  limit,
   recipient: address, // optional, defaults to the creator if not passed
 })
 ```
@@ -224,7 +226,7 @@ const publishTxHash = await originWalletClient.writeContract({
 
 [See more from viem's docs](https://viem.sh/)
 
-## Custom Chains and Contracts to the SDK (optional)
+## Custom Chains and Contracts (optional)
 The SDK is designed to work with the [@eco-foundation/routes-ts](https://www.npmjs.com/package/@eco-foundation/routes-ts) package, which provides the default chains and contracts. However, you can pass custom chains and contracts to the SDK if needed.
 
 To do this, you can create a custom `RoutesService` instance with your own chains and contracts:
