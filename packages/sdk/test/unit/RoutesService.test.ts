@@ -36,8 +36,8 @@ describe("RoutesService", () => {
 
       expect(routesService.getProtocolContractAddress(3, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
       expect(routesService.getProtocolContractAddress(3, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
-      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].IntentSource);
-      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].Inbox);
+      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod ? '-pre' : ''}`].IntentSource);
+      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod ? '-pre' : ''}`].Inbox);
     })
 
     test("non-overriden default addresses remain", () => {
@@ -57,7 +57,7 @@ describe("RoutesService", () => {
 
       expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
       expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
-      expect(routesService.getProtocolContractAddress(10, "HyperProver")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod && '-pre'}`].HyperProver);
+      expect(routesService.getProtocolContractAddress(10, "HyperProver")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod ? '-pre' : ''}`].HyperProver);
     })
   })
 
