@@ -1,19 +1,21 @@
 import { useEffect, useMemo, useState, useRef } from "react";
-import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams } from "@eco-foundation/routes-sdk"
-import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
-import { useAccount, useReadContract } from "wagmi";
+import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams, CreateNativeSendIntentParams } from "@eco-foundation/routes-sdk"
+import { erc20Abi, formatUnits, Hex, isAddress, formatEther, parseEther } from "viem";
+import { useAccount, useReadContract, useBalance } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
 import { chains } from "../../../wagmi";
 
 type Props = {
   routesService: RoutesService,
-  onNewIntent: (intent: IntentType) => void
+  onNewIntent: (intent: IntentType, isNative: boolean) => void,
+  onIntentCleared?: () => void
 }
 
 export default function CreateIntent({
   routesService,
-  onNewIntent
+  onNewIntent,
+  onIntentCleared
 }: Props) {
   const { address } = useAccount();
 
@@ -26,6 +28,7 @@ export default function CreateIntent({
   const [amount, setAmount] = useState<number | string | undefined>();
   const [recipient, setRecipient] = useState<string | undefined>();
   const [prover, setProver] = useState<"HyperProver" | "MetaProver">("HyperProver");
+  const [isNativeIntent, setIsNativeIntent] = useState<boolean>(false);
 
   const [isIntentValid, setIsIntentValid] = useState<boolean>(false);
 
@@ -46,7 +49,13 @@ export default function CreateIntent({
     address: originToken as Hex | undefined,
     functionName: 'balanceOf',
     args: [address!],
-    query: { enabled: Boolean(originChain && originToken && address) }
+    query: { enabled: Boolean(originChain && originToken && address && !isNativeIntent) }
+  })
+
+  const { data: nativeBalance } = useBalance({
+    chainId: effectiveOriginChain,
+    address: address,
+    query: { enabled: Boolean(effectiveOriginChain && address && isNativeIntent) }
   })
 
   const { data: decimals } = useReadContract({
@@ -58,38 +67,67 @@ export default function CreateIntent({
   })
 
   useEffect(() => {
-    if (balance && address && effectiveOriginChain && originToken && effectiveDestinationChain && destinationToken && amount && recipient && prover &&
-      isAddress(originToken, { strict: false }) &&
-      isAddress(destinationToken, { strict: false }) &&
-      isAddress(recipient, { strict: false }) &&
-      !isNaN(Number(amount)) &&
-      Number(amount) > 0
-    ) {
-      try {
-        const intent = routesService.createSimpleIntent({
-          creator: address,
-          originChainID: effectiveOriginChain,
-          spendingToken: originToken,
-          spendingTokenLimit: balance,
-          destinationChainID: effectiveDestinationChain,
-          receivingToken: destinationToken,
-          amount: BigInt(amount),
-          recipient,
-          prover
-        })
+    if (isNativeIntent) {
+      // Native intent validation
+      if (nativeBalance && address && effectiveOriginChain && effectiveDestinationChain && amount && recipient &&
+        isAddress(recipient, { strict: false }) &&
+        !isNaN(Number(amount)) &&
+        Number(amount) > 0
+      ) {
+        try {
+          const intent = routesService.createNativeSendIntent({
+            creator: address,
+            originChainID: effectiveOriginChain,
+            destinationChainID: effectiveDestinationChain,
+            amount: BigInt(amount),
+            limit: nativeBalance.value,
+            recipient,
+            prover
+          })
 
-        setIsIntentValid(true)
-        // set intent
-        onNewIntent(intent)
+          setIsIntentValid(true)
+          onNewIntent(intent, true)
+        }
+        catch (error) {
+          console.error(error)
+        }
       }
-      catch (error) {
-        console.error(error)
+    } else {
+      // Regular intent validation
+      if (balance && address && effectiveOriginChain && originToken && effectiveDestinationChain && destinationToken && amount && recipient && prover &&
+        isAddress(originToken, { strict: false }) &&
+        isAddress(destinationToken, { strict: false }) &&
+        isAddress(recipient, { strict: false }) &&
+        !isNaN(Number(amount)) &&
+        Number(amount) > 0
+      ) {
+        try {
+          const intent = routesService.createSimpleIntent({
+            creator: address,
+            originChainID: effectiveOriginChain,
+            spendingToken: originToken,
+            spendingTokenLimit: balance,
+            destinationChainID: effectiveDestinationChain,
+            receivingToken: destinationToken,
+            amount: BigInt(amount),
+            recipient,
+            prover
+          })
+
+          setIsIntentValid(true)
+          // set intent
+          onNewIntent(intent, false)
+        }
+        catch (error) {
+          console.error(error)
+        }
       }
     }
     return () => {
       setIsIntentValid(false)
+      onIntentCleared?.()
     }
-  }, [balance, address, effectiveOriginChain, originToken, effectiveDestinationChain, destinationToken, amount, recipient, prover, onNewIntent, routesService]);
+  }, [isNativeIntent, balance, nativeBalance, address, effectiveOriginChain, originToken, effectiveDestinationChain, destinationToken, amount, recipient, prover, onNewIntent, onIntentCleared, routesService]);
 
   const originTokensAvailable = useMemo(() => effectiveOriginChain ? getAvailableStables(effectiveOriginChain) : [], [effectiveOriginChain]);
   const destinationTokensAvailable = useMemo(() => effectiveDestinationChain ? getAvailableStables(effectiveDestinationChain) : [], [effectiveDestinationChain]);
@@ -97,6 +135,24 @@ export default function CreateIntent({
   return (
     <div className="m-4">
       <span className='text-2xl'>Create Intent:</span>
+      <div className="mb-4 p-2 border-1">
+        <label className="flex items-center gap-2">
+          <input 
+            type="checkbox" 
+            checked={isNativeIntent} 
+            onChange={(e) => {
+              setIsNativeIntent(e.target.checked)
+              // Reset form when switching intent types
+              setOriginToken(undefined)
+              setDestinationToken(undefined)
+              setAmount(undefined)
+            }}
+          />
+          <span className="text-lg font-semibold">
+            {isNativeIntent ? 'Native Send Intent (ETH, MATIC, etc.)' : 'Token Transfer Intent (USDC, USDT, etc.)'}
+          </span>
+        </label>
+      </div>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
           <div className="flex flex-col gap-2 p-1 border-1">
@@ -154,18 +210,27 @@ export default function CreateIntent({
                 <span className="text-red-500 text-sm">Invalid chain ID. Supported: {supportedChainIds.join(', ')}</span>
               )}
             </div>
-            <div>
-              <div className="flex gap-1">
-                <span>Token:</span>
-                <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
+            {!isNativeIntent && (
+              <>
+                <div>
+                  <div className="flex gap-1">
+                    <span>Token:</span>
+                    <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
+                  </div>
+                  {decimals && balance !== undefined ? <span className="text-sm italic">Balance: {formatUnits(balance, decimals)} (decimals: {decimals})</span> : null}
+                </div>
+                <div className="flex gap-2">
+                  Stables available: {originTokensAvailable.map((tokenConfig) => (
+                    <a key={tokenConfig.id} onClick={() => setOriginToken(tokenConfig.address)}>{tokenConfig.id}</a>
+                  ))}
+                </div>
+              </>
+            )}
+            {isNativeIntent && nativeBalance && (
+              <div>
+                <span className="text-sm italic">Native Balance: {formatUnits(nativeBalance.value, 18)} {nativeBalance.symbol}</span>
               </div>
-              {decimals && balance !== undefined ? <span className="text-sm italic">Balance: {formatUnits(balance, decimals)} (decimals: {decimals})</span> : null}
-            </div>
-            <div className="flex gap-2">
-              Stables available: {originTokensAvailable.map((tokenConfig) => (
-                <a key={tokenConfig.id} onClick={() => setOriginToken(tokenConfig.address)}>{tokenConfig.id}</a>
-              ))}
-            </div>
+            )}
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">
@@ -222,21 +287,26 @@ export default function CreateIntent({
                 <span className="text-red-500 text-sm">Invalid chain ID. Supported: {supportedChainIds.join(', ')}</span>
               )}
             </div>
-            <div className="flex gap-1">
-              <span>Token:</span>
-              <input type="text" className="border-1 w-full" value={destinationToken} onChange={(e) => setDestinationToken(e.target.value)} />
-            </div>
-            <div className="flex gap-2">
-              Stables available: {destinationTokensAvailable.map((tokenConfig) => (
-                <a key={tokenConfig.id} onClick={() => setDestinationToken(tokenConfig.address)}>{tokenConfig.id}</a>
-              ))}
-            </div>
+            {!isNativeIntent && (
+              <>
+                <div className="flex gap-1">
+                  <span>Token:</span>
+                  <input type="text" className="border-1 w-full" value={destinationToken} onChange={(e) => setDestinationToken(e.target.value)} />
+                </div>
+                <div className="flex gap-2">
+                  Stables available: {destinationTokensAvailable.map((tokenConfig) => (
+                    <a key={tokenConfig.id} onClick={() => setDestinationToken(tokenConfig.address)}>{tokenConfig.id}</a>
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">
-            <span className="text-xl">Desired Amount</span>
+            <span className="text-xl">Desired Amount {isNativeIntent ? '(in wei)' : ''}</span>
             <input type="number" className="border-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
-            {amount && decimals && <span className="text-sm italic">({formatUnits(BigInt(amount), decimals)})</span>}
+            {amount && isNativeIntent && <span className="text-sm italic">({formatUnits(BigInt(amount), 18)} {nativeBalance?.symbol || 'ETH'})</span>}
+            {amount && !isNativeIntent && decimals && <span className="text-sm italic">({formatUnits(BigInt(amount), decimals)})</span>}
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">
@@ -255,17 +325,28 @@ export default function CreateIntent({
         </div>
         <div className="h-full relative">
           <pre className="h-full">
-            {`const intent = routesService.createSimpleIntent(${JSON.stringify({
-              creator: address,
-              originChainID: effectiveOriginChain,
-              spendingToken: originToken,
-              spendingTokenLimit: balance ? Number(balance) : undefined,
-              destinationChainID: effectiveDestinationChain,
-              receivingToken: destinationToken,
-              amount: amount ? Number(amount) : undefined,
-              recipient: recipient && recipient !== address ? recipient : undefined,
-              prover
-            } as Partial<CreateSimpleIntentParams>, null, 2)})`}
+            {isNativeIntent ? 
+              `const intent = routesService.createNativeSendIntent(${JSON.stringify({
+                creator: address,
+                originChainID: effectiveOriginChain,
+                destinationChainID: effectiveDestinationChain,
+                amount: amount ? Number(amount) : undefined,
+                limit: nativeBalance?.value ? Number(nativeBalance.value) : undefined,
+                recipient: recipient && recipient !== address ? recipient : undefined,
+                prover
+              } as Partial<CreateNativeSendIntentParams>, null, 2)})` :
+              `const intent = routesService.createSimpleIntent(${JSON.stringify({
+                creator: address,
+                originChainID: effectiveOriginChain,
+                spendingToken: originToken,
+                spendingTokenLimit: balance ? Number(balance) : undefined,
+                destinationChainID: effectiveDestinationChain,
+                receivingToken: destinationToken,
+                amount: amount ? Number(amount) : undefined,
+                recipient: recipient && recipient !== address ? recipient : undefined,
+                prover
+              } as Partial<CreateSimpleIntentParams>, null, 2)})`
+            }
           </pre>
           <div className="absolute bottom-0 right-0 p-4 flex items-center gap-1 font-semibold">
             {isIntentValid ? (

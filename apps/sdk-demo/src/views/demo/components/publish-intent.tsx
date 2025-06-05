@@ -54,7 +54,8 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
         abi: IntentSourceAbi,
         functionName: 'publishAndFund',
         address: intentSourceContract,
-        args: [quotedIntent, false]
+        args: [quotedIntent, false],
+        value: quotedIntent.reward.nativeValue,
       })
 
       const receipt = await waitForTransactionReceipt(config, { hash: publishTxHash })
