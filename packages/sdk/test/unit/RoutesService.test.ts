@@ -712,7 +712,7 @@ describe("RoutesService", () => {
       expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
       expect(validIntent.reward.deadline).toBeDefined();
       expect(validIntent.reward.nativeValue).toBeDefined();
-      expect(validIntent.reward.nativeValue).toBe(BigInt(1000000));
+      expect(validIntent.reward.nativeValue).toBe(BigInt("1000000000000000000"));
       expect(validIntent.reward.tokens).toBeDefined();
       expect(validIntent.reward.tokens.length).toBe(0);
     })
@@ -734,7 +734,7 @@ describe("RoutesService", () => {
       expect(validIntent.route.calls.length).toBe(1);
       expect(validIntent.route.calls[0]!.target).toBe(recipient);
       expect(validIntent.route.calls[0]!.value).toBe(BigInt(1000000));
-      expect(validIntent.reward.nativeValue).toBe(BigInt(1000000));
+      expect(validIntent.reward.nativeValue).toBe(BigInt("1000000000000000000"));
     })
 
     test("validCreatorZeroAddress", async () => {

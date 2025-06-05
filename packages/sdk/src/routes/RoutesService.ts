@@ -266,7 +266,7 @@ export class RoutesService {
    * @throws {Error} If the quote is invalid.
    */
   applyQuoteToIntent({ intent, quote }: ApplyQuoteToIntentParams): IntentType {
-    if (!quote.quoteData.tokens.length) {
+    if (quote.quoteData.nativeValue === "0" && !quote.quoteData.tokens.length) {
       throw new Error("Invalid quoteData: tokens array must have length greater than 0")
     }
 
