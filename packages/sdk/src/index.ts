@@ -6,4 +6,4 @@ export type { CreateSimpleIntentParams, CreateIntentParams, ApplyQuoteToIntentPa
 
 export { OpenQuotingClient } from "./quotes/OpenQuotingClient.js";
 export type { SolverQuote, QuoteData } from "./quotes/types.js";
-export { selectCheapestQuote } from "./quotes/quoteSelectors.js";
+export { selectCheapestQuote, selectCheapestQuoteNativeSend } from "./quotes/quoteSelectors.js";
