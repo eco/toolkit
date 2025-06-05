@@ -5,6 +5,7 @@ import { privateKeyToAccount } from "viem/accounts";
 import { IntentSourceAbi } from "@eco-foundation/routes-ts";
 
 import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src/index.js";
+import { selectCheapestQuoteNativeSend } from "../../src/quotes/quoteSelectors.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
@@ -171,7 +172,7 @@ describe("publishAndFund", () => {
 
     // request quotes
     const quotes = await openQuotingClient.requestQuotesForIntent(intent)
-    const selectedQuote = selectCheapestQuote(quotes)
+    const selectedQuote = selectCheapestQuoteNativeSend(quotes)
 
     // setup the intent for publishing
     const quotedIntent = routesService.applyQuoteToIntent({

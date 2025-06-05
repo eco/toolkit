@@ -118,7 +118,7 @@ To request quotes for an intent and select the cheapest quote, use the `OpenQuot
 
 Then, you can apply the quote by calling `applyQuoteToIntent` on the `RoutesService` instance:
 ``` ts
-import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-sdk';
+import { OpenQuotingClient, selectCheapestQuote, selectCheapestQuoteNativeSend } from '@eco-foundation/routes-sdk';
 
 const openQuotingClient = new OpenQuotingClient({ dAppID: 'my-dapp' });
 
@@ -127,6 +127,8 @@ try {
 
   // select quote
   const selectedQuote = selectCheapestQuote(quotes);
+  // OR, for native send intents
+  const selectedQuote = selectCheapestQuoteNativeSend(quotes);
 
   // apply quote to intent
   const intentWithQuote = routesService.applyQuoteToIntent({ intent, quote: selectedQuote });
@@ -199,7 +201,8 @@ try {
     functionName: 'publishAndFund',
     args: [intentWithQuote, false],
     chain: originChain,
-    account
+    account,
+    value: intentWithQuote.reward.nativeValue // Send the required native value if applicable
   })
 
   await originPublicClient.waitForTransactionReceipt({ hash: publishTxHash })
@@ -207,21 +210,6 @@ try {
 catch (error) {
   console.error('Intent creation failed', error)
 }
-```
-
-#### Publishing a native send intent
-For native token (ETH, MATIC, etc.) send intents, you need to provide the native value when publishing:
-
-```ts
-const publishTxHash = await originWalletClient.writeContract({
-  abi: IntentSourceAbi,
-  address: intentSourceContract,
-  functionName: 'publishAndFund',
-  args: [intentWithQuote, false],
-  chain: originChain,
-  account,
-  value: intentWithQuote.reward.nativeValue // Send the required native value
-})
 ```
 
 [See more from viem's docs](https://viem.sh/)
