@@ -54,7 +54,7 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
   42161: {
     USDC: "0xaf88d065e77c8cc2239327c5edb3a432268e5831",
     USDCe: "0xff970a61a04b1ca14834a43f5de4533ebddb5cc8",
-    USDT: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
+    USDT0: "0xfd086bc7cd5c481dcc9c85ebe478a1c0b69fcbb9",
   },
   42220: {
     USDC: "0xceba9300f2b948710d2653dd7b07f33a8b32118c",
