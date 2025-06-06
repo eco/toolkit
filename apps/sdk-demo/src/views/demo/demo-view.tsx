@@ -52,7 +52,7 @@ export default function DemoView() {
       <EditConfig />
       <CreateIntent routesService={routesService} onNewIntent={handleNewIntent} onIntentCleared={handleIntentCleared} />
       <SelectQuote intent={intent} quotes={quotes} isNativeIntent={isNativeIntent} onQuoteSelected={setSelectedQuote} />
-      <PublishIntent routesService={routesService} intent={intent} quotes={quotes} quote={selectedQuote} />
+      <PublishIntent routesService={routesService} intent={intent} quotes={quotes} quote={selectedQuote} isNativeIntent={isNativeIntent} />
     </div>
   );
 }

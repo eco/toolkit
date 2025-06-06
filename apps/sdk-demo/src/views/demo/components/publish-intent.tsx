@@ -11,9 +11,10 @@ type Props = {
   intent: IntentType | undefined,
   quotes: SolverQuote[] | undefined,
   quote: SolverQuote | undefined
+  isNativeIntent?: boolean
 }
 
-export default function PublishIntent({ routesService, intent, quotes, quote }: Props) {
+export default function PublishIntent({ routesService, intent, quotes, quote, isNativeIntent }: Props) {
   const { chainId } = useAccount();
   const { switchChain } = useSwitchChain();
 
@@ -55,7 +56,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
         functionName: 'publishAndFund',
         address: intentSourceContract,
         args: [quotedIntent, false],
-        value: quotedIntent.reward.nativeValue,
+        value: isNativeIntent ? quotedIntent.reward.nativeValue : BigInt(0),
       })
 
       const receipt = await waitForTransactionReceipt(config, { hash: publishTxHash })
@@ -107,7 +108,7 @@ export default function PublishIntent({ routesService, intent, quotes, quote }: 
     finally {
       setIsPublishing(false)
     }
-  }, [intent, quote, writeContractAsync, routesService])
+  }, [intent, quote, writeContractAsync, routesService, isNativeIntent])
 
   if (!intent || !quote) return null
 
