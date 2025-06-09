@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams, CreateNativeSendIntentParams } from "@eco-foundation/routes-sdk"
-import { erc20Abi, formatUnits, Hex, isAddress, formatEther, parseEther } from "viem";
+import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
 import { useAccount, useReadContract, useBalance } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
@@ -137,9 +137,9 @@ export default function CreateIntent({
       <span className='text-2xl'>Create Intent:</span>
       <div className="mb-4 p-2 border-1">
         <label className="flex items-center gap-2">
-          <input 
-            type="checkbox" 
-            checked={isNativeIntent} 
+          <input
+            type="checkbox"
+            checked={isNativeIntent}
             onChange={(e) => {
               setIsNativeIntent(e.target.checked)
               // Reset form when switching intent types
@@ -182,15 +182,15 @@ export default function CreateIntent({
                     <option key={chain.id} value={chain.id} disabled={effectiveDestinationChain && effectiveDestinationChain === Number(chain.id) as RoutesSupportedChainId}>{chain.name}</option>
                   ))}
                 </select>
-                <input 
-                  type="text" 
-                  placeholder="Chain ID" 
+                <input
+                  type="text"
+                  placeholder="Chain ID"
                   className={`border-1 w-24 ${isOriginChainValid ? 'border-green-500' : originChainInput ? 'border-red-500' : ''}`}
                   value={originChainInput}
                   onChange={(e) => {
                     const value = e.target.value;
                     setOriginChainInput(value);
-                    
+
                     // Check if the entered value exists in the dropdown
                     const chainExists = chains.some(chain => chain.id.toString() === value);
                     if (originSelectRef.current) {
@@ -259,15 +259,15 @@ export default function CreateIntent({
                     <option key={chain.id} value={chain.id} disabled={effectiveOriginChain && effectiveOriginChain === Number(chain.id) as RoutesSupportedChainId}>{chain.name}</option>
                   ))}
                 </select>
-                <input 
-                  type="text" 
-                  placeholder="Chain ID" 
+                <input
+                  type="text"
+                  placeholder="Chain ID"
                   className={`border-1 w-24 ${isDestinationChainValid ? 'border-green-500' : destinationChainInput ? 'border-red-500' : ''}`}
                   value={destinationChainInput}
                   onChange={(e) => {
                     const value = e.target.value;
                     setDestinationChainInput(value);
-                    
+
                     // Check if the entered value exists in the dropdown
                     const chainExists = chains.some(chain => chain.id.toString() === value);
                     if (destinationSelectRef.current) {
@@ -325,7 +325,7 @@ export default function CreateIntent({
         </div>
         <div className="h-full relative">
           <pre className="h-full">
-            {isNativeIntent ? 
+            {isNativeIntent ?
               `const intent = routesService.createNativeSendIntent(${JSON.stringify({
                 creator: address,
                 originChainID: effectiveOriginChain,
