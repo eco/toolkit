@@ -28,5 +28,6 @@
   "workspaces": [
     "apps/*",
     "packages/*"
-  ]
+  ],
+  "version": "0.13.2"
 }
