@@ -1,6 +1,6 @@
 {
   "name": "@eco-foundation/routes-sdk",
-  "version": "0.12.10",
+  "version": "0.13.2",
   "description": "Eco Routes SDK",
   "main": "./dist/index.cjs",
   "module": "./dist/index.js",
@@ -8,9 +8,7 @@
   "type": "module",
   "exports": {
     ".": {
-      "types": "./dist/index.d.ts",
-      "import": "./dist/index.js",
-      "require": "./dist/index.cjs",
+      "types": "./src/index.ts",
       "default": "./dist/index.js"
     }
   },

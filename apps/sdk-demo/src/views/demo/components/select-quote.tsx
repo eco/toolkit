@@ -26,6 +26,7 @@ export default function SelectQuote({ intent, quotes, onQuoteSelected }: Props) 
                 ))}
               </ul>
               <span>Quote expires at: {new Date(Number(quote.quoteData.expiryTime) * 1000).toISOString()}</span>
+              <span>Estimated time to fulfill: {quote.quoteData.estimatedFulfillTimeSec} seconds</span>
               <button onClick={() => onQuoteSelected(quote)}>Select Quote</button>
             </div>
           ))}
