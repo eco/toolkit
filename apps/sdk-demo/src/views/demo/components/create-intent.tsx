@@ -137,6 +137,9 @@ export default function CreateIntent({
       <span className='text-2xl'>Create Intent:</span>
       <div className="mb-4 p-2 border-1">
         <label className="flex items-center gap-2">
+          <span className="text-lg font-semibold">
+            Native token intent:
+          </span>
           <input
             type="checkbox"
             checked={isNativeIntent}
@@ -148,9 +151,6 @@ export default function CreateIntent({
               setAmount(undefined)
             }}
           />
-          <span className="text-lg font-semibold">
-            {isNativeIntent ? 'Native Send Intent (ETH, MATIC, etc.)' : 'Token Transfer Intent (USDC, USDT, etc.)'}
-          </span>
         </label>
       </div>
       <div className="grid grid-cols-2 gap-4">
