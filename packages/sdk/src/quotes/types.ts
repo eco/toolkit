@@ -51,4 +51,5 @@ export type QuoteData = {
   }[]
   nativeValue: string
   expiryTime: string // seconds since epoch
+  estimatedFulfillTimeSec: number
 }

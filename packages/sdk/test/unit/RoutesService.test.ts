@@ -868,7 +868,8 @@ describe("RoutesService", () => {
             amount: "1000000",
           }],
           nativeValue: "0",
-          expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString()
+          expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString(),
+          estimatedFulfillTimeSec: 2,
         }
       };
     });
