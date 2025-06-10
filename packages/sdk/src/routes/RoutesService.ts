@@ -304,7 +304,7 @@ export class RoutesService {
   /**
    * Checks if a protocol contract exists for a given chain ID and protocol contract.
    *
-   * @param {RoutesSupportedChainId} chainID - The chain ID to check for the protocol contract.
+   * @param {number} chainId - The chain ID to check for the protocol contract.
    * @param {EcoProtocolContract} protocolContract - The protocol contract to check for existence.
    * @returns {boolean} True if the protocol contract exists, false otherwise.
    */
@@ -320,7 +320,7 @@ export class RoutesService {
   /**
    * Returns the address of a protocol contract for a given chain ID.
    *
-   * @param {RoutesSupportedChainId} chainID - The chain ID to get the protocol address for.
+   * @param {number} chainId - The chain ID to get the protocol address for.
    * @param {EcoProtocolContract} protocolContract - The protocol contract to get the address for.
    * @returns {Hex} The address of the protocol contract.
    * 

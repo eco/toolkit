@@ -1,12 +1,11 @@
 import { Hex } from "viem"
-import { RoutesSupportedChainId } from "../constants.js"
 import { SolverQuote } from "../quotes/types.js"
 import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
   creator: Hex
-  originChainID: RoutesSupportedChainId
-  destinationChainID: RoutesSupportedChainId
+  originChainID: number
+  destinationChainID: number
   receivingToken: Hex
   spendingToken: Hex
   spendingTokenLimit: bigint
@@ -18,8 +17,8 @@ export type CreateSimpleIntentParams = {
 
 export type CreateIntentParams = {
   creator: Hex
-  originChainID: RoutesSupportedChainId
-  destinationChainID: RoutesSupportedChainId
+  originChainID: number
+  destinationChainID: number
   calls: IntentCall[]
   callTokens: IntentToken[]
   tokens: IntentToken[]
@@ -30,8 +29,8 @@ export type CreateIntentParams = {
 
 export type CreateNativeSendIntentParams = {
   creator: Hex
-  originChainID: RoutesSupportedChainId
-  destinationChainID: RoutesSupportedChainId
+  originChainID: number
+  destinationChainID: number
   amount: bigint
   limit: bigint
   recipient?: Hex
