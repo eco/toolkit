@@ -65,7 +65,7 @@ export class RoutesService {
     amount,
     recipient = creator,
     prover = "HyperProver",
-    expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
+    expiryTime
   }: CreateSimpleIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
@@ -83,12 +83,11 @@ export class RoutesService {
     if (spendingTokenLimit < BigInt(amount)) {
       throw new Error("Insufficient spendingTokenLimit");
     }
-
-    // set expiry time
-
-    if (expiryTime < getSecondsFromNow(60)) {
+    if (expiryTime && expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
     }
+
+    const deadline = expiryTime || this.getDefaultDeadline(prover);
 
     // create calldata
     const data = encodeFunctionData({
@@ -120,7 +119,7 @@ export class RoutesService {
       reward: {
         creator,
         prover: this.getProverContract(prover, originChainID),
-        deadline: dateToTimestamp(expiryTime),
+        deadline: dateToTimestamp(deadline),
         nativeValue: BigInt(0),
         tokens: [
           {
@@ -208,7 +207,7 @@ export class RoutesService {
     limit,
     recipient = creator,
     prover = "HyperProver",
-    expiryTime = getSecondsFromNow(90 * 60) // 90 minutes from now
+    expiryTime
   }: CreateNativeSendIntentParams): IntentType {
     // validate
     if (!isAddress(creator, { strict: false })) {
@@ -229,9 +228,11 @@ export class RoutesService {
     if (limit < amount) {
       throw new Error("Insufficient limit");
     }
-    if (expiryTime < getSecondsFromNow(60)) {
+    if (expiryTime && expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");
     }
+
+    const deadline = expiryTime || this.getDefaultDeadline(prover);
 
     return {
       route: {
@@ -249,7 +250,7 @@ export class RoutesService {
       reward: {
         creator,
         prover: this.getProverContract(prover, originChainID),
-        deadline: dateToTimestamp(expiryTime),
+        deadline: dateToTimestamp(deadline),
         nativeValue: limit,
         tokens: []
       }
