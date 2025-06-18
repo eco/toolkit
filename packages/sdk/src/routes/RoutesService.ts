@@ -1,9 +1,9 @@
-import { encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
+import { GetEventArgs, encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
 import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, CreateNativeSendIntentParams, EcoProtocolContract, ProtocolAddresses } from "./types.js";
 
-import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
+import { EcoChainIdsEnv, EcoProtocolAddresses, IntentSourceAbi, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
 
 export class RoutesService {
@@ -403,5 +403,30 @@ export class RoutesService {
       }
     }
     throw new Error(`Stable not found for address ${address} on chain ${chainID}`);
+  }
+
+  static parseIntentFromIntentCreatedEventArgs(args: GetEventArgs<typeof IntentSourceAbi, 'IntentCreated', { IndexedOnly: false }>): IntentType {
+    const requiredFields = ['salt', 'source', 'destination', 'inbox', 'routeTokens', 'calls', 'creator', 'prover', 'deadline', 'nativeValue', 'rewardTokens'] as const satisfies readonly (keyof typeof args)[];
+    const missing = requiredFields.filter(field => args[field] === undefined);
+    if (missing.length) {
+      throw new Error(`Missing event args: ${missing.join(', ')}`);
+    }
+    return {
+      route: {
+        salt: args.salt!,
+        source: args.source!,
+        destination: args.destination!,
+        inbox: args.inbox!,
+        tokens: args.routeTokens!,
+        calls: args.calls!
+      },
+      reward: {
+        creator: args.creator!,
+        prover: args.prover!,
+        deadline: args.deadline!,
+        nativeValue: args.nativeValue!,
+        tokens: args.rewardTokens!
+      }
+    }
   }
 }
