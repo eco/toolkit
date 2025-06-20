@@ -1,10 +1,11 @@
 import { describe, test, expect, beforeAll, beforeEach } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { IntentType } from "@eco-foundation/routes-ts";
+import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
 import { RoutesService, SolverQuote } from "../../src/index.js";
 import { dateToTimestamp, getSecondsFromNow } from "../../src/utils.js";
+import { ECO_SDK_CONFIG } from "../../src/config.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
@@ -15,6 +16,49 @@ describe("RoutesService", () => {
 
   beforeAll(() => {
     routesService = new RoutesService();
+  })
+
+  describe("customProtocolAddresses", () => {
+    test("new chain addresses added and default chain addresses kept", () => {
+      const customAddresses = {
+        "3": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+        "3-pre": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        }
+      } as const;
+      const routesService = new RoutesService({
+        customProtocolAddresses: customAddresses
+      })
+
+      expect(routesService.getProtocolContractAddress(3, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
+      expect(routesService.getProtocolContractAddress(3, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
+      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod ? '-pre' : ''}`].IntentSource);
+      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod ? '-pre' : ''}`].Inbox);
+    })
+
+    test("non-overriden default addresses remain", () => {
+      const customAddresses = {
+        "10": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+        "10-pre": {
+          "IntentSource": "0x1234567890123456789012345678901234567890",
+          "Inbox": "0x0987654321098765432109876543210987654321",
+        },
+      } as const;
+      const routesService = new RoutesService({
+        customProtocolAddresses: customAddresses
+      })
+
+      expect(routesService.getProtocolContractAddress(10, "IntentSource")).toBe("0x1234567890123456789012345678901234567890");
+      expect(routesService.getProtocolContractAddress(10, "Inbox")).toBe("0x0987654321098765432109876543210987654321");
+      expect(routesService.getProtocolContractAddress(10, "HyperProver")).toBe(EcoProtocolAddresses[`10${ECO_SDK_CONFIG.isPreprod ? '-pre' : ''}`].HyperProver);
+    })
   })
 
   describe("createSimpleIntent", () => {
@@ -242,8 +286,8 @@ describe("RoutesService", () => {
         spendingTokenLimit: BigInt(10000000),
         receivingToken: RoutesService.getStableAddress(10, "USDC"),
         amount: BigInt(1000000),
-        prover: "StorageProver",
-      })).toThrow("No default prover found for this chain");
+        prover: "MetaProver",
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 
@@ -627,8 +671,174 @@ describe("RoutesService", () => {
           token: RoutesService.getStableAddress(42161, "USDC"),
           amount: BigInt(1000000),
         }],
-        prover: "StorageProver",
-      })).toThrow("No default prover found for this chain");
+        prover: "MetaProver",
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
+    })
+  })
+
+  describe("createNativeSendIntent", () => {
+    test("valid", async () => {
+      const validIntent = routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.salt).toBeDefined();
+      expect(validIntent.route.source).toBeDefined();
+      expect(validIntent.route.destination).toBeDefined();
+      expect(validIntent.route.inbox).toBeDefined();
+      expect(isAddress(validIntent.route.inbox, { strict: false })).toBe(true);
+      expect(validIntent.route.calls).toBeDefined();
+      expect(validIntent.route.calls.length).toBeGreaterThan(0);
+      for (const call of validIntent.route.calls) {
+        expect(call.target).toBeDefined();
+        expect(isAddress(call.target, { strict: false })).toBe(true);
+        expect(call.data).toBeDefined();
+        expect(call.value).toBeDefined();
+        expect(call.value).toBe(BigInt(1000000));
+      }
+      expect(validIntent.route.tokens).toBeDefined();
+      expect(validIntent.route.tokens.length).toBe(0);
+      expect(validIntent.reward).toBeDefined();
+      expect(validIntent.reward.creator).toBeDefined();
+      expect(isAddress(validIntent.reward.creator, { strict: false })).toBe(true);
+      expect(validIntent.reward.prover).toBeDefined();
+      expect(isAddress(validIntent.reward.prover, { strict: false })).toBe(true);
+      expect(validIntent.reward.deadline).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBeDefined();
+      expect(validIntent.reward.nativeValue).toBe(BigInt("1000000000000000000"));
+      expect(validIntent.reward.tokens).toBeDefined();
+      expect(validIntent.reward.tokens.length).toBe(0);
+    })
+
+    test("validWithCustomRecipient", async () => {
+      const recipient = "0x1234567890123456789012345678901234567890";
+      const validIntent = routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        recipient,
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent.route).toBeDefined();
+      expect(validIntent.route.calls.length).toBe(1);
+      expect(validIntent.route.calls[0]!.target).toBe(recipient);
+      expect(validIntent.route.calls[0]!.value).toBe(BigInt(1000000));
+      expect(validIntent.reward.nativeValue).toBe(BigInt("1000000000000000000"));
+    })
+
+    test("validCreatorZeroAddress", async () => {
+      const validIntent = routesService.createNativeSendIntent({
+        creator: zeroAddress,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+      });
+
+      expect(validIntent).toBeDefined();
+      expect(validIntent.reward.creator).toBe(zeroAddress);
+    })
+
+    test("invalidCreator", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator: "0x",
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+      })).toThrow("Invalid creator address");
+    })
+
+    test("invalidRecipient", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+        recipient: "0x"
+      })).toThrow("Invalid recipient address");
+    })
+
+    test("invalidChainIDs", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 10,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+      })).toThrow("originChainID and destinationChainID cannot be the same");
+    })
+
+    test("invalidAmount", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt(-1),
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+      })).toThrow("Invalid amount");
+    })
+
+    test("invalidLimit", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt(-1),
+        prover: 'HyperProver',
+      })).toThrow("Invalid limit");
+    })
+
+    test("invalid:insufficientLimit", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("999999"), // 0.000000999999 ETH
+        prover: 'HyperProver',
+      })).toThrow("Insufficient limit");
+    })
+
+    test("invalidExpiryTime", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: 'HyperProver',
+        expiryTime: getSecondsFromNow(50),
+      })).toThrow("Expiry time must be 60 seconds or more in the future");
+    })
+
+    test("invalidProverForChain", async () => {
+      expect(() => routesService.createNativeSendIntent({
+        creator,
+        originChainID: 42161,
+        destinationChainID: 10,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        prover: "MetaProver",
+      })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
 
@@ -657,6 +867,7 @@ describe("RoutesService", () => {
             token: RoutesService.getStableAddress(10, "USDC"),
             amount: "1000000",
           }],
+          nativeValue: "0",
           expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString(),
           estimatedFulfillTimeSec: 2,
         }

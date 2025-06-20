@@ -44,6 +44,8 @@ describe("OpenQuotingClient", () => {
       for (const quote of quotes) {
         expect(quote.quoteData).toBeDefined();
         expect(quote.quoteData.expiryTime).toBeDefined();
+        expect(quote.quoteData.nativeValue).toBeDefined();
+        expect(quote.quoteData.nativeValue).toBe("0");
         expect(quote.quoteData.tokens).toBeDefined();
         expect(quote.quoteData.tokens.length).toBeGreaterThan(0);
         for (const token of quote.quoteData.tokens) {
@@ -66,6 +68,8 @@ describe("OpenQuotingClient", () => {
       for (const quote of quotes) {
         expect(quote.quoteData).toBeDefined();
         expect(quote.quoteData.expiryTime).toBeDefined();
+        expect(quote.quoteData.nativeValue).toBeDefined();
+        expect(quote.quoteData.nativeValue).toBe("0");
         expect(quote.quoteData.tokens).toBeDefined();
         expect(quote.quoteData.tokens.length).toBeGreaterThan(0);
         for (const token of quote.quoteData.tokens) {
@@ -74,6 +78,32 @@ describe("OpenQuotingClient", () => {
           expect(BigInt(token.amount)).toBeGreaterThan(0);
           expect(token.token).toBeDefined();
         }
+      }
+    });
+
+    test("valid:nativesend", async () => {
+      const nativeSendIntent = routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        recipient: creator,
+        prover: 'HyperProver'
+      });
+
+      const quotes = await openQuotingClient.requestQuotesForIntent(nativeSendIntent);
+
+      expect(quotes).toBeDefined();
+      expect(quotes.length).toBeGreaterThan(0);
+
+      for (const quote of quotes) {
+        expect(quote.quoteData).toBeDefined();
+        expect(quote.quoteData.expiryTime).toBeDefined();
+        expect(quote.quoteData.nativeValue).toBeDefined();
+        expect(BigInt(quote.quoteData.nativeValue)).toBeGreaterThan(0);
+        expect(quote.quoteData.tokens).toBeDefined();
+        expect(quote.quoteData.tokens.length).toBe(0);
       }
     });
 

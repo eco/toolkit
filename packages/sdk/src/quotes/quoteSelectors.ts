@@ -8,3 +8,11 @@ export function selectCheapestQuote(quotes: SolverQuote[]): SolverQuote {
     return quoteSum < cheapestSum ? quote : cheapest;
   });
 }
+
+export function selectCheapestQuoteNativeSend(quotes: SolverQuote[]): SolverQuote {
+  return quotes.reduce((cheapest, quote) => {
+    const cheapestNativeValue = cheapest ? BigInt(cheapest.quoteData.nativeValue) : BigInt(Infinity);
+    const quoteNativeValue = BigInt(quote.quoteData.nativeValue);
+    return quoteNativeValue < cheapestNativeValue ? quote : cheapest;
+  });
+}
