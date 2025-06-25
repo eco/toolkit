@@ -12,7 +12,8 @@
     "changeset": "changeset",
     "update-versions": "changeset version",
     "publish-latest": "turbo run build lint check-types && changeset version && changeset publish && git push --follow-tags",
-    "publish-beta": "turbo run build lint check-types && changeset version && changeset publish --tag beta"
+    "publish-beta": "turbo run build lint check-types && changeset version && changeset publish --tag beta",
+    "publish-alpha": "turbo run build lint check-types && changeset version && changeset publish --tag alpha"
   },
   "devDependencies": {
     "@changesets/cli": "^2.27.11",

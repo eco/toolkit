@@ -17,6 +17,7 @@ export default function DemoView() {
   const [intent, setIntent] = useState<IntentType>();
   const [quotes, setQuotes] = useState<SolverQuote[]>();
   const [selectedQuote, setSelectedQuote] = useState<SolverQuote | undefined>();
+  const [quoteType, setQuoteType] = useState<"receive" | "spend">("receive");
   const [isNativeIntent, setIsNativeIntent] = useState<boolean>(false);
 
   const handleNewIntent = useCallback((newIntent: IntentType, isNative: boolean) => {
@@ -34,25 +35,36 @@ export default function DemoView() {
 
   useEffect(() => {
     if (intent) {
-      openQuotingClient.requestQuotesForIntent(intent).then((quotes) => {
-        setQuotes(quotes)
-      }).catch((error) => {
-        alert('Could not fetch quotes: ' + error.message)
-        console.error(error)
-      })
+      const fetchQuotes = async () => {
+        try {
+          let quotesResult: SolverQuote[];
+          if (quoteType === "receive") {
+            quotesResult = await openQuotingClient.requestQuotesForIntent({ intent });
+          } else {
+            quotesResult = await openQuotingClient.requestReverseQuotesForIntent({ intent });
+          }
+          setQuotes(quotesResult);
+        } catch (error) {
+          alert('Could not fetch quotes: ' + (error as Error).message);
+          console.error(error);
+        }
+      };
+
+      fetchQuotes();
     }
+
     return () => {
-      setSelectedQuote(undefined)
-      setQuotes(undefined)
+      setSelectedQuote(undefined);
+      setQuotes(undefined);
     }
-  }, [intent, openQuotingClient]);
+  }, [intent, quoteType, openQuotingClient]);
 
   return (
     <div>
       <EditConfig />
-      <CreateIntent routesService={routesService} onNewIntent={handleNewIntent} onIntentCleared={handleIntentCleared} />
-      <SelectQuote intent={intent} quotes={quotes} isNativeIntent={isNativeIntent} onQuoteSelected={setSelectedQuote} />
-      <PublishIntent routesService={routesService} intent={intent} quotes={quotes} quote={selectedQuote} isNativeIntent={isNativeIntent} />
+      <CreateIntent routesService={routesService} onNewIntent={handleNewIntent} quoteType={quoteType} setQuoteType={setQuoteType} onIntentCleared={handleIntentCleared} />
+      <SelectQuote intent={intent} quotes={quotes} isNativeIntent={isNativeIntent} onQuoteSelected={setSelectedQuote} quoteType={quoteType} />
+      <PublishIntent routesService={routesService} quotes={quotes} quote={selectedQuote} isNativeIntent={isNativeIntent} openQuotingClient={openQuotingClient} />
     </div>
   );
 }

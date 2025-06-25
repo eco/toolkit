@@ -1,18 +1,63 @@
 import { sum } from "../utils.js";
-import { SolverQuote } from "./types.js";
+import { QuoteSelectorOptions, QuoteSelectorResult, SolverQuote } from "./types.js";
 
-export function selectCheapestQuote(quotes: SolverQuote[]): SolverQuote {
-  return quotes.reduce((cheapest, quote) => {
-    const cheapestSum = cheapest ? sum(cheapest.quoteData.tokens.map(({ amount }) => amount)) : BigInt(Infinity);
-    const quoteSum = sum(quote.quoteData.tokens.map(({ amount }) => amount));
-    return quoteSum < cheapestSum ? quote : cheapest;
+export function selectCheapestQuote(solverQuotes: SolverQuote[], options: QuoteSelectorOptions = {}): QuoteSelectorResult {
+  const { isReverse = false, allowedIntentExecutionTypes = ["SELF_PUBLISH"] } = options;
+
+  const flatQuotes = solverQuotes.flatMap(solverQuote =>
+    solverQuote.quoteData.quoteEntries
+      .filter(quoteEntry => allowedIntentExecutionTypes.includes(quoteEntry.intentExecutionType))
+      .map(quoteEntry => ({
+        solverID: solverQuote.solverID,
+        quoteID: solverQuote.quoteID,
+        quote: quoteEntry
+      }))
+  );
+
+  if (flatQuotes.length === 0) {
+    throw new Error('No valid quotes found');
+  }
+
+  return flatQuotes.reduce((cheapest, current) => {
+    const currentTokens = isReverse ? current.quote.intentData.route.tokens : current.quote.intentData.reward.tokens;
+    const cheapestTokens = isReverse ? cheapest.quote.intentData.route.tokens : cheapest.quote.intentData.reward.tokens;
+
+    const currentSum = sum(currentTokens.map(({ amount }) => amount));
+    const cheapestSum = sum(cheapestTokens.map(({ amount }) => amount));
+
+    if (isReverse) {
+      return currentSum > cheapestSum ? current : cheapest;
+    } else {
+      return currentSum < cheapestSum ? current : cheapest;
+    }
   });
 }
 
-export function selectCheapestQuoteNativeSend(quotes: SolverQuote[]): SolverQuote {
-  return quotes.reduce((cheapest, quote) => {
-    const cheapestNativeValue = cheapest ? BigInt(cheapest.quoteData.nativeValue) : BigInt(Infinity);
-    const quoteNativeValue = BigInt(quote.quoteData.nativeValue);
-    return quoteNativeValue < cheapestNativeValue ? quote : cheapest;
+export function selectCheapestQuoteNativeSend(solverQuotes: SolverQuote[], options: QuoteSelectorOptions = {}): QuoteSelectorResult {
+  const { isReverse = false, allowedIntentExecutionTypes = ["SELF_PUBLISH"] } = options;
+
+  const flatQuotes = solverQuotes.flatMap(solverQuote =>
+    solverQuote.quoteData.quoteEntries
+      .filter(quoteEntry => allowedIntentExecutionTypes.includes(quoteEntry.intentExecutionType))
+      .map(quoteEntry => ({
+        solverID: solverQuote.solverID,
+        quoteID: solverQuote.quoteID,
+        quote: quoteEntry
+      }))
+  );
+
+  if (flatQuotes.length === 0) {
+    throw new Error('No valid quotes found');
+  }
+
+  return flatQuotes.reduce((cheapest, current) => {
+    const currentNativeValue = current.quote.intentData.reward.nativeValue;
+    const cheapestNativeValue = cheapest.quote.intentData.reward.nativeValue;
+
+    if (isReverse) {
+      return currentNativeValue > cheapestNativeValue ? current : cheapest;
+    } else {
+      return currentNativeValue < cheapestNativeValue ? current : cheapest;
+    }
   });
 }

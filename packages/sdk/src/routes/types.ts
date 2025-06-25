@@ -1,6 +1,5 @@
 import { Hex } from "viem"
-import { SolverQuote } from "../quotes/types.js"
-import { EcoChainIdsEnv, EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts"
+import { EcoChainIdsEnv, EcoProtocolAddresses } from "@eco-foundation/routes-ts"
 
 export type CreateSimpleIntentParams = {
   creator: Hex
@@ -36,11 +35,6 @@ export type CreateNativeSendIntentParams = {
   recipient?: Hex
   prover?: "HyperProver" | "MetaProver" | Hex
   expiryTime?: Date
-}
-
-export type ApplyQuoteToIntentParams = {
-  intent: IntentType
-  quote: SolverQuote
 }
 
 export type EcoProtocolContract = keyof typeof EcoProtocolAddresses[EcoChainIdsEnv];

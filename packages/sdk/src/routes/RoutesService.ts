@@ -1,7 +1,7 @@
 import { GetEventArgs, encodeFunctionData, erc20Abi, Hex, isAddress, isAddressEqual, zeroAddress } from "viem";
 import { dateToTimestamp, generateRandomHex, getSecondsFromNow, isAmountInvalid } from "../utils.js";
 import { stableAddresses, RoutesSupportedChainId, RoutesSupportedStable } from "../constants.js";
-import { CreateIntentParams, CreateSimpleIntentParams, ApplyQuoteToIntentParams, CreateNativeSendIntentParams, EcoProtocolContract, ProtocolAddresses } from "./types.js";
+import { CreateIntentParams, CreateSimpleIntentParams, CreateNativeSendIntentParams, EcoProtocolContract, ProtocolAddresses } from "./types.js";
 
 import { EcoChainIdsEnv, EcoProtocolAddresses, IntentSourceAbi, IntentType } from "@eco-foundation/routes-ts";
 import { ECO_SDK_CONFIG } from "../config.js";
@@ -50,9 +50,17 @@ export class RoutesService {
    * Creates a simple intent.
    *
    * @param {CreateSimpleIntentParams} params - The parameters for creating the simple intent.
-   * 
+   * @param {Hex} params.creator - The address of the intent creator.
+   * @param {RoutesSupportedChainId} params.originChainID - The chain ID where the intent originates.
+   * @param {RoutesSupportedChainId} params.destinationChainID - The chain ID where the intent is fulfilled.
+   * @param {Hex} params.receivingToken - The token address to be received on the destination chain.
+   * @param {Hex} params.spendingToken - The token address to be spent on the origin chain.
+   * @param {bigint} params.spendingTokenLimit - The maximum amount of spending token to use.
+   * @param {bigint} params.amount - The amount of receiving token to transfer.
+   * @param {string} [params.prover="HyperProver"] - The type of prover to use.
+   * @param {Hex} [params.recipient] - The recipient address (defaults to creator).
+   * @param {Date} [params.expiryTime] - The expiry time for the intent (defaults to 90 minutes from now).
    * @returns {IntentType} The created intent.
-   * 
    * @throws {Error} If the creator address is invalid, the origin and destination chain are the same, the amount is invalid, or the expiry time is in the past. Or if there is no prover for the specified configuration.
    */
   createSimpleIntent({
@@ -134,10 +142,16 @@ export class RoutesService {
   /**
    * Creates an intent.
    *
-   * @param {CreateRouteParams} params - The parameters for creating the intent.
-   * 
+   * @param {CreateIntentParams} params - The parameters for creating the intent.
+   * @param {Hex} params.creator - The address of the intent creator.
+   * @param {RoutesSupportedChainId} params.originChainID - The chain ID where the intent originates.
+   * @param {RoutesSupportedChainId} params.destinationChainID - The chain ID where the intent is fulfilled.
+   * @param {IntentCall[]} params.calls - The calls to be executed on the destination chain.
+   * @param {IntentToken[]} params.callTokens - The tokens required for the calls on the destination chain.
+   * @param {IntentToken[]} params.tokens - The tokens to be used for rewards on the origin chain.
+   * @param {string|Hex} [params.prover="HyperProver"] - The type of prover or custom prover address to use.
+   * @param {Date} [params.expiryTime] - The expiry time for the intent (defaults to 90 minutes from now).
    * @returns {IntentType} The created intent.
-   * 
    * @throws {Error} If the creator address is invalid, the origin and destination chain are the same, the calls or tokens are invalid, or the expiry time is in the past.
    */
   createIntent({
@@ -258,35 +272,10 @@ export class RoutesService {
   }
 
   /**
-   * Applies a quote to an intent, modifying the reward tokens.
-   *
-   * @param {ApplyQuoteToIntentParams} params - The parameters for applying the quote to the intent.
-   *
-   * @returns {IntentType} The intent with the quote applied.
-   * 
-   * @throws {Error} If the quote is invalid.
-   */
-  applyQuoteToIntent({ intent, quote }: ApplyQuoteToIntentParams): IntentType {
-    if (quote.quoteData.nativeValue === "0" && !quote.quoteData.tokens.length) {
-      throw new Error("Invalid quoteData: tokens array must have length greater than 0")
-    }
-
-    // only thing affected by the quote is the reward tokens
-    intent.reward.tokens = quote.quoteData.tokens.map(({ token, amount }) => ({
-      token: token,
-      amount: BigInt(amount)
-    }))
-
-    intent.reward.nativeValue = BigInt(quote.quoteData.nativeValue || 0)
-
-    return intent;
-  }
-
-  /**
    * Returns the EcoChainId for a given chainId, appending "-pre" if the environment is pre-production.
    *
-   * @param chainId - The chain ID to be converted to an EcoChainId.
-   * @returns The EcoChainId, with "-pre" appended if the environment is pre-production.
+   * @param {RoutesSupportedChainId} chainId - The chain ID to be converted to an EcoChainId.
+   * @returns {EcoChainIds} The EcoChainId, with "-pre" appended if the environment is pre-production.
    */
   getEcoChainId(chainId: RoutesSupportedChainId): EcoChainIdsEnv {
     return `${chainId}${this.isPreprod ? "-pre" : ""}`
@@ -388,6 +377,14 @@ export class RoutesService {
     }
   }
 
+  /**
+   * Gets the address of a stable token on a specific chain.
+   *
+   * @param {RoutesSupportedChainId} chainID - The chain ID where the stable token is deployed.
+   * @param {RoutesSupportedStable} stable - The type of stable token.
+   * @returns {Hex} The hexadecimal address of the stable token.
+   * @throws {Error} If the stable token is not found on the specified chain.
+   */
   static getStableAddress(chainID: RoutesSupportedChainId, stable: RoutesSupportedStable): Hex {
     const stableAddress = stableAddresses[chainID][stable];
     if (!stableAddress) {
@@ -396,6 +393,14 @@ export class RoutesService {
     return stableAddress;
   }
 
+  /**
+   * Gets the stable token type from its address on a specific chain.
+   *
+   * @param {RoutesSupportedChainId} chainID - The chain ID where the stable token is deployed.
+   * @param {Hex} address - The hexadecimal address of the stable token.
+   * @returns {RoutesSupportedStable | undefined} The type of stable token.
+   * @throws {Error} If no stable token is found for the given address on the specified chain.
+   */
   static getStableFromAddress(chainID: RoutesSupportedChainId, address: Hex): RoutesSupportedStable | undefined {
     for (const stable in stableAddresses[chainID]) {
       if (stableAddresses[chainID][stable as RoutesSupportedStable]?.toLowerCase() === address.toLowerCase()) {

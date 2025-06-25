@@ -1,10 +1,11 @@
-import { describe, test, expect, beforeAll, beforeEach } from "vitest";
+import { describe, test, expect, beforeAll } from "vitest";
 import { encodeFunctionData, erc20Abi, Hex, isAddress, zeroAddress } from "viem";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentType } from "@eco-foundation/routes-ts";
 
-import { RoutesService, SolverQuote } from "../../src/index.js";
-import { dateToTimestamp, getSecondsFromNow } from "../../src/utils.js";
+import { EcoProtocolAddresses } from "@eco-foundation/routes-ts";
+
+import { RoutesService } from "../../src/index.js";
+import { getSecondsFromNow } from "../../src/utils.js";
 import { ECO_SDK_CONFIG } from "../../src/config.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
@@ -841,87 +842,4 @@ describe("RoutesService", () => {
       })).toThrow(`No MetaProver exists on '42161${ECO_SDK_CONFIG.isPreprod && '-pre'}'`);
     })
   })
-
-  describe("applyQuoteToIntent", () => {
-    let validIntent: IntentType;
-    let validQuote: SolverQuote;
-
-    beforeAll(() => {
-      validIntent = routesService.createSimpleIntent({
-        creator,
-        originChainID: 10,
-        destinationChainID: 8453,
-        spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenLimit: BigInt(10000000),
-        receivingToken: RoutesService.getStableAddress(8453, "USDC"),
-        amount: BigInt(1000000),
-        prover: 'HyperProver',
-
-      });
-    })
-
-    beforeEach(() => {
-      validQuote = {
-        quoteData: {
-          tokens: [{
-            token: RoutesService.getStableAddress(10, "USDC"),
-            amount: "1000000",
-          }],
-          nativeValue: "0",
-          expiryTime: dateToTimestamp(getSecondsFromNow(60)).toString(),
-          estimatedFulfillTimeSec: 2,
-        }
-      };
-    });
-
-    test("valid", () => {
-      const intent = routesService.applyQuoteToIntent({ intent: validIntent, quote: validQuote });
-
-      expect(intent).toBeDefined();
-      expect(intent).toBeDefined();
-      expect(intent.route).toBeDefined();
-      expect(intent.route.salt).toBeDefined();
-      expect(intent.route.source).toBeDefined();
-      expect(intent.route.destination).toBeDefined();
-      expect(intent.route.inbox).toBeDefined();
-      expect(isAddress(intent.route.inbox, { strict: false })).toBe(true);
-      expect(intent.route.calls).toBeDefined();
-      expect(intent.route.calls.length).toBeGreaterThan(0);
-      for (const call of intent.route.calls) {
-        expect(call.target).toBeDefined();
-        expect(isAddress(call.target, { strict: false })).toBe(true);
-        expect(call.data).toBeDefined();
-        expect(call.value).toBeDefined();
-      }
-      expect(intent.reward).toBeDefined();
-      expect(intent.reward.creator).toBeDefined();
-      expect(isAddress(intent.reward.creator, { strict: false })).toBe(true);
-      expect(intent.reward.prover).toBeDefined();
-      expect(isAddress(intent.reward.prover, { strict: false })).toBe(true);
-      expect(intent.reward.deadline).toBeDefined();
-      expect(intent.reward.nativeValue).toBeDefined();
-      expect(intent.reward.tokens).toBeDefined();
-      expect(intent.reward.tokens.length).toBeGreaterThan(0);
-
-      for (const token of intent.reward.tokens) {
-        expect(token.token).toBeDefined();
-        expect(isAddress(token.token, { strict: false })).toBe(true);
-        expect(token.amount).toBeDefined();
-        expect(token.amount).toBeGreaterThan(0);
-      }
-    });
-
-    test("invalid quote data", () => {
-      const intent = validIntent;
-      const quote: SolverQuote = {
-        ...validQuote,
-        quoteData: {
-          ...validQuote.quoteData,
-          tokens: [],
-        }
-      };
-
-      expect(() => routesService.applyQuoteToIntent({ intent, quote })).toThrow("Invalid quoteData: tokens array must have length greater than 0");
-    });
-  });
 })

@@ -62,7 +62,7 @@ export default function EditConfig() {
   return (
     <div className="m-4">
       <div className="w-full border-b-1 pb-4">
-        <span className="text-2xl">Edit Config</span>
+        <span className="text-2xl">Configure:</span>
         <div className="grid grid-cols-2 gap-4">
           <div className="flex flex-col gap-2">
             <div className="flex gap-2">

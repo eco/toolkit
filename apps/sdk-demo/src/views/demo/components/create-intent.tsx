@@ -9,12 +9,16 @@ import { chains } from "../../../wagmi";
 type Props = {
   routesService: RoutesService,
   onNewIntent: (intent: IntentType, isNative: boolean) => void,
+  quoteType: "receive" | "spend",
+  setQuoteType: (type: "receive" | "spend") => void
   onIntentCleared?: () => void
 }
 
 export default function CreateIntent({
   routesService,
   onNewIntent,
+  quoteType,
+  setQuoteType,
   onIntentCleared
 }: Props) {
   const { address } = useAccount();
@@ -106,7 +110,7 @@ export default function CreateIntent({
             creator: address,
             originChainID: effectiveOriginChain,
             spendingToken: originToken,
-            spendingTokenLimit: balance,
+            spendingTokenLimit: quoteType === "receive" ? balance : BigInt(amount),
             destinationChainID: effectiveDestinationChain,
             receivingToken: destinationToken,
             amount: BigInt(amount),
@@ -127,7 +131,7 @@ export default function CreateIntent({
       setIsIntentValid(false)
       onIntentCleared?.()
     }
-  }, [isNativeIntent, balance, nativeBalance, address, effectiveOriginChain, originToken, effectiveDestinationChain, destinationToken, amount, recipient, prover, onNewIntent, onIntentCleared, routesService]);
+  }, [isNativeIntent, balance, nativeBalance, address, effectiveOriginChain, originToken, effectiveDestinationChain, destinationToken, amount, recipient, prover, onNewIntent, onIntentCleared, routesService, quoteType]);
 
   const originTokensAvailable = useMemo(() => effectiveOriginChain ? getAvailableStables(effectiveOriginChain) : [], [effectiveOriginChain]);
   const destinationTokensAvailable = useMemo(() => effectiveDestinationChain ? getAvailableStables(effectiveDestinationChain) : [], [effectiveDestinationChain]);
@@ -301,13 +305,35 @@ export default function CreateIntent({
               </>
             )}
           </div>
-
           <div className="flex flex-col gap-1 p-1 border-1">
-            <span className="text-xl">Desired Amount {isNativeIntent ? '(in wei)' : ''}</span>
+            <span className="text-xl">Amount {isNativeIntent ? '(in wei)' : ''}</span>
             <input type="number" className="border-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
             {amount && isNativeIntent && <span className="text-sm italic">({formatUnits(BigInt(amount), 18)} {nativeBalance?.symbol || 'ETH'})</span>}
             {amount && !isNativeIntent && decimals && <span className="text-sm italic">({formatUnits(BigInt(amount), decimals)})</span>}
-          </div>
+            <div className="flex gap-2 mb-2">
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="quoteType"
+                  value="receive"
+                  checked={quoteType === "receive"}
+                  onChange={() => setQuoteType("receive")}
+                />
+                <span>Receive this amount</span>
+              </label>
+              |
+              <label className="flex items-center gap-1">
+                <input
+                  type="radio"
+                  name="quoteType"
+                  value="spend"
+                  checked={quoteType === "spend"}
+                  onChange={() => setQuoteType("spend")}
+                />
+                <span>Spend this amount</span>
+              </label>
+            </div>
+          </div >
 
           <div className="flex flex-col gap-1 p-1 border-1">
             <span className="text-xl">Recipient</span>
@@ -322,7 +348,7 @@ export default function CreateIntent({
               <option value={"MetaProver"}>Meta Prover</option>
             </select>
           </div>
-        </div>
+        </div >
         <div className="h-full relative">
           <pre className="h-full">
             {isNativeIntent ?
@@ -365,7 +391,7 @@ export default function CreateIntent({
             )}
           </div>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }

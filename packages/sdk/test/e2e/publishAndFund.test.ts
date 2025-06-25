@@ -50,18 +50,11 @@ describe("publishAndFund", () => {
     })
 
     // request quotes
-    const quotes = await openQuotingClient.requestQuotesForIntent(intent)
-    const selectedQuote = selectCheapestQuote(quotes)
-
-    // setup the intent for publishing
-    const quotedIntent = routesService.applyQuoteToIntent({
-      intent,
-      quote: selectedQuote
-    })
-    expect(quotedIntent).toBeDefined()
+    const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
+    const { quote } = selectCheapestQuote(quotes)
 
     // approve
-    await Promise.all(quotedIntent.reward.tokens.map(async ({ token, amount }) => {
+    await Promise.all(quote.intentData.reward.tokens.map(async ({ token, amount }) => {
       const hash = await baseWalletClient.writeContract({
         abi: erc20Abi,
         address: token,
@@ -78,7 +71,7 @@ describe("publishAndFund", () => {
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [quotedIntent, false],
+      args: [quote.intentData, false],
       chain: originChain,
       account
     })
@@ -86,7 +79,51 @@ describe("publishAndFund", () => {
     await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
   }, 20_000)
 
-  test("simple intent onchain without quote", async () => {
+  test("onchain with reverse quote", async () => {
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, 'IntentSource')
+
+    const intent = routesService.createSimpleIntent({
+      creator: account.address,
+      originChainID: originChain.id,
+      destinationChainID: destinationChain.id,
+      receivingToken,
+      spendingToken,
+      spendingTokenLimit: balance,
+      amount,
+      recipient: account.address
+    })
+
+    // request quotes
+    const quotes = await openQuotingClient.requestReverseQuotesForIntent({ intent })
+    const { quote } = selectCheapestQuote(quotes)
+
+    // approve
+    await Promise.all(quote.intentData.reward.tokens.map(async ({ token, amount }) => {
+      const hash = await baseWalletClient.writeContract({
+        abi: erc20Abi,
+        address: token,
+        functionName: 'approve',
+        args: [intentSourceContract, amount],
+        chain: originChain,
+        account
+      })
+      await publicClient.waitForTransactionReceipt({ hash })
+    }))
+
+    // publish intent onchain
+    const publishTxHash = await baseWalletClient.writeContract({
+      abi: IntentSourceAbi,
+      address: intentSourceContract,
+      functionName: 'publishAndFund',
+      args: [quote.intentData, false],
+      chain: originChain,
+      account
+    })
+
+    await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  }, 20_000);
+
+  test("sinple intent onchain without quote", async () => {
     const intent = routesService.createSimpleIntent({
       creator: account.address,
       originChainID: originChain.id,
@@ -170,26 +207,22 @@ describe("publishAndFund", () => {
     })
 
     // request quotes
-    const quotes = await openQuotingClient.requestQuotesForIntent(intent)
-    const selectedQuote = selectCheapestQuoteNativeSend(quotes)
+    const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
+    const { quote } = selectCheapestQuoteNativeSend(quotes)
 
     // setup the intent for publishing
-    const quotedIntent = routesService.applyQuoteToIntent({
-      intent,
-      quote: selectedQuote
-    })
-    expect(quotedIntent).toBeDefined()
-    expect(quotedIntent.reward.nativeValue).toBeGreaterThan(BigInt(0))
+    expect(quote.intentData).toBeDefined()
+    expect(quote.intentData.reward.nativeValue).toBeGreaterThan(BigInt(0))
 
     // publish intent onchain with native value
     const publishTxHash = await baseWalletClient.writeContract({
       abi: IntentSourceAbi,
       address: intentSourceContract,
       functionName: 'publishAndFund',
-      args: [quotedIntent, false],
+      args: [quote.intentData, false],
       chain: originChain,
       account,
-      value: quotedIntent.reward.nativeValue
+      value: quote.intentData.reward.nativeValue
     })
 
     await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
