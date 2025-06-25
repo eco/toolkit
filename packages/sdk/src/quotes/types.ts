@@ -62,6 +62,7 @@ export namespace OpenQuotingAPI {
               amount: string
             }[]
             expiryTime: string
+            estimatedFulfillTimeSec: number
           }[]
         }
       }[]
@@ -154,6 +155,12 @@ export type QuoteData = {
   intentExecutionType: IntentExecutionType
   intentData: IntentType
   expiryTime: bigint // seconds since epoch
+  estimatedFulfillTimeSec: number
+}
+
+export type QuoteSelectorOptions = {
+  isReverse?: boolean;
+  allowedIntentExecutionTypes?: IntentExecutionType[];
 }
 
 export type QuoteSelectorResult = {

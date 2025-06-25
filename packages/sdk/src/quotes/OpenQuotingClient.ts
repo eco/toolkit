@@ -160,7 +160,8 @@ export class OpenQuotingClient {
               }))
             }
           },
-          expiryTime: BigInt(entry.expiryTime)
+          expiryTime: BigInt(entry.expiryTime),
+          estimatedFulfillTimeSec: entry.estimatedFulfillTimeSec
         }))
       }
     }));

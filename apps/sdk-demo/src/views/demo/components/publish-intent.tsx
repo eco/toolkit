@@ -4,8 +4,7 @@ import { useCallback, useState, useMemo } from "react"
 import { useAccount, useSwitchChain, useWriteContract, useReadContract, usePublicClient } from "wagmi"
 import { getBlockNumber, waitForTransactionReceipt, watchContractEvent, readContract } from "@wagmi/core"
 import { erc20Abi, Hex, parseEventLogs } from "viem"
-import { config } from "../../../wagmi"
-import { chains } from "../../../config"
+import { config, ecoChains } from "../../../wagmi"
 import { PermitAbi, Permit2Abi } from "../../../utils/abis"
 import { isUSDC, signPermit, signPermit2, PERMIT2_ADDRESS } from "../../../utils/permit"
 
@@ -13,10 +12,11 @@ type Props = {
   routesService: RoutesService,
   quotes: SolverQuote[] | undefined,
   quote: SolverQuote | undefined,
+  isNativeIntent?: boolean,
   openQuotingClient: OpenQuotingClient
 }
 
-export default function PublishIntent({ routesService, quotes, quote, openQuotingClient }: Props) {
+export default function PublishIntent({ routesService, quotes, quote, isNativeIntent, openQuotingClient }: Props) {
   const { address, chainId } = useAccount();
   const { switchChain } = useSwitchChain();
   const publicClient = usePublicClient();
@@ -63,6 +63,13 @@ export default function PublishIntent({ routesService, quotes, quote, openQuotin
     if (!quote) return [];
     return quote.quoteData.quoteEntries.map(entry => entry.intentExecutionType);
   }, [quote]);
+
+  // Set initial execution type when quote changes
+  useMemo(() => {
+    if (quote && availableExecutionTypes.length > 0 && !availableExecutionTypes.includes(selectedExecutionType)) {
+      setSelectedExecutionType(availableExecutionTypes[0]!);
+    }
+  }, [quote, availableExecutionTypes, selectedExecutionType]);
 
   const waitForFulfillment = async (intentHash: Hex, destinationChainId: number, inbox: Hex) => {
     const blockNumber = await getBlockNumber(config, { chainId: destinationChainId as RoutesSupportedChainId });
@@ -111,10 +118,8 @@ export default function PublishIntent({ routesService, quotes, quote, openQuotin
       // Get the intentData from the selected quote entry
       const intentData = selectedQuoteEntry.intentData;
 
-      // Get the intentSource contract address
-      const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(sourceChainID as RoutesSupportedChainId)].IntentSource;
-
       let intentHash: Hex | undefined;
+      const intentSourceContract = routesService.getProtocolContractAddress(sourceChainID, "IntentSource")
 
       // Handle based on execution type
       if (selectedExecutionType === "SELF_PUBLISH") {
@@ -136,7 +141,8 @@ export default function PublishIntent({ routesService, quotes, quote, openQuotin
           abi: IntentSourceAbi,
           functionName: 'publishAndFund',
           address: intentSourceContract,
-          args: [intentData, false]
+          args: [intentData, false],
+          value: isNativeIntent ? intentData.reward.nativeValue : BigInt(0)
         });
 
         const receipt = await waitForTransactionReceipt(config, { hash: publishTxHash });
@@ -366,7 +372,7 @@ export default function PublishIntent({ routesService, quotes, quote, openQuotin
     finally {
       setIsPublishing(false);
     }
-  }, [quote, writeContractAsync, routesService, selectedExecutionType, selectedQuoteEntry, sourceChainID, destinationChainID, inboxAddress, vaultAddress, address, publicClient, openQuotingClient]);
+  }, [quote, writeContractAsync, routesService, selectedExecutionType, selectedQuoteEntry, sourceChainID, destinationChainID, inboxAddress, vaultAddress, address, publicClient, isNativeIntent, openQuotingClient]);
 
   if (!quote) return null;
 
@@ -411,41 +417,44 @@ export default function PublishIntent({ routesService, quotes, quote, openQuotin
               )}
             </div>
           ) : (<>
-            {sourceChainID && chainId !== sourceChainID ? (
-              <button
-                className="p-1 mb-2 bg-blue-500 text-white hover:bg-blue-600"
-                onClick={() => switchChain({ chainId: sourceChainID })}
-              >
-                Switch to {chains[sourceChainID as RoutesSupportedChainId].label}
-              </button>
-            ) : (
-              <div className="flex flex-col gap-2">
-                <div className="flex flex-col gap-1">
-                  <label htmlFor="executionType">Select Execution Type:</label>
-                  <select
-                    id="executionType"
-                    className="p-1 border"
-                    value={selectedExecutionType}
-                    onChange={handleExecutionTypeChange}
-                  >
-                    {availableExecutionTypes.map(type => (
-                      <option key={type} value={type}>{type}</option>
-                    ))}
-                  </select>
-                </div>
-
+            {
+              sourceChainID && chainId !== sourceChainID ? (
                 <button
-                  className="p-1 mt-2 bg-blue-500 text-white hover:bg-blue-600"
-                  onClick={publishIntent}
+                  className="p-1 mb-2 bg-blue-500 text-white hover:bg-blue-600"
+                  onClick={() => switchChain({ chainId: sourceChainID })}
                 >
-                  {selectedExecutionType === "GASLESS"
-                    ? "Approve and Initiate Gasless Intent"
-                    : "Approve and Publish Intent"}
+                  Switch to {ecoChains.getChain(sourceChainID).name}
                 </button>
-              </div>
-            )}
-          </>)}
-        </div>
+              ) : (
+                <div className="flex flex-col gap-2">
+                  <div className="flex flex-col gap-1">
+                    <label htmlFor="executionType">Select Execution Type:</label>
+                    <select
+                      id="executionType"
+                      className="p-1 border"
+                      value={selectedExecutionType}
+                      onChange={handleExecutionTypeChange}
+                    >
+                      {availableExecutionTypes.map(type => (
+                        <option key={type} value={type}>{type}</option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <button
+                    className="p-1 mt-2 bg-blue-500 text-white hover:bg-blue-600"
+                    onClick={publishIntent}
+                  >
+                    {selectedExecutionType === "GASLESS"
+                      ? "Approve and Initiate Gasless Intent"
+                      : "Approve and Publish Intent"}
+                  </button>
+                </div>
+              )
+            }
+          </>)
+          }
+        </div >
         <div>
           <pre className="text-xs">
             {`${quotes && quote ? `// ${selectedExecutionType} execution
@@ -481,7 +490,7 @@ const publishTxHash = await writeContractAsync({
 });`}` : undefined}`}
           </pre>
         </div>
-      </div>
-    </div>
+      </div >
+    </div >
   )
 }

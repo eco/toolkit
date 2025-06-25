@@ -44,7 +44,10 @@ describe("OpenQuotingClient", () => {
       expect(quotes.length).toBeGreaterThan(0);
 
       for (const solverQuoteResponse of quotes) {
-        validateSolverQuoteResponse(solverQuoteResponse, validIntent, false);
+        validateSolverQuoteResponse({
+          solverQuoteResponse,
+          originalIntent: validIntent
+        });
       }
     });
 
@@ -57,7 +60,34 @@ describe("OpenQuotingClient", () => {
       expect(quotes.length).toBeGreaterThan(0);
 
       for (const solverQuoteResponse of quotes) {
-        validateSolverQuoteResponse(solverQuoteResponse, validIntent, false);
+        validateSolverQuoteResponse({
+          solverQuoteResponse,
+          originalIntent: validIntent
+        });
+      }
+    });
+
+    test("valid:nativesend", async () => {
+      const nativeSendIntent = routesService.createNativeSendIntent({
+        creator,
+        originChainID: 10,
+        destinationChainID: 8453,
+        amount: BigInt("1000000"), // 0.000000000001 ETH
+        limit: BigInt("1000000000000000000"), // 1 ETH
+        recipient: creator,
+        prover: 'HyperProver'
+      });
+
+      const quotes = await openQuotingClient.requestQuotesForIntent({ intent: nativeSendIntent });
+
+      expect(quotes).toBeDefined();
+      expect(quotes.length).toBeGreaterThan(0);
+
+      for (const quote of quotes) {
+        validateSolverQuoteResponse({
+          solverQuoteResponse: quote,
+          originalIntent: nativeSendIntent,
+        });
       }
     });
 
@@ -166,7 +196,11 @@ describe("OpenQuotingClient", () => {
       expect(quotes.length).toBeGreaterThan(0);
 
       for (const solverQuoteResponse of quotes) {
-        validateSolverQuoteResponse(solverQuoteResponse, validIntent, true);
+        validateSolverQuoteResponse({
+          solverQuoteResponse,
+          originalIntent: validIntent,
+          isReverseQuote: true
+        });
       }
     });
 
@@ -179,7 +213,11 @@ describe("OpenQuotingClient", () => {
       expect(quotes.length).toBeGreaterThan(0);
 
       for (const solverQuoteResponse of quotes) {
-        validateSolverQuoteResponse(solverQuoteResponse, validIntent, true);
+        validateSolverQuoteResponse({
+          solverQuoteResponse,
+          originalIntent: validIntent,
+          isReverseQuote: true
+        });
       }
     });
 

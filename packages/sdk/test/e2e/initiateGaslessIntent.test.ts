@@ -53,7 +53,7 @@ describe("initiateGaslessIntent", () => {
     })
 
     const quotes = await openQuotingClient.requestQuotesForIntent({ intent, intentExecutionTypes: ["GASLESS"] })
-    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, false, ["GASLESS"]);
+    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, { allowedIntentExecutionTypes: ["GASLESS"] });
 
     const intentSource = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
     // initiate gasless intent
@@ -104,7 +104,7 @@ describe("initiateGaslessIntent", () => {
     })
 
     const quotes = await openQuotingClient.requestReverseQuotesForIntent({ intent, intentExecutionTypes: ["GASLESS"] })
-    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, true, ["GASLESS"]);
+    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, { allowedIntentExecutionTypes: ["GASLESS"] });
 
     const intentSource = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
     // initiate gasless intent
@@ -155,7 +155,7 @@ describe("initiateGaslessIntent", () => {
     })
 
     const quotes = await openQuotingClient.requestQuotesForIntent({ intent, intentExecutionTypes: ["GASLESS"] })
-    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, true, ["GASLESS"]);
+    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, { allowedIntentExecutionTypes: ["GASLESS"] });
 
     const intentSource = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
     // initiate gasless intent
@@ -250,7 +250,7 @@ describe("initiateGaslessIntent", () => {
     })
 
     const quotes = await openQuotingClient.requestQuotesForIntent({ intent, intentExecutionTypes: ["GASLESS"] })
-    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, true, ["GASLESS"]);
+    const { quoteID, solverID, quote } = selectCheapestQuote(quotes, { allowedIntentExecutionTypes: ["GASLESS"] });
 
     const intentSource = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
     // initiate gasless intent

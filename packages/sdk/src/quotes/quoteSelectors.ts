@@ -1,88 +1,63 @@
-import { IntentExecutionType } from "../constants.js";
 import { sum } from "../utils.js";
-import { QuoteSelectorResult, SolverQuote } from "./types.js";
+import { QuoteSelectorOptions, QuoteSelectorResult, SolverQuote } from "./types.js";
 
-export function selectCheapestQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = ["SELF_PUBLISH"]): QuoteSelectorResult {
-  return solverQuotes.reduce<QuoteSelectorResult>(({ solverID: cheapestSolverID, quoteID: cheapestQuoteID, quote: cheapestQuoteData }, solverQuoteResponse) => {
-    const quotes = solverQuoteResponse.quoteData.quoteEntries;
-    let localCheapestQuoteData = cheapestQuoteData;
-    let localCheapestSolverID = cheapestSolverID;
-    let localCheapestQuoteID = cheapestQuoteID;
-    const defaultSum = BigInt(isReverse ? 0 : Number.MAX_SAFE_INTEGER);
+export function selectCheapestQuote(solverQuotes: SolverQuote[], options: QuoteSelectorOptions = {}): QuoteSelectorResult {
+  const { isReverse = false, allowedIntentExecutionTypes = ["SELF_PUBLISH"] } = options;
 
-    for (const quoteData of quotes) {
-      if (allowedIntentExecutionTypes.includes(quoteData.intentExecutionType)) {
-        let localCheapestTokens = localCheapestQuoteData?.intentData?.reward.tokens;
-        let quoteTokens = quoteData.intentData.reward.tokens;
+  const flatQuotes = solverQuotes.flatMap(solverQuote =>
+    solverQuote.quoteData.quoteEntries
+      .filter(quoteEntry => allowedIntentExecutionTypes.includes(quoteEntry.intentExecutionType))
+      .map(quoteEntry => ({
+        solverID: solverQuote.solverID,
+        quoteID: solverQuote.quoteID,
+        quote: quoteEntry
+      }))
+  );
 
-        if (isReverse) {
-          localCheapestTokens = localCheapestQuoteData?.intentData?.route.tokens;
-          quoteTokens = quoteData.intentData.route.tokens;
-        }
+  if (flatQuotes.length === 0) {
+    throw new Error('No valid quotes found');
+  }
 
-        const localCheapestSum = localCheapestQuoteData ? sum(localCheapestTokens.map(({ amount }) => amount)) : defaultSum;
-        const quoteSum = sum(quoteTokens.map(({ amount }) => amount));
+  return flatQuotes.reduce((cheapest, current) => {
+    const currentTokens = isReverse ? current.quote.intentData.route.tokens : current.quote.intentData.reward.tokens;
+    const cheapestTokens = isReverse ? cheapest.quote.intentData.route.tokens : cheapest.quote.intentData.reward.tokens;
 
-        if (isReverse) {
-          // want to set the quote with the highest route tokens sum (most received on destination chain)
-          if (quoteSum > localCheapestSum) {
-            localCheapestSolverID = solverQuoteResponse.solverID;
-            localCheapestQuoteID = solverQuoteResponse.quoteID;
-            localCheapestQuoteData = quoteData;
-          }
-        }
-        else {
-          // want to set the quote with the lowest reward tokens sum (least spent on origin chain)
-          if (quoteSum < localCheapestSum) {
-            localCheapestSolverID = solverQuoteResponse.solverID;
-            localCheapestQuoteID = solverQuoteResponse.quoteID;
-            localCheapestQuoteData = quoteData;
-          }
-        }
-      }
-    }
-
-    // After iterating through all quotes for this solver, compare the local cheapest with the global cheapest
-    if (!cheapestQuoteData) {
-      return {
-        solverID: localCheapestSolverID,
-        quoteID: localCheapestQuoteID,
-        quote: localCheapestQuoteData
-      };
-    }
+    const currentSum = sum(currentTokens.map(({ amount }) => amount));
+    const cheapestSum = sum(cheapestTokens.map(({ amount }) => amount));
 
     if (isReverse) {
-      const globalTokens = cheapestQuoteData.intentData.route.tokens;
-      const localTokens = localCheapestQuoteData?.intentData?.route.tokens;
-
-      const globalSum = sum(globalTokens.map(({ amount }) => amount));
-      const localSum = localCheapestQuoteData ? sum(localTokens.map(({ amount }) => amount)) : defaultSum;
-
-      return localSum > globalSum ? {
-        solverID: localCheapestSolverID,
-        quoteID: localCheapestQuoteID,
-        quote: localCheapestQuoteData
-      } : {
-        solverID: cheapestSolverID,
-        quoteID: cheapestQuoteID,
-        quote: cheapestQuoteData
-      };
+      return currentSum > cheapestSum ? current : cheapest;
     } else {
-      const globalTokens = cheapestQuoteData.intentData.reward.tokens;
-      const localTokens = localCheapestQuoteData?.intentData?.reward.tokens;
-
-      const globalSum = sum(globalTokens.map(({ amount }) => amount));
-      const localSum = localCheapestQuoteData ? sum(localTokens.map(({ amount }) => amount)) : defaultSum;
-
-      return localSum < globalSum ? {
-        solverID: localCheapestSolverID,
-        quoteID: localCheapestQuoteID,
-        quote: localCheapestQuoteData
-      } : {
-        solverID: cheapestSolverID,
-        quoteID: cheapestQuoteID,
-        quote: cheapestQuoteData
-      };
+      return currentSum < cheapestSum ? current : cheapest;
     }
-  }, {} as QuoteSelectorResult);
+  });
+}
+
+export function selectCheapestQuoteNativeSend(solverQuotes: SolverQuote[], options: QuoteSelectorOptions = {}): QuoteSelectorResult {
+  const { isReverse = false, allowedIntentExecutionTypes = ["SELF_PUBLISH"] } = options;
+
+  const flatQuotes = solverQuotes.flatMap(solverQuote =>
+    solverQuote.quoteData.quoteEntries
+      .filter(quoteEntry => allowedIntentExecutionTypes.includes(quoteEntry.intentExecutionType))
+      .map(quoteEntry => ({
+        solverID: solverQuote.solverID,
+        quoteID: solverQuote.quoteID,
+        quote: quoteEntry
+      }))
+  );
+
+  if (flatQuotes.length === 0) {
+    throw new Error('No valid quotes found');
+  }
+
+  return flatQuotes.reduce((cheapest, current) => {
+    const currentNativeValue = current.quote.intentData.reward.nativeValue;
+    const cheapestNativeValue = cheapest.quote.intentData.reward.nativeValue;
+
+    if (isReverse) {
+      return currentNativeValue > cheapestNativeValue ? current : cheapest;
+    } else {
+      return currentNativeValue < cheapestNativeValue ? current : cheapest;
+    }
+  });
 }

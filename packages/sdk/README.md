@@ -19,6 +19,12 @@
       </ul>
     </li>
     <li>
+      <a href="#refunding-expired-intents">Refunding Expired Intents</a>
+    </li>
+    <li>
+      <a href="#custom-chains-and-contracts-optional">Custom Chains and Contracts (optional)</a>
+    </li>
+    <li>
       <a href="#full-demo">Full Demo</a>
     </li>
     <li>
@@ -76,7 +82,7 @@ const amount = BigInt(1000000) // 1 USDC
 
 const routesService = new RoutesService()
 
-// create a simple stable transfer from my wallet on the origin chain to my wallet on the destination chain (bridge)
+// create a simple stable transfer from my wallet on the origin chain to my wallet on the destination chain
 const intent = routesService.createSimpleIntent({
   creator: address,
   originChainID,
@@ -89,12 +95,36 @@ const intent = routesService.createSimpleIntent({
 })
 ```
 
+### Create a native send intent
+To create a native token (ETH, MATIC, etc.) send intent, use the `createNativeSendIntent` method:
+``` ts
+import { RoutesService } from '@eco-foundation/routes-sdk';
+
+const address = '0x1234567890123456789012345678901234567890';
+const originChainID = 10; // Optimism
+const destinationChainID = 8453; // Base
+const amount = BigInt("10000000000000000"); // 0.01 ETH (in wei)
+const limit = BigInt("1000000000000000000"); // 1 ETH
+
+const routesService = new RoutesService();
+
+// create a native token send from my wallet on the origin chain to my wallet on the destination chain
+const intent = routesService.createNativeSendIntent({
+  creator: address,
+  originChainID,
+  destinationChainID,
+  amount,
+  limit,
+  recipient: address, // optional, defaults to the creator if not passed
+})
+```
+
 ### Request quotes for an intent and select a quote
 To request quotes for an intent and select the cheapest quote, use the `OpenQuotingClient` and `selectCheapestQuote` functions.
 
 Each quote includes a modified intent that is adjusted to account for the fees that the solver will charge.
 ``` ts
-import { OpenQuotingClient, selectCheapestQuote } from '@eco-foundation/routes-sdk'
+import { OpenQuotingClient, selectCheapestQuote, selectCheapestQuoteNativeSend } from '@eco-foundation/routes-sdk';
 
 const openQuotingClient = new OpenQuotingClient({ dAppID: 'my-dapp' })
 
@@ -102,7 +132,9 @@ try {
   const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
 
   // select quote
-  const selectedQuote = selectCheapestQuote(quotes)
+  const selectedQuote = selectCheapestQuote(quotes);
+  // OR, for native send intents
+  const selectedQuote = selectCheapestQuoteNativeSend(quotes);
 
   const quotedIntent = selectedQuote.quote.intentData
 }
@@ -134,12 +166,14 @@ try {
   const quotes = await openQuotingClient.requestReverseQuotesForIntent({ intent })
 
   // select quote
-  const selectedQuote = selectCheapestQuote(quotes, true)
+  const selectedQuote = selectCheapestQuote(quotes, { isReverse: true });
+  // OR, for native send intents
+  const selectedQuote = selectCheapestQuoteNativeSend(quotes, { isReverse: true });
 
   const quotedIntent = selectedQuote.quote.intentData
 }
 catch (error) {
-  console.error('No quotes available for intent', error)
+  console.error('No reverse quotes available for intent', error)
 }
 ```
 
@@ -147,10 +181,11 @@ catch (error) {
 Depending on your use case, you might want to select some quote based on some other criteria, not just the cheapest. You can create a custom selector function to do this.
 
 ``` ts
-import { SolverQuote, IntentExecutionType, QuoteSelectorResult } from '@eco-foundation/routes-sdk'
+import { SolverQuote, QuoteSelectorOptions, QuoteSelectorResult } from '@eco-foundation/routes-sdk'
 
 // custom selector fn using SolverQuote type
-function selectMyFavoriteQuote(solverQuotes: SolverQuote[], isReverse: boolean = false, allowedIntentExecutionTypes: IntentExecutionType[] = ['SELF_PUBLISH']): QuoteSelectorResult {
+function selectMyFavoriteQuote(solverQuotes: SolverQuote[], opts: QuoteSelectorOptions): QuoteSelectorResult {
+  const { isReverse = false, allowedIntentExecutionTypes = ['SELF_PUBLISH'] } = opts;
   // your custom logic here
   return {
     intentData,
@@ -167,9 +202,9 @@ If you do not request a quote for your intent and you continue with publishing i
 The SDK gives you what you need so that you can publish the intent to the origin chain with whatever web3 library you choose, here is an example of how to publish our quoted intent using `viem`!
 
 ``` ts
-import { createWalletClient, createPublicClient, privateKeyToAccount, webSocket, http, erc20Abi } from 'viem'
-import { optimism } from 'viem/chains'
-import { IntentSourceAbi, EcoProtocolAddresses } from '@eco-foundation/routes-ts'
+import { createWalletClient, createPublicClient, privateKeyToAccount, webSocket, http, erc20Abi } from 'viem';
+import { optimism } from 'viem/chains';
+import { IntentSourceAbi } from '@eco-foundation/routes-ts';
 
 const account = privateKeyToAccount('YOUR PRIVATE KEY HERE')
 const originChain = optimism
@@ -184,7 +219,7 @@ const originPublicClient = createPublicClient({
   transport: webSocket(rpcUrl) // OR http(rpcUrl)
 })
 
-const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, 'IntentSource');
 
 try {
   // approve the quoted amount to account for fees
@@ -207,7 +242,8 @@ try {
     functionName: 'publishAndFund',
     args: [quotedIntent, false],
     chain: originChain,
-    account
+    account,
+    value: intentWithQuote.reward.nativeValue // Send the required native value if applicable
   })
 
   await originPublicClient.waitForTransactionReceipt({ hash: publishTxHash })
@@ -221,7 +257,6 @@ catch (error) {
 
 ## Initiate the intent gaslessly
 Eco's solver provides the option to initiate an intent gaslessly using permit or permit2. By signing your approvals for source tokens, and then passing your intent to our open quoting API. Here is an example of how to do this:
-
 
 As a preliminary step for permit2 you need to ensure that the funder of the intent has permitted for the Permit2 contract to spend token on their behalf. This is done by calling `approve` on the tokens that you are spending on the source chain. This is the only operation that requires a transaction to be sent to the source chain.
 
@@ -343,6 +378,86 @@ await originPublicClient.waitForTransactionReceipt({ hash: initiateTxHash })
 ```
 
 [See more from Uniswap's Permit2 docs](https://blog.uniswap.org/permit2-integration-guide#how-to-construct-permit2-signatures-on-the-frontend)
+## Refunding Expired Intents
+
+If an intent expires before it's fulfilled by a solver, you can refund the tokens you deposited when creating the intent. To do this, you'll need the original intent data, which you can retrieve from the `IntentCreated` event log that was emitted when you published the intent.
+
+### Parsing Intent from Event Log
+
+When you publish an intent, the transaction receipt will contain an `IntentCreated` event. You can parse this event to get the intent data needed for refunding:
+
+```ts
+import { parseEventLogs } from 'viem';
+import { IntentSourceAbi } from '@eco-foundation/routes-ts';
+import { RoutesService } from '@eco-foundation/routes-sdk';
+
+// After publishing intent, get the transaction receipt
+const receipt = await publicClient.waitForTransactionReceipt({ hash: publishTxHash });
+
+// Parse the logs to find the IntentCreated event
+const logs = parseEventLogs({
+  abi: IntentSourceAbi,
+  logs: receipt.logs
+});
+
+const intentCreatedEvent = logs.find((log) => log.eventName === 'IntentCreated');
+
+// Parse the intent from the event arguments
+const parsedIntent = RoutesService.parseIntentFromIntentCreatedEventArgs(intentCreatedEvent!.args);
+```
+
+### Executing the Refund
+
+Once you have the parsed intent and it has expired, you can call the `refund` function on the `IntentSource` contract:
+
+```ts
+import { IntentSourceAbi } from '@eco-foundation/routes-ts';
+
+const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, 'IntentSource');
+
+// Make sure the intent has expired before attempting refund
+const currentTime = new Date();
+if (currentTime > parsedIntent.expiryTime) {
+  const refundTxHash = await walletClient.writeContract({
+    abi: IntentSourceAbi,
+    address: intentSourceContract,
+    functionName: 'refund',
+    args: [parsedIntent],
+    chain: originChain,
+    account
+  });
+
+  await publicClient.waitForTransactionReceipt({ hash: refundTxHash });
+  console.log('Refund successful!');
+} else {
+  console.log('Intent has not expired yet');
+}
+```
+
+## Custom Chains and Contracts (optional)
+The SDK is designed to work with the [@eco-foundation/routes-ts](https://www.npmjs.com/package/@eco-foundation/routes-ts) package, which provides the default chains and contracts. However, you can pass custom chains and contracts to the SDK if needed.
+
+To do this, you can create a custom `RoutesService` instance with your own chains and contracts:
+``` ts
+import { RoutesService, ProtocolAddresses } from '@eco-foundation/routes-sdk';
+
+const customProtocolAddresses: ProtocolAddresses = {
+  123456789: {
+    IntentSource: '0x1234567890123456789012345678901234567890',
+    MetaProver: '0x0987654321098765432109876543210987654321',
+  },
+  "123456789-pre": { // preprod contracts
+    IntentSource: '0xabcdefabcdefabcdefabcdefabcdefabcdefabcd',
+    MetaProver: '0x1234567890123456789012345678901234567890',
+  }
+}
+
+const routesService = new RoutesService({
+  customProtocolAddresses,
+})
+```
+
+> **Note:** Custom contract addresses passed on already-supported chains will override any default addresses from [@eco-foundation/routes-ts](https://www.npmjs.com/package/@eco-foundation/routes-ts).
 
 # Full Demo
 

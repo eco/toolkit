@@ -2,9 +2,9 @@ import { describe, test, expect, beforeAll } from "vitest";
 import { createWalletClient, Hex, webSocket, WalletClient, erc20Abi, createPublicClient } from "viem";
 import { base, optimism } from "viem/chains";
 import { privateKeyToAccount } from "viem/accounts";
-import { EcoProtocolAddresses, IntentSourceAbi } from "@eco-foundation/routes-ts";
+import { IntentSourceAbi } from "@eco-foundation/routes-ts";
 
-import { RoutesService, OpenQuotingClient, selectCheapestQuote } from "../../src/index.js";
+import { RoutesService, OpenQuotingClient, selectCheapestQuote, selectCheapestQuoteNativeSend } from "../../src/index.js";
 
 const account = privateKeyToAccount(process.env.VITE_TESTING_PK as Hex)
 
@@ -35,8 +35,8 @@ describe("publishAndFund", () => {
     })
   })
 
-  test("onchain with quote", async () => {
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+  test("simple intent onchain with quote", async () => {
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
 
     const intent = routesService.createSimpleIntent({
       creator: account.address,
@@ -51,7 +51,7 @@ describe("publishAndFund", () => {
 
     // request quotes
     const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
-    const { quote } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
+    const { quote } = selectCheapestQuote(quotes)
 
     // approve
     await Promise.all(quote.intentData.reward.tokens.map(async ({ token, amount }) => {
@@ -80,7 +80,7 @@ describe("publishAndFund", () => {
   }, 20_000)
 
   test("onchain with reverse quote", async () => {
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, 'IntentSource')
 
     const intent = routesService.createSimpleIntent({
       creator: account.address,
@@ -95,7 +95,7 @@ describe("publishAndFund", () => {
 
     // request quotes
     const quotes = await openQuotingClient.requestReverseQuotesForIntent({ intent })
-    const { quote } = selectCheapestQuote(quotes, false, ["SELF_PUBLISH"])
+    const { quote } = selectCheapestQuote(quotes)
 
     // approve
     await Promise.all(quote.intentData.reward.tokens.map(async ({ token, amount }) => {
@@ -123,7 +123,7 @@ describe("publishAndFund", () => {
     await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
   }, 20_000);
 
-  test("onchain without quote", async () => {
+  test("sinple intent onchain without quote", async () => {
     const intent = routesService.createSimpleIntent({
       creator: account.address,
       originChainID: originChain.id,
@@ -135,7 +135,7 @@ describe("publishAndFund", () => {
       recipient: account.address
     })
 
-    const intentSourceContract = EcoProtocolAddresses[routesService.getEcoChainId(originChain.id)].IntentSource
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
     expect(intentSourceContract).toBeDefined()
 
     // approve
@@ -162,4 +162,69 @@ describe("publishAndFund", () => {
 
     await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
   }, 15_000)
+
+  test("native send intent onchain without quote", async () => {
+    const nativeAmount = BigInt("10000") // 0.00000000000001 ETH
+
+    const intent = routesService.createNativeSendIntent({
+      creator: account.address,
+      originChainID: originChain.id,
+      destinationChainID: destinationChain.id,
+      amount: nativeAmount,
+      limit: nativeAmount * BigInt(10),
+      recipient: account.address
+    })
+
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
+    expect(intentSourceContract).toBeDefined()
+    expect(intent.reward.nativeValue).toBe(nativeAmount)
+
+    // publish intent onchain with native value
+    const publishTxHash = await baseWalletClient.writeContract({
+      abi: IntentSourceAbi,
+      address: intentSourceContract,
+      functionName: 'publishAndFund',
+      args: [intent, false],
+      chain: originChain,
+      account,
+      value: intent.reward.nativeValue
+    })
+
+    await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  }, 15_000)
+
+  test("native send intent onchain with quote", async () => {
+    const intentSourceContract = routesService.getProtocolContractAddress(originChain.id, "IntentSource")
+    const nativeAmount = BigInt("10000") // 0.00000000000001 ETH
+
+    const intent = routesService.createNativeSendIntent({
+      creator: account.address,
+      originChainID: originChain.id,
+      destinationChainID: destinationChain.id,
+      amount: nativeAmount,
+      limit: nativeAmount * BigInt(10),
+      recipient: account.address
+    })
+
+    // request quotes
+    const quotes = await openQuotingClient.requestQuotesForIntent({ intent })
+    const { quote } = selectCheapestQuoteNativeSend(quotes)
+
+    // setup the intent for publishing
+    expect(quote.intentData).toBeDefined()
+    expect(quote.intentData.reward.nativeValue).toBeGreaterThan(BigInt(0))
+
+    // publish intent onchain with native value
+    const publishTxHash = await baseWalletClient.writeContract({
+      abi: IntentSourceAbi,
+      address: intentSourceContract,
+      functionName: 'publishAndFund',
+      args: [quote.intentData, false],
+      chain: originChain,
+      account,
+      value: quote.intentData.reward.nativeValue
+    })
+
+    await publicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  }, 20_000)
 })

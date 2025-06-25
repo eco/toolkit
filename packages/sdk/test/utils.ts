@@ -5,13 +5,21 @@ import { IntentType } from "@eco-foundation/routes-ts";
 import { decodeFunctionData, erc20Abi } from "viem";
 import { sum } from "../src/utils.js";
 
-export function validateSolverQuoteResponse(quoteResponse: SolverQuote, originalIntent: IntentType, isReverseQuote: boolean) {
-  expect(quoteResponse.solverID).toBeDefined();
-  expect(quoteResponse.quoteData).toBeDefined();
-  expect(quoteResponse.quoteData.quoteEntries).toBeDefined();
-  expect(quoteResponse.quoteData.quoteEntries.length).toBeGreaterThan(0);
+export type ValidateSolverQuoteResponseOptions = {
+  solverQuoteResponse: SolverQuote;
+  originalIntent: IntentType;
+  isReverseQuote?: boolean;
+}
 
-  for (const quote of quoteResponse.quoteData.quoteEntries) {
+export function validateSolverQuoteResponse(opts: ValidateSolverQuoteResponseOptions): void {
+  const { solverQuoteResponse, originalIntent, isReverseQuote = false } = opts;
+  const isNativeIntent = originalIntent.reward.nativeValue > 0n;
+  expect(solverQuoteResponse.solverID).toBeDefined();
+  expect(solverQuoteResponse.quoteData).toBeDefined();
+  expect(solverQuoteResponse.quoteData.quoteEntries).toBeDefined();
+  expect(solverQuoteResponse.quoteData.quoteEntries.length).toBeGreaterThan(0);
+
+  for (const quote of solverQuoteResponse.quoteData.quoteEntries) {
     expect(quote).toBeDefined();
     expect(quote.intentExecutionType).toBeDefined();
     expect(quote.intentExecutionType).toBeOneOf([...INTENT_EXECUTION_TYPES]);
@@ -24,12 +32,19 @@ export function validateSolverQuoteResponse(quoteResponse: SolverQuote, original
     expect(quote.intentData.reward.deadline).toBeDefined();
     expect(quote.intentData.reward.nativeValue).toBeDefined();
     expect(quote.intentData.reward.tokens).toBeDefined();
-    expect(quote.intentData.reward.tokens.length).toBeGreaterThan(0);
-    for (const token of quote.intentData.reward.tokens) {
-      expect(token).toBeDefined();
-      expect(token.amount).toBeDefined();
-      expect(token.amount).toBeGreaterThan(0n);
-      expect(token.token).toBeDefined();
+
+    if (isNativeIntent) {
+      expect(quote.intentData.reward.nativeValue).toBeGreaterThan(0n);
+      expect(quote.intentData.reward.tokens.length).toBe(0);
+    }
+    else {
+      expect(quote.intentData.reward.tokens.length).toBeGreaterThan(0);
+      for (const token of quote.intentData.reward.tokens) {
+        expect(token).toBeDefined();
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0n);
+        expect(token.token).toBeDefined();
+      }
     }
 
     expect(quote.intentData.route).toBeDefined();
@@ -38,13 +53,19 @@ export function validateSolverQuoteResponse(quoteResponse: SolverQuote, original
     expect(quote.intentData.route.destination).toBeDefined();
     expect(quote.intentData.route.inbox).toBeDefined();
     expect(quote.intentData.route.tokens).toBeDefined();
-    expect(quote.intentData.route.tokens.length).toBeGreaterThan(0);
-    for (const token of quote.intentData.route.tokens) {
-      expect(token).toBeDefined();
-      expect(token.amount).toBeDefined();
-      expect(token.amount).toBeGreaterThan(0n);
-      expect(token.token).toBeDefined();
+    if (isNativeIntent) {
+      expect(quote.intentData.route.tokens.length).toBe(0);
     }
+    else {
+      expect(quote.intentData.route.tokens.length).toBeGreaterThan(0);
+      for (const token of quote.intentData.route.tokens) {
+        expect(token).toBeDefined();
+        expect(token.amount).toBeDefined();
+        expect(token.amount).toBeGreaterThan(0n);
+        expect(token.token).toBeDefined();
+      }
+    }
+
     expect(quote.intentData.route.calls).toBeDefined();
     expect(quote.intentData.route.calls.length).toBeGreaterThan(0);
     for (const call of quote.intentData.route.calls) {
@@ -56,19 +77,33 @@ export function validateSolverQuoteResponse(quoteResponse: SolverQuote, original
 
     // Validate that quotes are applied correctly based on the quote method
     if (isReverseQuote) {
-      // For reverse quotes:
-      // 1. Validate all calls are ERC20 transfers and the overall amount is less than the original intent
-      const quoteCallsSum = sum(quote.intentData.route.calls.map(call => {
-        const decodedCall = decodeFunctionData({ data: call.data, abi: erc20Abi });
-        expect(decodedCall.functionName).toBe("transfer");
-        return BigInt(decodedCall.args[1]!);
-      }));
-      const intentCallsSum = sum(originalIntent.route.calls.map(call => {
-        const decodedCall = decodeFunctionData({ data: call.data, abi: erc20Abi });
-        expect(decodedCall.functionName).toBe("transfer");
-        return BigInt(decodedCall.args[1]!);
-      }));
-      expect(quoteCallsSum, "Reverse quote should reduce route.calls sum").toBeLessThanOrEqual(intentCallsSum);
+      // For reverse quote native intents:
+      if (isNativeIntent) {
+        // 1. Validate that the native value is equal to the original intent's native value
+        expect(quote.intentData.reward.nativeValue).toEqual(originalIntent.reward.nativeValue);
+        // 2. Validate that the route and reward tokens are empty
+        expect(quote.intentData.route.tokens.length).toBe(0);
+        expect(quote.intentData.reward.tokens.length).toBe(0);
+        // 3. Validate that the calls value sum is less than or equal to the original intent's calls value sum
+        const callsValueSum = sum(quote.intentData.route.calls.map(call => BigInt(call.value)));
+        const originalCallsValueSum = sum(originalIntent.route.calls.map(call => BigInt(call.value)));
+        expect(callsValueSum, "Reverse quote should reduce route.calls value sum").toBeLessThanOrEqual(originalCallsValueSum);
+      }
+      else {
+        // For reverse quote ERC20 intents:
+        // 1. Validate all calls are ERC20 transfers and the overall amount is less than the original intent
+        const quoteCallsSum = sum(quote.intentData.route.calls.map(call => {
+          const decodedCall = decodeFunctionData({ data: call.data, abi: erc20Abi });
+          expect(decodedCall.functionName).toBe("transfer");
+          return BigInt(decodedCall.args[1]!);
+        }));
+        const intentCallsSum = sum(originalIntent.route.calls.map(call => {
+          const decodedCall = decodeFunctionData({ data: call.data, abi: erc20Abi });
+          expect(decodedCall.functionName).toBe("transfer");
+          return BigInt(decodedCall.args[1]!);
+        }));
+        expect(quoteCallsSum, "Reverse quote should reduce route.calls sum").toBeLessThanOrEqual(intentCallsSum);
+      }
 
       // 2. Verify quote is applied to route tokens
       const quoteTokensSum = sum(quote.intentData.route.tokens.map(token => token.amount));
@@ -82,20 +117,34 @@ export function validateSolverQuoteResponse(quoteResponse: SolverQuote, original
         intentRewardTokensSum,
       );
     } else {
-      // For standard quotes:
-      // 1. Verify quote reduces asked reward tokens or keeps it the same
-      const quoteRewardTokensSum = sum(quote.intentData.reward.tokens.map(token => token.amount));
-      const intentRewardTokensSum = sum(originalIntent.reward.tokens.map(token => token.amount));
-      expect(quoteRewardTokensSum, "Standard quote should reducs reward.tokens sum").toBeLessThanOrEqual(
-        intentRewardTokensSum,
-      );
+      if (isNativeIntent) {
+        // For standard quote native intents:
+        // 1. Validate that the native value is greater or equal to the original intent's native value
+        expect(quote.intentData.reward.nativeValue).toBeGreaterThanOrEqual(originalIntent.reward.nativeValue);
+        // 2. Validate that the route and reward tokens are empty
+        expect(quote.intentData.route.tokens.length).toBe(0);
+        expect(quote.intentData.reward.tokens.length).toBe(0);
+        // 3. Validate that the calls value sum is equal to the original intent's calls value sum
+        const callsValueSum = sum(quote.intentData.route.calls.map(call => BigInt(call.value)));
+        const originalCallsValueSum = sum(originalIntent.route.calls.map(call => BigInt(call.value)));
+        expect(callsValueSum, "Reverse quote should reduce route.calls value sum").toEqual(originalCallsValueSum);
+      }
+      else {
+        // For standard quote ERC20 intents:
+        // 1. Verify quote reduces asked reward tokens or keeps it the same
+        const quoteRewardTokensSum = sum(quote.intentData.reward.tokens.map(token => token.amount));
+        const intentRewardTokensSum = sum(originalIntent.reward.tokens.map(token => token.amount));
+        expect(quoteRewardTokensSum, "Standard quote should reducs reward.tokens sum").toBeLessThanOrEqual(
+          intentRewardTokensSum,
+        );
 
-      // 2. Route token amounts should remain unchanged
-      const quoteRouteTokensSum = sum(quote.intentData.route.tokens.map(token => token.amount));
-      const intentRouteTokensSum = sum(originalIntent.route.tokens.map(token => token.amount));
-      expect(quoteRouteTokensSum, "Standard quote should not change route.tokens sum").toBe(
-        intentRouteTokensSum,
-      );
+        // 2. Route token amounts should remain unchanged
+        const quoteRouteTokensSum = sum(quote.intentData.route.tokens.map(token => token.amount));
+        const intentRouteTokensSum = sum(originalIntent.route.tokens.map(token => token.amount));
+        expect(quoteRouteTokensSum, "Standard quote should not change route.tokens sum").toBe(
+          intentRouteTokensSum,
+        );
+      }
     }
 
     // Verify that the quote reward tokens sum is equal to or greater than the route tokens sum
