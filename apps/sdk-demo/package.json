@@ -11,7 +11,7 @@
     "start": "next start"
   },
   "dependencies": {
-    "@eco-foundation/chains": "^1.0.33",
+    "@eco-foundation/chains": "^1.0.45",
     "@eco-foundation/routes-sdk": "*",
     "@eco-foundation/routes-ts": "^2.8.10",
     "@rainbow-me/rainbowkit": "^2.2.3",
