@@ -80,8 +80,8 @@ export class RoutesService {
     if (isAmountInvalid(amount)) {
       throw new Error("Invalid amount");
     }
-    if (spendingTokenLimit < BigInt(amount)) {
-      throw new Error("Insufficient spendingTokenLimit");
+    if (isAmountInvalid(spendingTokenLimit)) {
+      throw new Error("Invalid spendingTokenLimit");
     }
     if (expiryTime && expiryTime < getSecondsFromNow(60)) {
       throw new Error("Expiry time must be 60 seconds or more in the future");

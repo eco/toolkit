@@ -256,11 +256,11 @@ describe("RoutesService", () => {
         originChainID: 10,
         destinationChainID: 8453,
         spendingToken: RoutesService.getStableAddress(10, "USDC"),
-        spendingTokenLimit: BigInt(999999),
+        spendingTokenLimit: BigInt(-1),
         receivingToken: RoutesService.getStableAddress(8453, "USDC"),
         amount: BigInt(1000000),
         prover: 'HyperProver',
-      })).toThrow("Insufficient spendingTokenLimit");
+      })).toThrow("Invalid spendingTokenLimit");
     })
 
     test("invalidExpiryTime", async () => {
