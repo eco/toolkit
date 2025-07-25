@@ -12,7 +12,7 @@ export const chainIds = [
   466,        // Appchain
   478,        // Form
   480,        // Worldchain
-  999,        // HyperEVM
+  // 999,        // HyperEVM
   1996,       // Sanko
   2525,       // inEVM
   // 2741,       // Abstract
@@ -79,9 +79,9 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
   480: {
     USDC: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1'
   },
-  999: {
-    USDT0: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb'
-  },
+  // 999: {
+  //   USDT0: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb'
+  // },
   1996: {
     USDC: '0x13D675BC5e659b11CFA331594cF35A20815dCF02'
   },
