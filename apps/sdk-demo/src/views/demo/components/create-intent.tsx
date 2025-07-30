@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams, CreateNativeSendIntentParams } from "@eco-foundation/routes-sdk"
-import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
-import { useAccount, useReadContract, useBalance } from "wagmi";
+import { formatUnits, isAddress } from "viem";
+import { useAccount } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
 import { chains } from "../../../wagmi";

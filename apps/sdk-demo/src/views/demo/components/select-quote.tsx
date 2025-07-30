@@ -1,8 +1,7 @@
 import { RoutesSupportedChainId, SolverQuote, selectCheapestQuote, selectCheapestQuoteNativeSend } from "@eco-foundation/routes-sdk"
 import { IntentType } from "@eco-foundation/routes-ts"
 import { formatUnits } from "viem"
-import { findTokenByAddress } from "../../../utils"
-import { useTokenDecimals } from "../../../hooks/useTokenDecimals"
+import { TokenDisplay } from "./token-display"
 
 type Props = {
   intent: IntentType | undefined,
@@ -41,13 +40,7 @@ export default function SelectQuote({ intent, quotes, isNativeIntent, onQuoteSel
                 </div>
               ) : (
                 <ul className="list-disc">
-                  {quote.quoteData.tokens.map((token) => {
-                    const { data: tokenDecimals } = useTokenDecimals(Number(intent.route.source) as RoutesSupportedChainId, token.token, isNativeIntent);
-                    if (!tokenDecimals) return null;
-                    return (
-                      <li key={token.token} className="ml-4">{formatUnits(BigInt(token.amount), tokenDecimals)} {findTokenByAddress(Number(intent.route.source) as RoutesSupportedChainId, token.token)?.id}</li>
-                    );
-                  })}
+                  {quote.quoteData.tokens.map((token) => <TokenDisplay key={token.token} chainId={Number(intent.route.source) as RoutesSupportedChainId} token={token} />)}
                 </ul>
               )}
               <span>Quote expires at: {new Date(Number(quote.quoteData.expiryTime) * 1000).toISOString()}</span>
