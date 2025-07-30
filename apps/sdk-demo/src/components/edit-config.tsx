@@ -40,15 +40,15 @@ export default function EditConfig() {
       ...chains[chainId],
       [contractType]: address || undefined
     };
-    
+
     const hasContracts = Object.values(updatedChain).some(addr => addr);
     const updatedAddresses = {
       ...chains,
       [chainId]: hasContracts ? updatedChain : {}
     };
-    
-    const isEmpty = Object.keys(updatedAddresses).length === 0 || 
-                   Object.values(updatedAddresses).every(chain => Object.keys(chain).length === 0);
+
+    const isEmpty = Object.keys(updatedAddresses).length === 0 ||
+      Object.values(updatedAddresses).every(chain => Object.keys(chain).length === 0);
     config.updateConfig({ customProtocolAddresses: isEmpty ? undefined : updatedAddresses });
   }
 
@@ -71,7 +71,12 @@ export default function EditConfig() {
             </div>
             <div className="flex gap-2">
               <span>Open Quoting URL:</span>
-              <input type="text" className="border-1 w-[250px]" onChange={(e) => setQuotingClientUrl(e.target.value)} defaultValue={config.openQuotingClientUrl} />
+              <input type="text" className="border-1 w-[250px]" value={config.openQuotingClientUrl} onChange={(e) => setQuotingClientUrl(e.target.value)} />
+            </div>
+            <div className="flex gap-2">
+              <a onClick={() => setQuotingClientUrl("https://quotes.eco.com")}>Production</a>
+              <a onClick={() => setQuotingClientUrl("https://quotes-preprod.eco.com")}>Preproduction</a>
+              <a onClick={() => setQuotingClientUrl("https://quotes.staging.eco.com")}>Staging</a>
             </div>
             <div className="flex flex-col gap-2">
               <span>Custom Protocol Addresses:</span>
