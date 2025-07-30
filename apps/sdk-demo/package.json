@@ -11,9 +11,9 @@
     "start": "next start"
   },
   "dependencies": {
-    "@eco-foundation/chains": "^1.0.33",
+    "@eco-foundation/chains": "^1.0.45",
     "@eco-foundation/routes-sdk": "*",
-    "@eco-foundation/routes-ts": "^2.8.2",
+    "@eco-foundation/routes-ts": "^2.8.12",
     "@rainbow-me/rainbowkit": "^2.2.3",
     "@tailwindcss/postcss": "^4.0.1",
     "@tanstack/react-query": "^5.55.3",
@@ -22,7 +22,7 @@
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "tailwindcss": "^4.0.1",
-    "viem": "^2.22.12",
+    "viem": "^2.31.7",
     "wagmi": "^2.14.7"
   },
   "devDependencies": {

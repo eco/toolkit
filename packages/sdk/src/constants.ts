@@ -3,13 +3,16 @@ import { Hex } from "viem";
 export const chainIds = [
   1,          // ETH Mainnet
   10,         // Optimism
+  56,         // BSC
   130,        // Unichain
   137,        // Polygon
+  146,        // Sonic
   169,        // Manta Pacific
   360,        // Molten
   466,        // Appchain
   478,        // Form
-  // 480,        // Worldchain
+  480,        // Worldchain
+  // 999,        // HyperEVM
   1996,       // Sanko
   2525,       // inEVM
   // 2741,       // Abstract
@@ -23,7 +26,7 @@ export const chainIds = [
   42220,      // Celo
   57073,      // Ink
   // 543210,     // ZERO
-  // 10241024,   // AlienX
+  10241024,   // AlienX
   1380012617, // RARI
 ] as const;
 export type RoutesSupportedChainId = typeof chainIds[number];
@@ -43,6 +46,10 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDT: "0x94b008aA00579c1307B0EF2c499aD98a8ce58e58",
     oUSDT: "0x1217bfe6c773eec6cc4a38b5dc45b92292b6e189",
   },
+  56: {
+    USDC: '0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d',
+    USDT: '0x55d398326f99059fF775485246999027B3197955',
+  },
   130: {
     USDC: "0x078D782b760474a361dDA0AF3839290b0EF57AD6",
     USDT0: "0x9151434b16b9763660705744891fa906f660ecc5"
@@ -51,6 +58,9 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0x3c499c542cEF5E3811e1192ce70d8cC03d5c3359",
     USDCe: "0x2791Bca1f2de4661ED88A30C99A7a9449Aa84174",
     USDT: "0xc2132d05d31c914a87c6611c10748aeb04b58e8f",
+  },
+  146: {
+    USDC: '0x29219dd400f2Bf60E5a23d13Be72B486D4038894'
   },
   169: {
     USDC: '0xb73603C5d87fA094B7314C74ACE2e64D165016fb',
@@ -66,6 +76,12 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: '0xFBf489bb4783D4B1B2e7D07ba39873Fb8068507D',
     USDT: '0xFA3198ecF05303a6d96E57a45E6c815055D255b1'
   },
+  480: {
+    USDC: '0x79A02482A880bCE3F13e09Da970dC34db4CD24d1'
+  },
+  // 999: {
+  //   USDT0: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb'
+  // },
   1996: {
     USDC: '0x13D675BC5e659b11CFA331594cF35A20815dCF02'
   },
@@ -116,10 +132,10 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDCe: "0xF1815bd50389c46847f0Bda824eC8da914045D14",
     USDT0: "0x0200C29006150606B650577BBE7B6248F58470c1",
   },
-  // 10241024: {
-  //   USDC: '0x14B90E36Ca85D8B563430C0940E80d3A040285cC',
-  //   USDT: '0x486bee264E0F6EB9A1d5947F5FCB097C5378c8E3',
-  // },
+  10241024: {
+    USDC: '0x14B90E36Ca85D8B563430C0940E80d3A040285cC',
+    USDT: '0x486bee264E0F6EB9A1d5947F5FCB097C5378c8E3',
+  },
   1380012617: {
     USDC: '0x46B991aCbD9290967a3A9e02f14895c2F9FE809A',
     USDT: '0x362FAE9A75B27BBc550aAc28a7c1F96C8D483120',
