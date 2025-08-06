@@ -5,7 +5,10 @@ if (!process.env.NEXT_PUBLIC_WALLET_CONNECT_ID) {
   throw new Error('NEXT_PUBLIC_WALLET_CONNECT_ID is required');
 }
 
-export const ecoChains = new EcoChains({ alchemyKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY })
+export const ecoChains = new EcoChains({
+  alchemyKey: process.env.NEXT_PUBLIC_ALCHEMY_API_KEY,
+  infuraKey: process.env.NEXT_PUBLIC_INFURA_API_KEY
+})
 export const chains = ecoChains.getAllChains();
 
 export const config = getDefaultConfig({
@@ -13,4 +16,5 @@ export const config = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
   chains,
   ssr: true,
+  transports: ecoChains.getTransports(chains)
 });

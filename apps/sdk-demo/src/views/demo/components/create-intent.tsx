@@ -1,10 +1,13 @@
 import { useEffect, useMemo, useState, useRef } from "react";
 import { RoutesSupportedChainId, RoutesService, CreateSimpleIntentParams, CreateNativeSendIntentParams } from "@eco-foundation/routes-sdk"
-import { erc20Abi, formatUnits, Hex, isAddress } from "viem";
-import { useAccount, useReadContract, useBalance } from "wagmi";
+import { formatUnits, isAddress } from "viem";
+import { useAccount } from "wagmi";
 import { IntentType } from "@eco-foundation/routes-ts";
 import { getAvailableStables } from "../../../utils";
 import { chains } from "../../../wagmi";
+import { useTokenBalance } from "../../../hooks/useTokenBalance";
+import { useNativeTokenBalance } from "../../../hooks/useNativeTokenBalance";
+import { useTokenDecimals } from "../../../hooks/useTokenDecimals";
 
 type Props = {
   routesService: RoutesService,
@@ -43,28 +46,11 @@ export default function CreateIntent({
   const effectiveOriginChain = isOriginChainValid ? Number(originChainInput) as RoutesSupportedChainId : originChain;
   const effectiveDestinationChain = isDestinationChainValid ? Number(destinationChainInput) as RoutesSupportedChainId : destinationChain;
 
-  const { data: balance } = useReadContract({
-    chainId: effectiveOriginChain,
-    abi: erc20Abi,
-    address: originToken as Hex | undefined,
-    functionName: 'balanceOf',
-    args: [address!],
-    query: { enabled: Boolean(originChain && originToken && address && !isNativeIntent) }
-  })
+  const { data: balance } = useTokenBalance(effectiveOriginChain, originToken, address, isNativeIntent);
+  const { data: nativeBalance } = useNativeTokenBalance(effectiveOriginChain, address, !isNativeIntent);
 
-  const { data: nativeBalance } = useBalance({
-    chainId: effectiveOriginChain,
-    address: address,
-    query: { enabled: Boolean(effectiveOriginChain && address && isNativeIntent) }
-  })
-
-  const { data: decimals } = useReadContract({
-    chainId: effectiveOriginChain,
-    abi: erc20Abi,
-    address: originToken as Hex | undefined,
-    functionName: 'decimals',
-    query: { enabled: Boolean(effectiveOriginChain && originToken) }
-  })
+  const { data: originTokenDecimals } = useTokenDecimals(effectiveOriginChain, originToken, isNativeIntent);
+  const { data: destinationTokenDecimals } = useTokenDecimals(effectiveDestinationChain, destinationToken, isNativeIntent);
 
   useEffect(() => {
     if (isNativeIntent) {
@@ -217,7 +203,7 @@ export default function CreateIntent({
                     <span>Token:</span>
                     <input type="text" className="border-1 w-full" value={originToken} onChange={(e) => setOriginToken(e.target.value)} />
                   </div>
-                  {decimals && balance !== undefined ? <span className="text-sm italic">Balance: {formatUnits(balance, decimals)} (decimals: {decimals})</span> : null}
+                  {originTokenDecimals && balance !== undefined ? <span className="text-sm italic">Balance: {formatUnits(balance, originTokenDecimals)} (decimals: {originTokenDecimals})</span> : null}
                 </div>
                 <div className="flex gap-2">
                   Stables available: {originTokensAvailable.map((tokenConfig) => (
@@ -306,7 +292,7 @@ export default function CreateIntent({
             <span className="text-xl">Desired Amount {isNativeIntent ? '(in wei)' : ''}</span>
             <input type="number" className="border-1" value={amount} onChange={(e) => setAmount(e.target.value)} />
             {amount && isNativeIntent && <span className="text-sm italic">({formatUnits(BigInt(amount), 18)} {nativeBalance?.symbol || 'ETH'})</span>}
-            {amount && !isNativeIntent && decimals && <span className="text-sm italic">({formatUnits(BigInt(amount), decimals)})</span>}
+            {amount && !isNativeIntent && destinationTokenDecimals && <span className="text-sm italic">({formatUnits(BigInt(amount), destinationTokenDecimals)})</span>}
           </div>
 
           <div className="flex flex-col gap-1 p-1 border-1">

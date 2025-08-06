@@ -167,7 +167,7 @@ If you do not request a quote for your intent and you continue with publishing i
 The SDK gives you what you need so that you can publish the intent to the origin chain with whatever web3 library you choose, here is an example of how to publish our quoted intent using `viem`!
 
 ``` ts
-import { createWalletClient, privateKeyToAccount, webSocket, http, erc20Abi } from 'viem';
+import { createWalletClient, privateKeyToAccount, webSocket, http, erc20Abi, parseEventLogs } from 'viem';
 import { optimism } from 'viem/chains';
 import { IntentSourceAbi } from '@eco-foundation/routes-ts';
 
@@ -211,12 +211,75 @@ try {
     value: intentWithQuote.reward.nativeValue // Send the required native value if applicable
   })
 
-  await originPublicClient.waitForTransactionReceipt({ hash: publishTxHash })
+  const publishReceipt = await originPublicClient.waitForTransactionReceipt({ hash: publishTxHash });
+  
+  const logs = parseEventLogs({
+    abi: IntentSourceAbi,
+    logs: publishReceipt.logs
+  })
+  const intentCreatedEvent = logs.find((log) => log.eventName === 'IntentCreated')
+
+  if (!intentCreatedEvent) {
+    throw new Error('IntentCreated event not found in logs')
+  }
+
+  const intentHash = intentCreatedEvent.args.hash;
 }
 catch (error) {
   console.error('Intent creation failed', error)
 }
 ```
+
+### Tracking the intent fulfillment
+Once the intent is published, you can track its fulfillment by listening to the `Fulfillment` event emitted by the `Inbox` contract.
+
+``` ts
+import { createPublicClient, webSocket, Hex } from 'viem';
+import { base } from 'viem/chains';
+import { InboxAbi } from '@eco-foundation/routes-ts';
+
+const inboxContract = routesService.getProtocolContractAddress(originChain.id, 'Inbox');
+
+const rpcUrl = 'YOUR RPC URL';
+const destinationPublicClient = createPublicClient({
+  chain: base,
+  transport: webSocket(rpcUrl)
+});
+
+try {
+  // get block to start watching from
+  const latestBlock = await destinationPublicClient.getBlockNumber();
+
+  const fulfillmentTxHash = await new Promise<Hex>((resolve, reject) => {
+    const unwatch = destinationPublicClient.watchContractEvent({
+      fromBlock: latestBlock - BigInt(25),
+      abi: InboxAbi,
+      address: inboxContract,
+      eventName: 'Fulfillment',
+      args: {
+        _hash: intentHash
+      }
+      onLogs(logs) {
+        if (logs.length > 0) {
+          const txHash = logs[0]!.transactionHash;
+          unwatch();
+          resolve(txHash);
+        }
+      },
+      onError(error) {
+        unwatch();
+        reject(error);
+      }
+    });
+  });
+
+  console.log('Fulfillment transaction hash:', fulfillmentTxHash);
+} catch (error) {
+  console.error('Error tracking intent fulfillment:', error);
+}
+```
+
+Once the fulfillment transaction is mined, you can then check the balance of the receiving token in your wallet on the destination chain to confirm that the funds have been received.
 
 [See more from viem's docs](https://viem.sh/)
 

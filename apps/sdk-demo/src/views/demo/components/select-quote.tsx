@@ -1,7 +1,7 @@
 import { RoutesSupportedChainId, SolverQuote, selectCheapestQuote, selectCheapestQuoteNativeSend } from "@eco-foundation/routes-sdk"
 import { IntentType } from "@eco-foundation/routes-ts"
 import { formatUnits } from "viem"
-import { findTokenByAddress } from "../../../utils"
+import { TokenDisplay } from "./token-display"
 
 type Props = {
   intent: IntentType | undefined,
@@ -14,8 +14,8 @@ export default function SelectQuote({ intent, quotes, isNativeIntent, onQuoteSel
   if (!intent || !quotes) return null
 
   const handleSelectCheapest = () => {
-    const cheapestQuote = isNativeIntent ? 
-      selectCheapestQuoteNativeSend(quotes) : 
+    const cheapestQuote = isNativeIntent ?
+      selectCheapestQuoteNativeSend(quotes) :
       selectCheapestQuote(quotes);
     onQuoteSelected(cheapestQuote);
   };
@@ -25,7 +25,7 @@ export default function SelectQuote({ intent, quotes, isNativeIntent, onQuoteSel
       <span className="text-2xl">Quotes Available:</span>
       <div className="grid grid-cols-2 gap-4">
         <div className="flex flex-col gap-2">
-          <button 
+          <button
             onClick={handleSelectCheapest}
             className="p-2 bg-blue-500 text-white rounded hover:bg-blue-600"
           >
@@ -40,9 +40,7 @@ export default function SelectQuote({ intent, quotes, isNativeIntent, onQuoteSel
                 </div>
               ) : (
                 <ul className="list-disc">
-                  {quote.quoteData.tokens.map((token) => (
-                    <li key={token.token} className="ml-4">{formatUnits(BigInt(token.amount), 6)} {findTokenByAddress(Number(intent.route.source) as RoutesSupportedChainId, token.token)?.id}</li>
-                  ))}
+                  {quote.quoteData.tokens.map((token) => <TokenDisplay key={token.token} chainId={Number(intent.route.source) as RoutesSupportedChainId} token={token} />)}
                 </ul>
               )}
               <span>Quote expires at: {new Date(Number(quote.quoteData.expiryTime) * 1000).toISOString()}</span>
