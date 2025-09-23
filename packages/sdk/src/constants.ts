@@ -21,6 +21,7 @@ export const chainIds = [
   // 7887,       // Kinto
   8333,       // B3
   8453,       // Base
+  9745,       // Plasma
   33139,      // ApeChain
   42161,      // Arbitrum
   42220,      // Celo
@@ -114,6 +115,9 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913",
     USDbC: "0xd9aAEc86B65D86f6A7B5B1b0c42FFA531710b6CA",
     oUSDT: "0x1217bfe6c773eec6cc4a38b5dc45b92292b6e189"
+  },
+  9745: {
+    USDT0: '0xB8CE59FC3717ada4C02eaDF9682A9e934F625ebb'
   },
   33139: {
     ApeUSD: '0xA2235d059F80e176D931Ef76b6C51953Eb3fBEf4',

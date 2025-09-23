@@ -16,5 +16,5 @@ export const config = getDefaultConfig({
   projectId: process.env.NEXT_PUBLIC_WALLET_CONNECT_ID,
   chains,
   ssr: true,
-  transports: ecoChains.getTransports(chains)
+  transports: ecoChains.getTransports(chains, { preferredProviders: ['alchemy', 'infura'] })
 });
