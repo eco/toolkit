@@ -11,9 +11,9 @@
     "start": "next start"
   },
   "dependencies": {
-    "@eco-foundation/chains": "^1.0.47",
+    "@eco-foundation/chains": "^2.0.3",
     "@eco-foundation/routes-sdk": "*",
-    "@eco-foundation/routes-ts": "^2.8.12",
+    "@eco-foundation/routes-ts": "^2.8.17",
     "@rainbow-me/rainbowkit": "^2.2.3",
     "@tailwindcss/postcss": "^4.0.1",
     "@tanstack/react-query": "^5.55.3",
