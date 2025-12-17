@@ -32,7 +32,7 @@ export const chainIds = [
 ] as const;
 export type RoutesSupportedChainId = typeof chainIds[number];
 
-export const stables = ["USDC", "USDbC", "USDCe", "USDT", "oUSDT", 'USDT0', 'ApeUSD', 'sUSDe'] as const;
+export const stables = ["USDC", "USDbC", "USDCe", "USDT", "oUSDT", 'USDT0', 'ApeUSD', 'sUSDe', 'USDG'] as const;
 export type RoutesSupportedStable = typeof stables[number];
 
 export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<RoutesSupportedStable, Hex | undefined>>> = {
@@ -40,6 +40,7 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
     USDC: "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
     USDT: "0xdac17f958d2ee523a2206206994597c13d831ec7",
     oUSDT: "0x1217bfe6c773eec6cc4a38b5dc45b92292b6e189",
+    USDG: "0xe343167631d89B6Ffc58B88d6b7fB0228795491D",
   },
   10: {
     USDC: "0x0b2c639c533813f4aa9d7837caf62653d097ff85",
@@ -135,6 +136,7 @@ export const stableAddresses: Record<RoutesSupportedChainId, Partial<Record<Rout
   57073: {
     USDCe: "0xF1815bd50389c46847f0Bda824eC8da914045D14",
     USDT0: "0x0200C29006150606B650577BBE7B6248F58470c1",
+    USDG: "0xe343167631d89B6Ffc58B88d6b7fB0228795491D",
   },
   10241024: {
     USDC: '0x14B90E36Ca85D8B563430C0940E80d3A040285cC',
